@@ -1,7 +1,10 @@
 <div>{{ myTitle }} app is running and it says {{myPhrase}}!</div>
-<ng-container  *ngFor="let nsScore of myArray">
+<ng-container  *ngFor="let obj of myArray">
     <div class="grid-container-element">
-        <div class="grid-child-element"> {{nsString(nsScore)}} </div>
-        <div class="grid-child-element"> {{ewString(nsScore)}} </div>
+        <div class="grid-child-element"> {{obj.nsPair}} </div>
+        <div class="grid-child-element"> {{obj.ewPair}} </div>
+        <div class="grid-child-element"> &nbsp; </div>
+        <div class="grid-child-element"> {{nsString(obj.score)}} </div>
+        <div class="grid-child-element"> {{ewString(obj.score)}} </div>
     </div>
 </ng-container>

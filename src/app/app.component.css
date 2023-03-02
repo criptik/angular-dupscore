@@ -1,9 +1,9 @@
 .grid-container-element { 
     display: grid; 
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr; 
     grid-gap: 0px; 
     border: none;
-    width: 200px;
+    width: 250px;
     min-height: 35px;
 } 
 .grid-child-element { 

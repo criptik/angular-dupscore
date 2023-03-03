@@ -3,21 +3,13 @@
           href="https://fonts.googleapis.com/css2?family=Courier+Prime">
 </head>
 <div>{{ myTitle }} app is running and it says {{myPhrase}}!</div>
-<!-- header -->
-<div class="grid-container-element">
-    <div class="grid-child-element"> &nbsp; </div>
-    <div class="grid-child-element"> NS </div>
-    <div class="grid-child-element-score-header"> &nbsp;&nbsp;&nbsp;&nbsp;SCORE&nbsp;&nbsp; </div>
-    <div class="grid-child-element"> &nbsp; </div>
-    <div class="grid-child-element"> EW </div>
+<div style="font-family: 'Courier Prime', monospace; font-size:30px; white-space:pre-wrap">
+    <!-- header -->
+    <div>{{headerLine}}</div>
+    <!-- <div>012345678901234567890123456789</div> -->
+
+    <ng-container  *ngFor="let viewline of myLines">
+        <div>{{viewline}}</div>
+    </ng-container>
 </div>
-<ng-container  *ngFor="let obj of myArray">
-    <div class="grid-container-element">
-        <div class="grid-child-element"> --> </div>
-        <div class="grid-child-element"> {{obj.nsPair}} </div>
-        <div class="grid-child-element"> {{nsString(obj.score)}} </div>
-        <div class="grid-child-element"> {{ewString(obj.score)}} </div>
-        <div class="grid-child-element"> &nbsp; </div>
-        <div class="grid-child-element"> {{obj.ewPair}} </div>
-    </div>
-</ng-container>
+

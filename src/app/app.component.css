@@ -1,16 +1,18 @@
 .grid-container-element { 
     display: grid; 
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr; 
+    grid-template-columns: 3fr 2fr 6fr 5fr 1fr 2fr; 
     grid-gap: 0px; 
     border: none;
-    width: 250px;
+    width: 350px;
     min-height: 35px;
 } 
-.grid-child-element { 
+[class^="grid-child-element"] { 
     margin: 0px; 
-    border: 1px solid;
-    align: right;
+    border: none;
     text-align: right;
-    font-size: 30px;
-                
+    font-size: 25px;
+    font-family: Courier Prime, monospace;
+}
+.grid-child-element-score-header { 
+    grid-column: span 2;
 }

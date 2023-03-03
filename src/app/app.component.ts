@@ -14,9 +14,9 @@ export class AppComponent {
     myPhrase:string = 'this is funny';
     blanks: string = '  ';
     myArray: ScoreLine[] = [
-        new ScoreLine(3,4,100),
-        new ScoreLine(5,2),
-        new ScoreLine(6,1,-200),
+        new ScoreLine(3,4,1100),
+        new ScoreLine(5,2,-1100),
+        new ScoreLine(6,1,-1100),
        ];
 
     nsString(nsScore:number): string {

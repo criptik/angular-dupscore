@@ -15,6 +15,6 @@
             <div>{{viewline}}</div>
         </ng-template>
     </ng-container>
-    <div>{{inputLine}} <input size="5" style="font-size:30px"></div>
+    <div>{{inputLine}} <input autofocus (keyup)="onInputKeyUp($event)" size="5" style="font-size:30px"></div>
 </div>
 

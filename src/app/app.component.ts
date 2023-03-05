@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Directive, ElementRef } from '@angular/core';
+import { FocusTrapFactory} from '@angular/cdk/a11y';
 
 @Component({
     selector: 'app-root',
@@ -17,6 +19,8 @@ export class AppComponent {
     inputLine: string = ' ';
     nsScore : Map<number, number> = new Map();
     nsewMap: Map<number, number> = new Map();
+    nsOrder: number[] = [];
+    lastInput: string = '';
     
     constructor() {
         // temporary for testing
@@ -28,11 +32,14 @@ export class AppComponent {
         this.nsewMap.set(6, 1);
         this.nsewMap.set(8, 7);
         
-        this.onNS = 6;
+        this.onNS = 3;
+
+        this.buildNSOrder();
         this.updateView();
     }
 
     updateView() {
+        this.viewLines = [];
         this.viewLines[0] = `Section:A  Board:${this.boardNum}  Vul:${this.boardVul}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
@@ -50,7 +57,7 @@ export class AppComponent {
         this.viewLines.push(` `);
         const onEW = this.nsewMap.get(this.onNS) as number;
         this.inputLine = `Board: ${this.boardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.boardVul}     SCORE:`;
-        
+        // console.log(this.viewLines);
     }
 
     scoreStr(score: number | undefined, forNS: boolean): string {
@@ -61,5 +68,96 @@ export class AppComponent {
         else if (score < 0 && !forNS) str = `${-1*score}`;
         return str.padStart(4, ' ');
     }
+
+    onInputKeyUp(x : any) {
+        const key: string = x.key;
+        var curInput: string = x.target.value;
+        console.log(`key=${key}, curInput=${curInput}`);
+        if (key === 'ArrowDown' && curInput === '') {
+            this.onNS = this.getNewNS(1);
+            // console.log(`new onNS = ${this.onNS}`);
+            this.updateView();
+        }
+        else if (key === 'ArrowUp' && curInput === '') {
+            this.onNS = this.getNewNS(-1);
+            // console.log(`new onNS = ${this.onNS}`);
+            this.updateView();
+        }
+        else if (key === 'Enter') {
+            if (curInput !== '') {
+                // score entered
+                const newScore : number = parseInt(`${curInput}0`);
+                this.lastInput = curInput;
+                x.target.value = '';
+                this.nsScore.set(this.onNS, newScore);
+                this.updateView();
+            } else if (this.lastInput != '') {
+                const newScore : number = parseInt(`${this.lastInput}0`);
+                this.lastInput = curInput;
+                x.target.value = '';
+                this.nsScore.set(this.onNS, newScore);
+                this.updateView();
+            }
+            this.onNS = this.getNewNS(1);
+            // console.log(`new onNS = ${this.onNS}`);
+            this.updateView();
+        }
+        else if (key === '-') {
+            if (curInput !== '') {
+                // negative score entered
+                // move - sign from end of input to beginning
+                curInput = `-${curInput.slice(0, -1)}`;
+                const newScore : number = parseInt(`${curInput}0`);
+                this.lastInput = curInput;
+                x.target.value = '';
+                this.nsScore.set(this.onNS, newScore);
+                this.updateView();
+            } else if (this.lastInput != '') {
+                const newScore : number = parseInt(`-${this.lastInput}0`);
+                this.lastInput = curInput;
+                x.target.value = '';
+                this.nsScore.set(this.onNS, newScore);
+                this.updateView();
+            }
+            this.onNS = this.getNewNS(1);
+            // console.log(`new onNS = ${this.onNS}`);
+            this.updateView();
+        }
+        
+        else if (isFinite(parseInt(key))) {
+            console.log(`key ${key} is a number!`);
+            console.log(`input is now ${x.target.value}`);
+        }
+        else {
+            // ignore non-numeric keys
+            console.log(`key ${key} is not a number!`);
+            x.target.value = x.target.value.slice(0, -1);
+            console.log(`input is now ${x.target.value}`);
+        }
+    }
+
+    getNewNS(dir: number) : number {
+        const idx = this.nsOrder.indexOf(this.onNS);
+        const newidx = idx + dir;
+        if (newidx < 0 || newidx >= this.nsOrder.length) return this.onNS;
+        else return this.nsOrder[newidx];
+    }
+    
+    buildNSOrder() {
+        this.nsOrder = Array.from(this.nsewMap.keys()).sort();
+    }
+
+
+}
+
+@Directive({
+  selector: '[autofocus]'
+})
+export class AutofocusDirective {
+  constructor(private input: ElementRef) {}
+
+  ngAfterViewInit() {
+    this.input.nativeElement.focus();
+  }
 }
 

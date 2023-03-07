@@ -75,11 +75,13 @@ export class AppComponent {
         console.log(`key=${key}, curInput=${curInput}`);
         if (key === 'ArrowDown' && curInput === '') {
             this.onNS = this.getNewNS(1);
+            this.lastInput = '';
             // console.log(`new onNS = ${this.onNS}`);
             this.updateView();
         }
         else if (key === 'ArrowUp' && curInput === '') {
             this.onNS = this.getNewNS(-1);
+            this.lastInput = '';
             // console.log(`new onNS = ${this.onNS}`);
             this.updateView();
         }
@@ -103,22 +105,19 @@ export class AppComponent {
             this.updateView();
         }
         else if (key === '-') {
-            if (curInput !== '') {
-                // negative score entered
-                // move - sign from end of input to beginning
-                curInput = `-${curInput.slice(0, -1)}`;
-                const newScore : number = parseInt(`${curInput}0`);
-                this.lastInput = curInput;
+            if (curInput === '-') {
                 x.target.value = '';
-                this.nsScore.set(this.onNS, newScore);
-                this.updateView();
-            } else if (this.lastInput != '') {
-                const newScore : number = parseInt(`-${this.lastInput}0`);
-                this.lastInput = curInput;
-                x.target.value = '';
-                this.nsScore.set(this.onNS, newScore);
-                this.updateView();
+                return;
             }
+            // now we know there is a non-empty input
+            // negative score entered
+            // move - sign from end of input to beginning
+            curInput = `-${curInput.slice(0, -1)}`;
+            const newScore : number = parseInt(`${curInput}0`);
+            this.lastInput = curInput;
+            x.target.value = '';
+            this.nsScore.set(this.onNS, newScore);
+            this.updateView();
             this.onNS = this.getNewNS(1);
             // console.log(`new onNS = ${this.onNS}`);
             this.updateView();

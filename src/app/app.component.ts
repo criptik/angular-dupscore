@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
+import { LegalScore, Vul } from './legalscore'
 
 @Component({
     selector: 'app-root',
@@ -21,6 +22,7 @@ export class AppComponent {
     nsewMap: Map<number, number> = new Map();
     nsOrder: number[] = [];
     lastInput: string = '';
+    legalScoreObj : LegalScore = new LegalScore();
     
     constructor() {
         // temporary for testing
@@ -69,6 +71,11 @@ export class AppComponent {
         return str.padStart(4, ' ');
     }
 
+    checkScoreLegality(newScore:number) {
+        console.log(`legalscore = ${this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V)}`); 
+        return this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V);
+    }
+    
     onInputKeyUp(x : any) {
         const key: string = x.key;
         var curInput: string = x.target.value;
@@ -89,20 +96,25 @@ export class AppComponent {
             if (curInput !== '') {
                 // score entered
                 const newScore : number = parseInt(`${curInput}0`);
-                this.lastInput = curInput;
-                x.target.value = '';
-                this.nsScore.set(this.onNS, newScore);
-                this.updateView();
-            } else if (this.lastInput != '') {
+                if (this.checkScoreLegality(newScore)) {
+                    this.lastInput = curInput;
+                    x.target.value = '';
+                    this.nsScore.set(this.onNS, newScore);
+                    this.onNS = this.getNewNS(1);
+                    this.updateView();
+                }
+                else {
+                    x.target.value = '';
+                    this.viewLines[this.viewLines.length - 1] = `!! ${newScore} is not possible on this board !!`;
+                }
+            } else if (this.lastInput !== '') {
                 const newScore : number = parseInt(`${this.lastInput}0`);
                 this.lastInput = curInput;
                 x.target.value = '';
                 this.nsScore.set(this.onNS, newScore);
+                this.onNS = this.getNewNS(1);
                 this.updateView();
             }
-            this.onNS = this.getNewNS(1);
-            // console.log(`new onNS = ${this.onNS}`);
-            this.updateView();
         }
         else if (key === '-') {
             if (curInput === '-') {
@@ -114,15 +126,20 @@ export class AppComponent {
             // move - sign from end of input to beginning
             curInput = `-${curInput.slice(0, -1)}`;
             const newScore : number = parseInt(`${curInput}0`);
-            this.lastInput = curInput;
-            x.target.value = '';
-            this.nsScore.set(this.onNS, newScore);
-            this.updateView();
-            this.onNS = this.getNewNS(1);
-            // console.log(`new onNS = ${this.onNS}`);
-            this.updateView();
+            if (this.checkScoreLegality(newScore)) {
+                this.lastInput = curInput;
+                x.target.value = '';
+                this.nsScore.set(this.onNS, newScore);
+                this.onNS = this.getNewNS(1);
+                // console.log(`new onNS = ${this.onNS}`);
+                this.updateView();
+            }
+            else {
+                x.target.value = '';
+                this.viewLines[this.viewLines.length - 1] = `!! ${newScore} is not possible on this board !!`;
+            }
         }
-        
+            
         else if (isFinite(parseInt(key))) {
             console.log(`key ${key} is a number!`);
             console.log(`input is now ${x.target.value}`);

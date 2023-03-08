@@ -3,6 +3,17 @@ import { Directive, ElementRef } from '@angular/core';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { LegalScore, Vul } from './legalscore'
 
+
+class ScoreObj {
+    score:number;
+    kind:string;
+    constructor(score: number, kind: string = '') {
+        this.score = score;
+        this.kind = kind;
+    }
+}
+
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -10,6 +21,7 @@ import { LegalScore, Vul } from './legalscore'
 })
 
 export class AppComponent {
+    
     myTitle:string = 'my-app';
     myPhrase:string = 'this is funny';
     numPairs: number = 8;
@@ -18,17 +30,18 @@ export class AppComponent {
     boardVul: string = 'BOTH';
     onNS: number;
     inputLine: string = ' ';
-    nsScore : Map<number, number> = new Map();
+    nsScore : Map<number, ScoreObj> = new Map();
     nsewMap: Map<number, number> = new Map();
     nsOrder: number[] = [];
     lastInput: string = '';
     legalScoreObj : LegalScore = new LegalScore();
+    errmsg: string = '  ';
     
     constructor() {
         // temporary for testing
-        this.nsScore.set(3, 1100);
-        this.nsScore.set(6, -1100);
-        this.nsScore.set(8, 0);
+        this.nsScore.set(3, new ScoreObj(1100));
+        this.nsScore.set(6, new ScoreObj(-1100));
+        this.nsScore.set(8, new ScoreObj(0));
         this.nsewMap.set(5, 2);
         this.nsewMap.set(3, 4);
         this.nsewMap.set(6, 1);
@@ -51,12 +64,15 @@ export class AppComponent {
         // handle lines which have real ns&ew pairs (score may still be undefined)
         Array.from(this.nsewMap.keys()).forEach((nsPair:number) => {
             const ewPair = this.nsewMap.get(nsPair) as number;
-            const score: number | undefined  = this.nsScore.get(nsPair);
+            const scoreObj: ScoreObj | undefined  = this.nsScore.get(nsPair);
+            const score = scoreObj?.score;
+            // console.log(nsPair, score);
             const arrow: string = (nsPair === this.onNS ? `==>` : `   `);
             this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(score, true)} ${this.scoreStr(score, false)}  ${ewPair.toString().padStart(2,' ')}    `;
         });
         this.viewLines.push(` `);
-        this.viewLines.push(` `);
+        this.viewLines.push(this.errmsg);
+        this.errmsg = '  '; 
         const onEW = this.nsewMap.get(this.onNS) as number;
         this.inputLine = `Board: ${this.boardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.boardVul}     SCORE:`;
         // console.log(this.viewLines);
@@ -94,24 +110,36 @@ export class AppComponent {
         }
         else if (key === 'Enter') {
             if (curInput !== '') {
+                // first check for the special commands
+                if (curInput === 'x') {
+                    this.nsScore.delete(this.onNS);
+                    x.target.value = '';
+                    this.lastInput = '';
+                    this.onNS = this.getNewNS(1);
+                    this.updateView();
+                    return;
+                }
+                
+                
                 // score entered
                 const newScore : number = parseInt(`${curInput}0`);
                 if (this.checkScoreLegality(newScore)) {
                     this.lastInput = curInput;
                     x.target.value = '';
-                    this.nsScore.set(this.onNS, newScore);
+                    this.nsScore.set(this.onNS, new ScoreObj(newScore));
                     this.onNS = this.getNewNS(1);
                     this.updateView();
                 }
                 else {
                     x.target.value = '';
-                    this.viewLines[this.viewLines.length - 1] = `!! ${newScore} is not possible on this board !!`;
+                    this.errmsg = `!! ${newScore} is not possible on this board !!`;
+                    this.updateView();
                 }
             } else if (this.lastInput !== '') {
                 const newScore : number = parseInt(`${this.lastInput}0`);
                 this.lastInput = curInput;
                 x.target.value = '';
-                this.nsScore.set(this.onNS, newScore);
+                this.nsScore.set(this.onNS, new ScoreObj(newScore));
                 this.onNS = this.getNewNS(1);
                 this.updateView();
             }
@@ -129,7 +157,7 @@ export class AppComponent {
             if (this.checkScoreLegality(newScore)) {
                 this.lastInput = curInput;
                 x.target.value = '';
-                this.nsScore.set(this.onNS, newScore);
+                this.nsScore.set(this.onNS, new ScoreObj(newScore));
                 this.onNS = this.getNewNS(1);
                 // console.log(`new onNS = ${this.onNS}`);
                 this.updateView();
@@ -141,9 +169,14 @@ export class AppComponent {
         }
             
         else if (isFinite(parseInt(key))) {
+            // numeric keys always ok
             console.log(`key ${key} is a number!`);
             console.log(`input is now ${x.target.value}`);
         }
+        else if ('xln'.includes(key) && x.target.value == key) {
+            
+        }
+        
         else {
             // ignore non-numeric keys
             console.log(`key ${key} is not a number!`);

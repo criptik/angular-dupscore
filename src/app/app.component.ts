@@ -6,10 +6,12 @@ import { LegalScore, Vul } from './legalscore'
 
 class ScoreObj {
     score:number;
-    kind:string;
-    constructor(score: number, kind: string = '') {
+    kindNS:string;
+    kindEW:string;
+    constructor(score: number, kindNS: string = '', kindEW: string=kindNS) {
         this.score = score;
-        this.kind = kind;
+        this.kindNS = kindNS;
+        this.kindEW = kindEW;
     }
 }
 
@@ -65,10 +67,9 @@ export class AppComponent {
         Array.from(this.nsewMap.keys()).forEach((nsPair:number) => {
             const ewPair = this.nsewMap.get(nsPair) as number;
             const scoreObj: ScoreObj | undefined  = this.nsScore.get(nsPair);
-            const score = scoreObj?.score;
             // console.log(nsPair, score);
             const arrow: string = (nsPair === this.onNS ? `==>` : `   `);
-            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(score, true)} ${this.scoreStr(score, false)}  ${ewPair.toString().padStart(2,' ')}    `;
+            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(scoreObj, true)} ${this.scoreStr(scoreObj, false)}  ${ewPair.toString().padStart(2,' ')}    `;
         });
         this.viewLines.push(` `);
         this.viewLines.push(this.errmsg);
@@ -78,12 +79,20 @@ export class AppComponent {
         // console.log(this.viewLines);
     }
 
-    scoreStr(score: number | undefined, forNS: boolean): string {
+    scoreStr(scoreObj: ScoreObj | undefined, forNS: boolean): string {
         var str = ' ';
-        if (score === undefined) str = ' ? ';
-        else if (score === 0 && forNS) str = 'PASS';
-        else if (score > 0 && forNS) str = `${score}`;
-        else if (score < 0 && !forNS) str = `${-1*score}`;
+        if (scoreObj === undefined) str = ' ? ';
+        else if (scoreObj?.kindNS === '') {
+            // normal ScoreObj with a score
+            const score = scoreObj.score;
+            if (score === 0 && forNS) str = 'PASS';
+            else if (score > 0 && forNS) str = `${score}`;
+            else if (score < 0 && !forNS) str = `${-1*score}`;
+        }
+        else {
+            // a "special" scoreObj, with strings in the kindNS and kindEW
+            str = (forNS ? scoreObj.kindNS : scoreObj.kindEW);
+        }
         return str.padStart(4, ' ');
     }
 
@@ -91,11 +100,50 @@ export class AppComponent {
         console.log(`legalscore = ${this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V)}`); 
         return this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V);
     }
-    
+
+    checkSpecialInput(curInput: string, x:any) : boolean {
+        var foundSpecial:boolean = false;
+        
+        if (curInput === 'X') {
+            this.nsScore.delete(this.onNS);
+            foundSpecial = true;
+        }
+        if (curInput === 'N') {
+            this.nsScore.set(this.onNS, new ScoreObj(-1, 'NP '));
+            foundSpecial = true;
+        }
+        if (curInput === 'L') {
+            this.nsScore.set(this.onNS, new ScoreObj(-1, 'LATE'));
+            foundSpecial = true;
+        }
+        if (curInput === 'A') {
+            this.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE', 'AVE'));
+            foundSpecial = true;
+        }
+        if (curInput === 'A+') {
+            this.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE+', 'AVE-'));
+            foundSpecial = true;
+        }
+        if (curInput === 'A-') {
+            this.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE-', 'AVE+'));
+            foundSpecial = true;
+        }
+        
+        if (foundSpecial) {
+            x.target.value = '';
+            this.lastInput = '';
+            this.onNS = this.getNewNS(1);
+            this.updateView();
+        }
+        return foundSpecial;
+
+    }
+                
     onInputKeyUp(x : any) {
         const key: string = x.key;
         var curInput: string = x.target.value;
         console.log(`key=${key}, curInput=${curInput}`);
+        if (key === 'Shift') return;
         if (key === 'ArrowDown' && curInput === '') {
             this.onNS = this.getNewNS(1);
             this.lastInput = '';
@@ -110,17 +158,7 @@ export class AppComponent {
         }
         else if (key === 'Enter') {
             if (curInput !== '') {
-                // first check for the special commands
-                if (curInput === 'x') {
-                    this.nsScore.delete(this.onNS);
-                    x.target.value = '';
-                    this.lastInput = '';
-                    this.onNS = this.getNewNS(1);
-                    this.updateView();
-                    return;
-                }
-                
-                
+                if (this.checkSpecialInput(curInput, x)) return;
                 // score entered
                 const newScore : number = parseInt(`${curInput}0`);
                 if (this.checkScoreLegality(newScore)) {
@@ -144,9 +182,17 @@ export class AppComponent {
                 this.updateView();
             }
         }
+        else if (key === '+') {
+            // A+ is a legal input
+            if (curInput === 'A+') return;
+        }
         else if (key === '-') {
-            if (curInput === '-') {
+                if (curInput === '-') {
                 x.target.value = '';
+                return;
+            }
+            if (curInput === 'A-') {
+                // a legal combo for ns=avg-, ew=avg+
                 return;
             }
             // now we know there is a non-empty input
@@ -173,8 +219,8 @@ export class AppComponent {
             console.log(`key ${key} is a number!`);
             console.log(`input is now ${x.target.value}`);
         }
-        else if ('xln'.includes(key) && x.target.value == key) {
-            
+        else if ('XLNA'.includes(key.toUpperCase()) && x.target.value.toUpperCase() === key.toUpperCase()) {
+            x.target.value = key.toUpperCase()
         }
         
         else {

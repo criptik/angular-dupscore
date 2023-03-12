@@ -1,19 +1,8 @@
 import { Component } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
-import { LegalScore, Vul } from './legalscore'
-
-
-class ScoreObj {
-    score:number;
-    kindNS:string;
-    kindEW:string;
-    constructor(score: number, kindNS: string = '', kindEW: string=kindNS) {
-        this.score = score;
-        this.kindNS = kindNS;
-        this.kindEW = kindEW;
-    }
-}
+import { LegalScore, Vul } from './legalscore';
+import { GameDataComponent, ScoreObj } from '../game-data/game-data.component';
 
 @Component({
     selector: 'app-score-entry',
@@ -23,29 +12,17 @@ class ScoreObj {
 
 
 export class ScoreEntryComponent {
-    numPairs: number = 8;
+    gameDataPtr: GameDataComponent = new GameDataComponent();
     viewLines: string[] = [];
-    boardNum: number = 4;
-    boardVul: string = 'BOTH';
+    nsOrder: number[] = [];
     onNS: number;
     inputLine: string = ' ';
-    nsScore : Map<number, ScoreObj> = new Map();
-    nsewMap: Map<number, number> = new Map();
-    nsOrder: number[] = [];
     lastInput: string = '';
     legalScoreObj : LegalScore = new LegalScore();
     errmsg: string = '  ';
     
     constructor() {
-        // temporary for testing
-        this.nsScore.set(3, new ScoreObj(1100));
-        this.nsScore.set(6, new ScoreObj(-1100));
-        this.nsScore.set(8, new ScoreObj(0));
-        this.nsewMap.set(5, 2);
-        this.nsewMap.set(3, 4);
-        this.nsewMap.set(6, 1);
-        this.nsewMap.set(8, 7);
-        
+ 
         this.onNS = 3;
 
         this.buildNSOrder();
@@ -54,16 +31,16 @@ export class ScoreEntryComponent {
 
     updateView() {
         this.viewLines = [];
-        this.viewLines[0] = `Section:A  Board:${this.boardNum}  Vul:${this.boardVul}`;
+        this.viewLines[0] = `Section:A  Board:${this.gameDataPtr.boardNum}  Vul:${this.gameDataPtr.boardVul}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
-        [...Array(this.numPairs).keys()].forEach(pair => {
+        [...Array(this.gameDataPtr.numPairs).keys()].forEach(pair => {
             this.viewLines[pair+2] = `      ${'--'.repeat(5)}  `; 
         });
         // handle lines which have real ns&ew pairs (score may still be undefined)
-        Array.from(this.nsewMap.keys()).forEach((nsPair:number) => {
-            const ewPair = this.nsewMap.get(nsPair) as number;
-            const scoreObj: ScoreObj | undefined  = this.nsScore.get(nsPair);
+        Array.from(this.gameDataPtr.nsewMap.keys()).forEach((nsPair:number) => {
+            const ewPair = this.gameDataPtr.nsewMap.get(nsPair) as number;
+            const scoreObj: ScoreObj | undefined  = this.gameDataPtr.nsScore.get(nsPair);
             // console.log(nsPair, score);
             const arrow: string = (nsPair === this.onNS ? `==>` : `   `);
             this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(scoreObj, true)} ${this.scoreStr(scoreObj, false)}  ${ewPair.toString().padStart(2,' ')}    `;
@@ -71,8 +48,8 @@ export class ScoreEntryComponent {
         this.viewLines.push(` `);
         this.viewLines.push(this.errmsg);
         this.errmsg = '  '; 
-        const onEW = this.nsewMap.get(this.onNS) as number;
-        this.inputLine = `Board: ${this.boardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.boardVul}     SCORE:`;
+        const onEW = this.gameDataPtr.nsewMap.get(this.onNS) as number;
+        this.inputLine = `Board: ${this.gameDataPtr.boardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.gameDataPtr.boardVul}     SCORE:`;
         // console.log(this.viewLines);
     }
 
@@ -102,27 +79,27 @@ export class ScoreEntryComponent {
         var foundSpecial:boolean = false;
         
         if (curInput === 'X') {
-            this.nsScore.delete(this.onNS);
+            this.gameDataPtr.nsScore.delete(this.onNS);
             foundSpecial = true;
         }
         if (curInput === 'N') {
-            this.nsScore.set(this.onNS, new ScoreObj(-1, 'NP '));
+            this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(-1, 'NP '));
             foundSpecial = true;
         }
         if (curInput === 'L') {
-            this.nsScore.set(this.onNS, new ScoreObj(-1, 'LATE'));
+            this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(-1, 'LATE'));
             foundSpecial = true;
         }
         if (curInput === 'A') {
-            this.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE', 'AVE'));
+            this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE', 'AVE'));
             foundSpecial = true;
         }
         if (curInput === 'A+') {
-            this.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE+', 'AVE-'));
+            this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE+', 'AVE-'));
             foundSpecial = true;
         }
         if (curInput === 'A-') {
-            this.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE-', 'AVE+'));
+            this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(-1, 'AVE-', 'AVE+'));
             foundSpecial = true;
         }
         
@@ -161,7 +138,7 @@ export class ScoreEntryComponent {
                 if (this.checkScoreLegality(newScore)) {
                     this.lastInput = curInput;
                     x.target.value = '';
-                    this.nsScore.set(this.onNS, new ScoreObj(newScore));
+                    this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(newScore));
                     this.onNS = this.getNewNS(1);
                     this.updateView();
                 }
@@ -174,7 +151,7 @@ export class ScoreEntryComponent {
                 const newScore : number = parseInt(`${this.lastInput}0`);
                 this.lastInput = curInput;
                 x.target.value = '';
-                this.nsScore.set(this.onNS, new ScoreObj(newScore));
+                this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(newScore));
                 this.onNS = this.getNewNS(1);
                 this.updateView();
             }
@@ -200,7 +177,7 @@ export class ScoreEntryComponent {
             if (this.checkScoreLegality(newScore)) {
                 this.lastInput = curInput;
                 x.target.value = '';
-                this.nsScore.set(this.onNS, new ScoreObj(newScore));
+                this.gameDataPtr.nsScore.set(this.onNS, new ScoreObj(newScore));
                 this.onNS = this.getNewNS(1);
                 // console.log(`new onNS = ${this.onNS}`);
                 this.updateView();
@@ -236,7 +213,7 @@ export class ScoreEntryComponent {
     }
     
     buildNSOrder() {
-        this.nsOrder = Array.from(this.nsewMap.keys()).sort();
+        this.nsOrder = Array.from(this.gameDataPtr.nsewMap.keys()).sort();
     }
 
 

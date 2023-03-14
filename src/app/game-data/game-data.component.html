@@ -1,1 +1,3 @@
-<app-score-entry></app-score-entry>
+<div *ngIf="gameDataSetup">
+    <app-score-entry [gameDataPtr] ="this"></app-score-entry>
+</div>

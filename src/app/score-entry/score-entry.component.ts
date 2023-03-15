@@ -14,6 +14,8 @@ import { GameDataComponent, BoardObj, BoardPlay } from '../game-data/game-data.c
 
 export class ScoreEntryComponent {
     @Input() gameDataPtr: GameDataComponent;
+    testStartBoardNum: number = 5;
+    curBoardNum: number = 5;
     viewLines: string[] = [];
     nsOrder: number[] = [];
     onNS: number;
@@ -31,13 +33,21 @@ export class ScoreEntryComponent {
     ngOnInit() {
         // when this is called, we assume the parent is all setup
         console.log(`in ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
+        // temporary stuff for testing
+        const testBoardPlays  = this.gameDataPtr.boardObjs.get(this.testStartBoardNum)?.boardPlays;
+        
+        testBoardPlays?.get(1)?.addScoreInfo(1100);   // ns pair 1 
+        testBoardPlays?.get(6)?.addScoreInfo(-1100);  // ns pair 6
+        // for now leave other ns pair 4 empty
+        console.log(testBoardPlays);
+
         this.buildNSOrder();
         this.updateView();
     }
     
     updateView() {
         this.viewLines = [];
-        this.viewLines[0] = `Section:A  Board:${this.gameDataPtr.boardNum}  Vul:${this.gameDataPtr.boardVul}`;
+        this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${this.gameDataPtr.boardVul}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
         [...Array(this.gameDataPtr.numPairs).keys()].forEach(pair => {
@@ -45,39 +55,38 @@ export class ScoreEntryComponent {
         });
         var onEW = 0;
         // handle lines which have real ns&ew pairs (score may still be undefined)
-        const bdnum = this.gameDataPtr.boardNum;
-        const playInfos = this.gameDataPtr.boardObjs.get(bdnum)?.playInfo as Map<number, BoardPlay>;
-        Array.from(playInfos.keys()).forEach((nsPair:number) => {
-            const playInfo = playInfos.get(nsPair) as BoardPlay;
-            const ewPair = playInfo.ewPair as number;
+        const boardPlays = this.getBoardPlays(this.curBoardNum);
+        Array.from(boardPlays.keys()).forEach((nsPair:number) => {
+            const boardPlay = boardPlays.get(nsPair) as BoardPlay;
+            const ewPair = boardPlay.ewPair as number;
             // console.log(nsPair, ewPair, nsScore);
             var arrow: string = `   `;
             if (nsPair === this.onNS) {
                 arrow = `==>`;
                 onEW = ewPair;
             }
-            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(playInfo, true)} ${this.scoreStr(playInfo, false)}  ${ewPair.toString().padStart(2,' ')}    `;
+            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(boardPlay, true)} ${this.scoreStr(boardPlay, false)}  ${ewPair.toString().padStart(2,' ')}    `;
         });
         this.viewLines.push(` `);
         this.viewLines.push(this.errmsg);
         this.errmsg = '  '; 
-        this.inputLine = `Board: ${this.gameDataPtr.boardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.gameDataPtr.boardVul}     SCORE:`;
+        this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.gameDataPtr.boardVul}     SCORE:`;
         // console.log(this.viewLines);
     }
 
-    scoreStr(playInfo: BoardPlay, forNS: boolean): string {
+    scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
         var str = ' ';
-        if (playInfo?.nsScore === -2) str = ' ? ';
-        else if (playInfo?.nsScore !== -1) {
+        if (boardPlay?.nsScore === -2) str = ' ? ';
+        else if (boardPlay?.nsScore !== -1) {
             // normal ScoreObj with a score
-            const score = playInfo.nsScore;
+            const score = boardPlay.nsScore;
             if (score === 0 && forNS) str = 'PASS';
             else if (score > 0 && forNS) str = `${score}`;
             else if (score < 0 && !forNS) str = `${-1*score}`;
         }
         else {
-            // a "special" playInfo, with strings in the kindNS and kindEW
-            str = (forNS ? playInfo?.kindNS : playInfo?.kindEW);
+            // a "special" boardPlays, with strings in the kindNS and kindEW
+            str = (forNS ? boardPlay?.kindNS : boardPlay?.kindEW);
         }
         return str.padStart(4, ' ');
     }
@@ -87,32 +96,42 @@ export class ScoreEntryComponent {
         return this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V);
     }
 
+    getBoardPlays(bdnum: number): Map<number, BoardPlay> {
+        const boardPlays = this.gameDataPtr.boardObjs.get(bdnum)?.boardPlays as Map<number, BoardPlay>;
+        return boardPlays;
+    }
+    
+    getBoardPlay(bdnum: number, nsPair: number): BoardPlay {
+        const boardPlay = this.getBoardPlays(bdnum).get(nsPair) as BoardPlay;
+        return boardPlay;
+    }
+
     checkSpecialInput(curInput: string, x:any) : boolean {
         var foundSpecial:boolean = false;
-        // get pointer to playInfo for onNS board
-        const playInfo = this.gameDataPtr.boardObjs.get(this.gameDataPtr.boardNum)?.playInfo.get(this.onNS) as BoardPlay;
+        // get pointer to boardPlays for onNS board
+        const boardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         if (curInput === 'X') {
-            playInfo.addScoreInfo(-2);
+            boardPlay.addScoreInfo(-2);
             foundSpecial = true;
         }
         if (curInput === 'N') {
-            playInfo.addScoreInfo(-1, 'NP ');
+            boardPlay.addScoreInfo(-1, 'NP ');
             foundSpecial = true;
         }
         if (curInput === 'L') {
-            playInfo.addScoreInfo(-1, 'LATE');
+            boardPlay.addScoreInfo(-1, 'LATE');
             foundSpecial = true;
         }
         if (curInput === 'A') {
-            playInfo.addScoreInfo(-1, 'AVE', 'AVE');
+            boardPlay.addScoreInfo(-1, 'AVE', 'AVE');
             foundSpecial = true;
         }
         if (curInput === 'A+') {
-            playInfo.addScoreInfo(-1, 'AVE+', 'AVE-');
+            boardPlay.addScoreInfo(-1, 'AVE+', 'AVE-');
             foundSpecial = true;
         }
         if (curInput === 'A-') {
-            playInfo.addScoreInfo(-1, 'AVE-', 'AVE+');
+            boardPlay.addScoreInfo(-1, 'AVE-', 'AVE+');
             foundSpecial = true;
         }
         
@@ -128,7 +147,7 @@ export class ScoreEntryComponent {
     onInputKeyUp(x : any) {
         const key: string = x.key;
         var curInput: string = x.target.value;
-        const onNSPlayInfo = this.gameDataPtr.boardObjs.get(this.gameDataPtr.boardNum)?.playInfo.get(this.onNS) as BoardPlay;
+        const onNSBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         console.log(`key=${key}, curInput=${curInput}`);
         if (key === 'Shift') return;
         if (key === 'ArrowDown' && curInput === '') {
@@ -151,7 +170,7 @@ export class ScoreEntryComponent {
                 if (this.checkScoreLegality(newScore)) {
                     this.lastInput = curInput;
                     x.target.value = '';
-                    onNSPlayInfo.addScoreInfo(newScore);
+                    onNSBoardPlay.addScoreInfo(newScore);
                     this.onNS = this.getNewNS(1);
                     this.updateView();
                 }
@@ -164,7 +183,7 @@ export class ScoreEntryComponent {
                 const newScore : number = parseInt(`${this.lastInput}0`);
                 this.lastInput = curInput;
                 x.target.value = '';
-                onNSPlayInfo.addScoreInfo(newScore);
+                onNSBoardPlay.addScoreInfo(newScore);
                 this.onNS = this.getNewNS(1);
                 this.updateView();
             }
@@ -190,7 +209,7 @@ export class ScoreEntryComponent {
             if (this.checkScoreLegality(newScore)) {
                 this.lastInput = curInput;
                 x.target.value = '';
-                onNSPlayInfo.addScoreInfo(newScore);
+                onNSBoardPlay.addScoreInfo(newScore);
                 this.onNS = this.getNewNS(1);
                 // console.log(`new onNS = ${this.onNS}`);
                 this.updateView();
@@ -226,11 +245,9 @@ export class ScoreEntryComponent {
     }
     
     buildNSOrder() {
-        const bdobj = this.gameDataPtr.boardObjs.get(this.gameDataPtr.boardNum) as BoardObj;
-        this.nsOrder = Array.from(bdobj.playInfo.keys()).sort();
+        const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
+        this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort();
     }
-
-
 }
 
 @Directive({

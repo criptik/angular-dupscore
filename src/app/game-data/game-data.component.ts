@@ -29,7 +29,7 @@ export class BoardPlay {
 
 export class BoardObj {
     bdnum: number;
-    playInfo: Map<number, BoardPlay>  = new Map();
+    boardPlays: Map<number, BoardPlay>  = new Map();
 
     constructor(bdnum: number) {
         this.bdnum = bdnum;
@@ -46,9 +46,8 @@ export class GameDataComponent {
     // for current testing, just set some data here
     // later these will be derived from the game setup info and the .MOV file
     
-    numPairs: number = 6;
-    boardNum: number = 5;
-    boardVul: string = 'BOTH';
+    numPairs: number = 6;   // should come from the .MOV file
+    boardVul: string = 'NS VUL';
     boardObjs: Map<number, BoardObj> = new Map();
     abuf: ArrayBuffer = new ArrayBuffer(0);
     gameDataSetup: boolean = false;
@@ -82,7 +81,7 @@ export class GameDataComponent {
             _.range(1, numboards+1).forEach(bdnum => {
                 this.boardObjs.set(bdnum, new BoardObj(bdnum));
             });
-            // console.log(this.boardObjs.get(1).playInfo);
+            // console.log(this.boardObjs.get(1).boardPlays);
             
             console.log(`tables = ${numtables}, rounds=${numrounds}, datsiz=${datsiz}`);
             _.range(1,numtables+1).forEach(itable => {
@@ -94,20 +93,13 @@ export class GameDataComponent {
                     _.range(1, boardsPerRound+1).forEach(idxbd => {
                         const bdnum = (boardset-1)*boardsPerRound + idxbd;
                         const bp = new BoardPlay(nsPair, ewPair, iround);
-                        this.boardObjs.get(bdnum)?.playInfo.set(nsPair, bp);
+                        this.boardObjs.get(bdnum)?.boardPlays.set(nsPair, bp);
                     });
                     
                     idx+=3;
                 });
             });
 
-            // temporary for testing
-            const testBoardPlay  = this.boardObjs.get(this.boardNum)?.playInfo;
-            
-            testBoardPlay?.get(1)?.addScoreInfo(1100);   // ns pair 5 
-            testBoardPlay?.get(6)?.addScoreInfo(-1100);  // ns pair 6
-            // for now leave other ns pair 4 empty
-            console.log(testBoardPlay);
             // now set a variable so the html knows it is safe to invoke
             this.gameDataSetup = true;
             console.log(`gameData is now setup`);

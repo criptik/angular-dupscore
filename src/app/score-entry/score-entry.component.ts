@@ -5,6 +5,8 @@ import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { LegalScore, Vul } from './legalscore';
 import { GameDataComponent, BoardObj, BoardPlay } from '../game-data/game-data.component';
 
+var nsEndBoardMarker: number = -1;
+
 @Component({
     selector: 'app-score-entry',
     templateUrl: './score-entry.component.html',
@@ -18,7 +20,8 @@ export class ScoreEntryComponent {
     curBoardNum: number = 5;
     viewLines: string[] = [];
     nsOrder: number[] = [];
-    onNS: number;
+    onNS: number = 0;
+    inputElement: any = 1;
     inputLine: string = ' ';
     lastInput: string = '';
     legalScoreObj : LegalScore = new LegalScore();
@@ -26,7 +29,6 @@ export class ScoreEntryComponent {
     
     constructor(private http: HttpClient) {
         this.gameDataPtr = new GameDataComponent(this.http); //dummy
-        this.onNS = 4;  // for testing
         console.log(`gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
     }
 
@@ -36,12 +38,15 @@ export class ScoreEntryComponent {
         // temporary stuff for testing
         const testBoardPlays  = this.gameDataPtr.boardObjs.get(this.testStartBoardNum)?.boardPlays;
         
-        testBoardPlays?.get(1)?.addScoreInfo(1100);   // ns pair 1 
-        testBoardPlays?.get(6)?.addScoreInfo(-1100);  // ns pair 6
+        testBoardPlays?.get(1)?.addScoreInfo(1100);   // ns pair 1 on testBoardNum 
+        testBoardPlays?.get(6)?.addScoreInfo(-1100);  // ns pair 6 etc.
         // for now leave other ns pair 4 empty
         console.log(testBoardPlays);
 
+        this.curBoardNum = 1;
         this.buildNSOrder();
+        this.onNS = this.nsOrder[0];
+        console.log(this.nsOrder);
         this.updateView();
     }
     
@@ -70,7 +75,13 @@ export class ScoreEntryComponent {
         this.viewLines.push(` `);
         this.viewLines.push(this.errmsg);
         this.errmsg = '  '; 
-        this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.gameDataPtr.boardVul}     SCORE:`;
+        if (this.onNS === nsEndBoardMarker) {
+            this.inputLine = `Go To Board: `;
+            this.inputElement.target.value = `${this.curBoardNum+1}`;
+        }
+        else {
+            this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.gameDataPtr.boardVul}     SCORE:`;
+        }
         // console.log(this.viewLines);
     }
 
@@ -143,12 +154,53 @@ export class ScoreEntryComponent {
         }
         return foundSpecial;
     }
-                
+
+    goToBoardInput() {
+        const x = this.inputElement;
+        const key: string = x.key;
+        var curInput: string = x.target.value;
+        if (key === 'Enter') {
+            this.curBoardNum = parseInt(curInput);
+            x.target.value = '';
+            this.buildNSOrder();
+            this.onNS = this.nsOrder[0];
+            this.updateView();
+            return;
+        }
+        else if (isFinite(parseInt(key))) {
+            // numeric keys always ok
+            console.log(`goToBoard key ${key} is a number!`);
+            console.log(`input is now ${x.target.value}`);
+        }
+        else {
+            // ignore anything else
+            x.target.value = '';
+            console.log(`input is now ${x.target.value}`);
+        }
+        
+    }
+    
     onInputKeyUp(x : any) {
+        this.inputElement = x;  // save this
+        const key: string = x.key;
+        var curInput: string = x.target.value;
+        // check for special situation
+        if (this.onNS === nsEndBoardMarker) {
+            this.goToBoardInput();
+            return;
+        }
+        else {
+            this.scoreEntryInput();
+            return;
+        }
+    }
+    
+    scoreEntryInput() {    
+        const x = this.inputElement;
         const key: string = x.key;
         var curInput: string = x.target.value;
         const onNSBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
-        console.log(`key=${key}, curInput=${curInput}`);
+        console.log(`key=${key}, curInput=${curInput}, lastInput=${this.lastInput}`);
         if (key === 'Shift') return;
         if (key === 'ArrowDown' && curInput === '') {
             this.onNS = this.getNewNS(1);
@@ -181,7 +233,7 @@ export class ScoreEntryComponent {
                 }
             } else if (this.lastInput !== '') {
                 const newScore : number = parseInt(`${this.lastInput}0`);
-                this.lastInput = curInput;
+                this.lastInput = this.lastInput;
                 x.target.value = '';
                 onNSBoardPlay.addScoreInfo(newScore);
                 this.onNS = this.getNewNS(1);
@@ -240,7 +292,8 @@ export class ScoreEntryComponent {
     getNewNS(dir: number) : number {
         const idx = this.nsOrder.indexOf(this.onNS);
         const newidx = idx + dir;
-        if (newidx < 0 || newidx >= this.nsOrder.length) return this.onNS;
+        if (newidx < 0) return this.onNS;
+        if (newidx >= this.nsOrder.length) return nsEndBoardMarker;  // special code for end of board scores
         else return this.nsOrder[newidx];
     }
     

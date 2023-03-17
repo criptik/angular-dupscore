@@ -72,6 +72,16 @@ export class ScoreEntryComponent {
             }
             this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(boardPlay, true)} ${this.scoreStr(boardPlay, false)}  ${ewPair.toString().padStart(2,' ')}    `;
         });
+        // build incomplete board list
+        if (this.onNS === nsEndBoardMarker) {
+            this.gameDataPtr.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
+            this.errmsg = 'Boards To Score: ';
+            Array.from(this.gameDataPtr.boardObjs.keys()).forEach( bdnum => {
+                if (!this.gameDataPtr.boardObjs.get(bdnum)?.allPlaysEntered) {
+                    this.errmsg += ` ${bdnum}`;
+                }
+            });
+        }
         this.viewLines.push(` `);
         this.viewLines.push(this.errmsg);
         this.errmsg = '  '; 

@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
 
+const SCORE_EMPTY: number = -2;
+const SCORE_SPECIAL: number = -1;
+
 export class BoardPlay {
     // static info
     nsPair: number;
@@ -18,7 +21,7 @@ export class BoardPlay {
         this.nsPair = nsPair;
         this.ewPair = ewPair;
         this.round = round;
-        this.nsScore = -2;  // symbol for empty
+        this.nsScore = SCORE_EMPTY;  // symbol for empty
     }
 
     addScoreInfo(nsScore: number, kindNS: string = '', kindEW: string = kindNS) {
@@ -35,10 +38,22 @@ export class BoardObj {
     bdnum: number;
     boardPlays: Map<number, BoardPlay>  = new Map();
     mpMap: Map<number, number> = new Map();
+    allPlaysEntered: boolean = false;
+
     constructor(bdnum: number) {
         this.bdnum = bdnum;
     }
 
+    updateAllPlaysEntered() {
+        Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
+            if (bp.nsScore === SCORE_EMPTY) {
+                this.allPlaysEntered = true;
+                return;
+            }
+        });
+        this.allPlaysEntered = true;
+    }
+    
     getCbMap(ary: number[]) {
         const cbmap: NNMap = new Map();
         ary.forEach( n => {

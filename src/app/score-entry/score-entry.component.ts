@@ -76,6 +76,10 @@ export class ScoreEntryComponent {
         this.viewLines.push(this.errmsg);
         this.errmsg = '  '; 
         if (this.onNS === nsEndBoardMarker) {
+            // temporary for testing
+            const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
+            bdobj.computeMP();
+            console.log(bdobj.mpMap);
             this.inputLine = `Go To Board: `;
             this.inputElement.target.value = `${this.curBoardNum+1}`;
         }

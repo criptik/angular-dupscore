@@ -11,7 +11,9 @@ export class BoardPlay {
     nsScore:number;
     kindNS:string = '';
     kindEW:string = '';
-
+    nsMP: number|null = null;
+    ewMP: number|null = null;
+    
     constructor(nsPair: number, ewPair: number, round: number) {
         this.nsPair = nsPair;
         this.ewPair = ewPair;
@@ -27,13 +29,57 @@ export class BoardPlay {
     
 }
 
+type NNMap = Map<number, number>;
+
 export class BoardObj {
     bdnum: number;
     boardPlays: Map<number, BoardPlay>  = new Map();
-
+    mpMap: Map<number, number> = new Map();
     constructor(bdnum: number) {
         this.bdnum = bdnum;
     }
+
+    getCbMap(ary: number[]) {
+        const cbmap: NNMap = new Map();
+        ary.forEach( n => {
+            const curval = cbmap.get(n);
+            cbmap.set(n, (curval === undefined ? 1 : curval + 1));
+        });
+        return cbmap;    
+    }
+    
+    matchpointsCountBy(cbmap: NNMap, testval: number): number {
+        const cbkeys: number[] = Array.from(cbmap.keys());
+        return(cbkeys.reduce((mp:number, key:number) => {
+            const countForKey: number|undefined  = cbmap.get(key);
+            if (countForKey === undefined) return 0;
+            else {
+                return mp + (key < testval ? countForKey : (key == testval ? (countForKey - 1)*0.5 : 0));
+            }
+        }, 0));
+    }
+
+    mpMapFromCb(cbmap: NNMap): NNMap {
+        const cbkeys: number[] = Array.from(cbmap.keys());
+        const mpmap: NNMap = new Map();
+        cbkeys.forEach( key => {
+            mpmap.set(key, this.matchpointsCountBy(cbmap, key)); 
+        });
+        return mpmap;
+    }
+
+    computeMP() {
+        // gather the nsScores from the BoardPlays that have numeric results
+        const scores: number[] = [];
+        Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
+            if (bp.kindNS === '') {
+                scores.push(bp.nsScore);
+            }
+        });
+        const cbmap = this.getCbMap(scores);
+        this.mpMap = this.mpMapFromCb(cbmap);
+    }
+
     
 }
 

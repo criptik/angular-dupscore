@@ -3,7 +3,7 @@ import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { LegalScore, Vul } from './legalscore';
-import { GameDataService, BoardObj, BoardPlay } from '../game-data.service';
+import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
 
 var nsEndBoardMarker: number = -1;
 

@@ -37,11 +37,14 @@ type NNMap = Map<number, number>;
 export class BoardObj {
     bdnum: number;
     boardPlays: Map<number, BoardPlay>  = new Map();
-    mpMap: Map<number, number> = new Map();
+    mpMap: NNMap = new Map();  // maps a score to a mp amt
     allPlaysEntered: boolean = false;
-
-    constructor(bdnum: number) {
+    pairToMpMap: NNMap = new Map();  // maps a pair to a mp amt
+    servicePtr: GameDataService;   // to parent  
+    
+    constructor(bdnum: number, servicePtr: GameDataService) {
         this.bdnum = bdnum;
+        this.servicePtr = servicePtr;
     }
 
     updateAllPlaysEntered() {
@@ -83,6 +86,19 @@ export class BoardObj {
         return mpmap;
     }
 
+    buildPairToMpMap() {
+        Array.from(this.boardPlays.keys()).forEach( nsPair => {
+            const bp = this.boardPlays.get(nsPair) as BoardPlay;
+            const nsScore = bp.nsScore;
+            const ewPair = bp.ewPair;
+            const nsMps = this.mpMap.get(nsScore) as number;
+            const ewMps = this.servicePtr.boardTop - nsMps;
+            this.pairToMpMap.set(nsPair, nsMps);
+            this.pairToMpMap.set(ewPair, ewMps);
+        });
+        console.log(this.pairToMpMap);
+    }
+    
     computeMP() {
         // gather the nsScores from the BoardPlays that have numeric results
         const scores: number[] = [];
@@ -93,6 +109,7 @@ export class BoardObj {
         });
         const cbmap = this.getCbMap(scores);
         this.mpMap = this.mpMapFromCb(cbmap);
+        this.buildPairToMpMap();
     }
 }
 
@@ -105,6 +122,7 @@ export class GameDataService {
     // later these will be derived from the game setup info and the .MOV file
     
     numPairs: number = 6;   // should come from the .MOV file
+    boardTop: number = this.numPairs / 2 - 1;
     boardVul: string = 'NS VUL';
     boardObjs: Map<number, BoardObj> = new Map();
     abuf: ArrayBuffer = new ArrayBuffer(0);
@@ -137,7 +155,8 @@ export class GameDataService {
             const numboards = numrounds * boardsPerRound;
             // create the BoardInfo objects
             _.range(1, numboards+1).forEach(bdnum => {
-                this.boardObjs.set(bdnum, new BoardObj(bdnum));
+                const bdobj = new BoardObj(bdnum, this);
+                this.boardObjs.set(bdnum, bdobj);
             });
             // console.log(this.boardObjs.get(1).boardPlays);
             

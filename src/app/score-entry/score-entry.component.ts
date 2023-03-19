@@ -3,7 +3,7 @@ import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { LegalScore, Vul } from './legalscore';
-import { GameDataComponent, BoardObj, BoardPlay } from '../game-data/game-data.component';
+import { GameDataService, BoardObj, BoardPlay } from '../game-data.service';
 
 var nsEndBoardMarker: number = -1;
 
@@ -15,7 +15,6 @@ var nsEndBoardMarker: number = -1;
 
 
 export class ScoreEntryComponent {
-    @Input() gameDataPtr: GameDataComponent;
     testStartBoardNum: number = 5;
     curBoardNum: number = 5;
     viewLines: string[] = [];
@@ -27,14 +26,13 @@ export class ScoreEntryComponent {
     legalScoreObj : LegalScore = new LegalScore();
     errmsg: string = '  ';
     
-    constructor(private http: HttpClient) {
-        this.gameDataPtr = new GameDataComponent(this.http); //dummy
-        console.log(`gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
+    constructor(private gameDataPtr: GameDataService) {
+        // console.log(`in constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
     }
 
     ngOnInit() {
-        // when this is called, we assume the parent is all setup
-        console.log(`in ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
+        // when this is called, parent is all setup
+        console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
         // temporary stuff for testing
         const testBoardPlays  = this.gameDataPtr.boardObjs.get(this.testStartBoardNum)?.boardPlays;
         

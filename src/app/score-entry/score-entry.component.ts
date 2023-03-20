@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
-import { LegalScore, Vul } from './legalscore';
+import { LegalScore } from './legalscore';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
 
 var nsEndBoardMarker: number = -1;
@@ -47,10 +47,21 @@ export class ScoreEntryComponent {
         console.log(this.nsOrder);
         this.updateView();
     }
+
+    getVulStr(bdnum: number): string {
+        const bdobj: BoardObj = this.gameDataPtr.boardObjs.get(bdnum) as BoardObj;
+        const vulNS = bdobj.vulNS;
+        const vulEW = bdobj.vulEW;
+        if (!vulNS && !vulEW) return 'NONE';
+        if (vulNS && !vulEW) return 'N-S';
+        if (!vulNS && vulEW) return 'E-W';
+        else return 'BOTH';
+    }
     
     updateView() {
         this.viewLines = [];
-        this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${this.gameDataPtr.boardVul}`;
+        const bdvulStr = this.getVulStr(this.curBoardNum);
+        this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${bdvulStr}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
         [...Array(this.gameDataPtr.numPairs).keys()].forEach(pair => {
@@ -92,7 +103,7 @@ export class ScoreEntryComponent {
             this.inputElement.target.value = `${this.curBoardNum+1}`;
         }
         else {
-            this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${this.gameDataPtr.boardVul}     SCORE:`;
+            this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  VUL:${bdvulStr}     SCORE:`;
         }
         // console.log(this.viewLines);
     }
@@ -115,8 +126,10 @@ export class ScoreEntryComponent {
     }
 
     checkScoreLegality(newScore:number) {
-        console.log(`legalscore = ${this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V)}`); 
-        return this.legalScoreObj.checkNSScoreLegal(newScore, Vul.V, Vul.V);
+        const bdobj: BoardObj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
+        const vulNS = bdobj.vulNS;
+        const vulEW = bdobj.vulEW;
+        return this.legalScoreObj.checkNSScoreLegal(newScore, vulNS, vulEW);
     }
 
     getBoardPlays(bdnum: number): Map<number, BoardPlay> {

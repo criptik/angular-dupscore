@@ -36,15 +36,26 @@ type NNMap = Map<number, number>;
 
 export class BoardObj {
     bdnum: number;
+    vulNS: boolean;
+    vulEW: boolean;
+    dealer: string; 
     boardPlays: Map<number, BoardPlay>  = new Map();
     mpMap: NNMap = new Map();  // maps a score to a mp amt
     allPlaysEntered: boolean = false;
     pairToMpMap: NNMap = new Map();  // maps a pair to a mp amt
     servicePtr: GameDataService;   // to parent  
+
     
     constructor(bdnum: number, servicePtr: GameDataService) {
+        const vulNSVals = [0,1,0,1, 1,0,1,0, 0,1,0,1, 1,0,1,0];
+        const vulEWVals = [0,0,1,1, 0,1,1,0, 1,1,0,0, 1,0,0,1];
         this.bdnum = bdnum;
         this.servicePtr = servicePtr;
+        this.vulNS = vulNSVals[(bdnum-1) % 16] === 1;
+        this.vulEW = vulEWVals[(bdnum-1) % 16] === 1;
+        // for now, we don't really need to show the dealer
+        // but we'll compute it anyway
+        this.dealer = 'NESW'.charAt((this.bdnum-1) % 4);
     }
 
     updateAllPlaysEntered() {
@@ -123,7 +134,6 @@ export class GameDataService {
     
     numPairs: number = 6;   // should come from the .MOV file
     boardTop: number = this.numPairs / 2 - 1;
-    boardVul: string = 'NS VUL';
     boardObjs: Map<number, BoardObj> = new Map();
     abuf: ArrayBuffer = new ArrayBuffer(0);
     gameDataSetup: boolean = false;
@@ -159,6 +169,8 @@ export class GameDataService {
                 this.boardObjs.set(bdnum, bdobj);
             });
             // console.log(this.boardObjs.get(1).boardPlays);
+            // inspect the triplets to determine the maximum pair #
+            
             
             console.log(`tables = ${numtables}, rounds=${numrounds}, datsiz=${datsiz}`);
             _.range(1,numtables+1).forEach(itable => {

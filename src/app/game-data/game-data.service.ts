@@ -131,70 +131,101 @@ export class GameDataService {
 
     // for current testing, just set some data here
     // later these will be derived from the game setup info and the .MOV file
+
+    // movFileName: string = 'HCOLONEL.MOV';
+    movFileName: string = 'H0407X.MOV';
+    // user will eventually specify the boards per round
+    boardsPerRound: number = 2;
+    // other stuff is derived from the .MOV file
+    numPairs: number = 0;
+    numTables: number = 0;
+    numRounds: number = 0;
+    numBoards: number = 0;
     
-    numPairs: number = 6;   // should come from the .MOV file
-    boardTop: number = this.numPairs / 2 - 1;
+    boardTop: number = 0; 
     boardObjs: Map<number, BoardObj> = new Map();
-    abuf: ArrayBuffer = new ArrayBuffer(0);
     gameDataSetup: boolean = false;
     
     constructor(private http: HttpClient) {
         // console.log('in game-data.service constructor');
     }
 
-    Initialize() {
-        // console.log('in Initialize');
-        this.http.get('assets/HCOLONEL.MOV', { responseType: 'blob' }).subscribe(async res => {
-            //  console.log('in subscribe');
-            const reader = new FileReader();
-            reader.readAsDataURL(res);
-            this.abuf = await res?.arrayBuffer();
-            
-            // now set up ui8ary, datstart
-            console.log(`this.abuf=${this.abuf}, len=${this.abuf.byteLength}`);
-            const ui8ary : Uint8Array = new Uint8Array(this.abuf);
-            const asStr:string = new TextDecoder('utf-8').decode(ui8ary);
-            const datstart = asStr.lastIndexOf('\x21\x22\x23\x24')+4;
-            const datsiz = this.abuf.byteLength - datstart;
-            // console.log(`ui8ary=${ui8ary}`);
-            console.log(`datstart=${datstart}`);
-            var idx = datstart;
-            const numtables = 3;
-            const boardsPerRound = 2;
-            const numrounds = (datsiz / numtables) / 3;
-            const numboards = numrounds * boardsPerRound;
-            // create the BoardInfo objects
-            _.range(1, numboards+1).forEach(bdnum => {
-                const bdobj = new BoardObj(bdnum, this);
-                this.boardObjs.set(bdnum, bdobj);
-            });
-            // console.log(this.boardObjs.get(1).boardPlays);
-            // inspect the triplets to determine the maximum pair #
-            
-            
-            console.log(`tables = ${numtables}, rounds=${numrounds}, datsiz=${datsiz}`);
-            _.range(1,numtables+1).forEach(itable => {
-                _.range(1,numrounds+1).forEach(iround => {
-                    // console.log(`T${itable}, R${iround}`, ui8ary[idx], ui8ary[idx+1], ui8ary[idx+2]);
-                    const nsPair = ui8ary[idx+0];
-                    const ewPair = ui8ary[idx+1];
-                    const boardset = ui8ary[idx+2];
-                    _.range(1, boardsPerRound+1).forEach(idxbd => {
-                        const bdnum = (boardset-1)*boardsPerRound + idxbd;
-                        const bp = new BoardPlay(nsPair, ewPair, iround);
-                        this.boardObjs.get(bdnum)?.boardPlays.set(nsPair, bp);
-                    });
-                    
-                    idx+=3;
+    parseAbuf(abuf: ArrayBuffer) {
+        // now set up ui8ary, datstart
+        console.log(`abuf=${abuf}, len=${abuf.byteLength}`);
+        const ui8ary : Uint8Array = new Uint8Array(abuf);
+        const asStr:string = new TextDecoder('utf-8').decode(ui8ary);
+        // stuff from the beginning of the .mov file
+        this.numTables = ui8ary[3];
+        this.numPairs = 2 * this.numTables;
+        this.boardTop = this.numPairs/2 - 1;
+
+        // find the round info
+        const pattern = '\x21\x22\x23\x24';
+        const datstart = asStr.lastIndexOf(pattern) + pattern.length;
+        const datsiz = abuf.byteLength - datstart;
+        console.log(`rounds|boardsets=${ui8ary[4]}`);
+        console.log(`datstart=${datstart}`);
+        var idx = datstart;
+        this.numRounds = (datsiz / this.numTables) / 3;
+        this.numBoards = this.numRounds * this.boardsPerRound;
+        // create the BoardInfo objects
+        _.range(1, this.numBoards+1).forEach(bdnum => {
+            const bdobj = new BoardObj(bdnum, this);
+            this.boardObjs.set(bdnum, bdobj);
+        });
+        // console.log(this.boardObjs.get(1).boardPlays);
+        // inspect the triplets to determine the maximum pair #
+        
+        
+        console.log(`tables = ${this.numTables}, rounds=${this.numRounds}, numBoards=${this.numBoards}, datsiz=${datsiz}`);
+        _.range(1,this.numTables+1).forEach(itable => {
+            _.range(1,this.numRounds+1).forEach(iround => {
+                // console.log(`T${itable}, R${iround}`, ui8ary[idx], ui8ary[idx+1], ui8ary[idx+2]);
+                const nsPair = ui8ary[idx+0];
+                const ewPair = ui8ary[idx+1];
+                const boardset = ui8ary[idx+2];
+                _.range(1, this.boardsPerRound+1).forEach(idxbd => {
+                    const bdnum = (boardset-1)*this.boardsPerRound + idxbd;
+                    const bp = new BoardPlay(nsPair, ewPair, iround);
+                    this.boardObjs.get(bdnum)?.boardPlays.set(nsPair, bp);
                 });
+                
+                idx+=3;
             });
+        });
+    }
+    
+    Initialize2() {
+        this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+            console.log('in subscribe, res=', res, typeof res);
+            const reader = new FileReader();
+            reader.onloadend = (x) => {
+                const abuf: ArrayBuffer = reader.result as ArrayBuffer;
+                console.log('onloadend', abuf, abuf.byteLength);
+            }
+            console.log('before read');
+            reader.readAsArrayBuffer(res.body as Blob);
+        });
+    }
+
+    Initialize() {
+            // console.log('in Initialize');
+        this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+            console.log('in subscribe, res=', res, typeof res);
+            // const reader = new FileReader();
+            // const awres: Blob = res.body as Blob;
+            // reader.readAsDataURL(awres);
+            // console.log('awres', awres, typeof awres);
+            // console.log('awres.text', await awres.slice(0));
+            const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
+            this.parseAbuf(abuf);
             
-            // now set a variable so the html knows it is safe to invoke
+            // now set a variable so the other users know we are setup
             this.gameDataSetup = true;
             console.log(`gameData is now setup`);
         });
     }
-
 }
 
 

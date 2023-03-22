@@ -65,7 +65,7 @@ export class ScoreEntryComponent {
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
         [...Array(this.gameDataPtr.numPairs).keys()].forEach(pair => {
-            this.viewLines[pair+2] = `      ${'--'.repeat(5)}  `; 
+            this.viewLines[pair+2] = `       ${'--'.repeat(5)}  `; 
         });
         var onEW = 0;
         // handle lines which have real ns&ew pairs (score may still be undefined)

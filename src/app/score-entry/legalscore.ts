@@ -14,18 +14,18 @@ export class LegalScore {
         this.buildScoreSet(this.legalScoresNotVul, false);
         this.buildScoreSet(this.legalScoresVul, true);
         if (this.debug) {
-            console.log(this.legalScoresNotVul.size);
-            console.log(this.legalScoresVul.size);
-            console.table(Array.from(this.legalScoresNotVul.values()).sort((a:number, b:number) => a-b));
-            console.table(Array.from(this.legalScoresVul.values()).sort((a:number, b:number) => a-b));
+            //console.log(this.legalScoresNotVul.size);
+            //console.log(this.legalScoresVul.size);
+            //console.table(Array.from(this.legalScoresNotVul.values()).sort((a:number, b:number) => a-b));
+            //console.table(Array.from(this.legalScoresVul.values()).sort((a:number, b:number) => a-b));
             // tests
-            this.checkNSScoreLegal(110, false, false);
-            this.checkNSScoreLegal(1200, false, false);
-            this.checkNSScoreLegal(1300, false, false);
-            this.checkNSScoreLegal(1300, false, true);
-            this.checkNSScoreLegal(420, true, true);
-            this.checkNSScoreLegal(350, true, true);
-            this.checkNSScoreLegal(650, true, true);
+            console.assert(this.checkNSScoreLegal(110, false, false));
+            console.assert(this.checkNSScoreLegal(1200, false, false));
+            console.assert(!this.checkNSScoreLegal(1300, false, false));
+            console.assert(this.checkNSScoreLegal(1300, false, true));
+            console.assert(!this.checkNSScoreLegal(420, true, true));
+            console.assert(this.checkNSScoreLegal(350, true, true));
+            console.assert(this.checkNSScoreLegal(650, true, true));
         }
     }
 

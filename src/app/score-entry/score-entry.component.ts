@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LegalScore } from './legalscore';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
 
@@ -25,18 +26,26 @@ export class ScoreEntryComponent {
     legalScoreObj : LegalScore = new LegalScore();
     errmsg: string = '  ';
     
-    constructor(private gameDataPtr: GameDataService) {
+    constructor(private gameDataPtr: GameDataService,
+                private _router: Router,
+                private _activatedRoute: ActivatedRoute,)  {
         // console.log(`in constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
     }
 
     ngOnInit() {
         // when this is called, parent is all setup
         console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
-        this.curBoardNum = 1;
-        this.buildNSOrder();
-        this.onNS = this.nsOrder[0];
-        console.log(this.nsOrder);
-        this.updateView();
+        this.curBoardNum = 1;  // TODO: fix to be first incomplete board
+        if (this.gameDataPtr.gameDataSetup) {
+            this.buildNSOrder();
+            this.onNS = this.nsOrder[0];
+            console.log(this.nsOrder);
+            this.updateView();
+        }
+        else {
+            this._router.navigate(["/status"])
+        }
+        
     }
 
     getVulStr(bdnum: number): string {
@@ -198,6 +207,9 @@ export class ScoreEntryComponent {
     
     onInputKeyUp(x : any) {
         this.inputElement = x;  // save this
+        // ignore if gameData not set up yet
+        if (!this.gameDataPtr.gameDataSetup) return;
+        
         const key: string = x.key;
         var curInput: string = x.target.value;
         // check for special situation
@@ -317,16 +329,20 @@ export class ScoreEntryComponent {
         const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
         this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort();
     }
+
 }
 
 @Directive({
   selector: '[autofocus]'
 })
 export class AutofocusDirective {
-    constructor(private input: ElementRef) {}
+    constructor(private elem : ElementRef) {
+        console.log('autofocus diretive constructor');
+    }
     
-    ngAfterViewInit() {
-        this.input.nativeElement.focus();
+    ngAfterContentInit() {
+        console.log('in ngAfterContentInit');
+        this.elem.nativeElement.focus();
     }
 }
 

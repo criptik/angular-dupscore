@@ -4,7 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ScoreEntryComponent } from './score-entry/score-entry.component';
+import { ScoreEntryComponent, AutofocusDirective } from './score-entry/score-entry.component';
 import { GameDataComponent } from './game-data/game-data.component';
 import { GameDataService } from './game-data/game-data.service';
 
@@ -13,6 +13,7 @@ import { GameDataService } from './game-data/game-data.service';
         AppComponent,
         ScoreEntryComponent,
         GameDataComponent,
+        AutofocusDirective,
     ],
     imports: [
         BrowserModule,

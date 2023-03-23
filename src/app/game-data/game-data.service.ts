@@ -168,6 +168,8 @@ export class GameDataService {
         console.log(`datstart=${datstart}`);
         var idx = datstart;
         this.numRounds = (datsiz / this.numTables) / 3;
+        const bprmap: NNMap = new Map([[10, 2], [7, 3], [3, 6]]);
+        this.boardsPerRound = bprmap.get(this.numRounds) as number;
         this.numBoards = this.numRounds * this.boardsPerRound;
         // create the BoardInfo objects
         _.range(1, this.numBoards+1).forEach(bdnum => {
@@ -209,8 +211,8 @@ export class GameDataService {
         });
     }
 
-    Initialize() {
-            // console.log('in Initialize');
+    async Initialize() {
+        console.log('in Initialize');
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
             console.log('in subscribe, res=', res, typeof res);
             // const reader = new FileReader();
@@ -219,12 +221,18 @@ export class GameDataService {
             // console.log('awres', awres, typeof awres);
             // console.log('awres.text', await awres.slice(0));
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
+            console.log(`before parseAbuf`);
             this.parseAbuf(abuf);
             
             // now set a variable so the other users know we are setup
             this.gameDataSetup = true;
             console.log(`gameData is now setup`);
         });
+        // wait for gameDataSetup
+        while (!this.gameDataSetup) {
+            console.log(`wait a bit`);
+            await new Promise(resolve => setTimeout(resolve, 300));
+        };
     }
 }
 

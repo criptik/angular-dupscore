@@ -1,6 +1,5 @@
 <div>
-    game-data works.
-</div>
-<div *ngIf="gameDataPtrPublic.gameDataSetup">
-    <app-score-entry></app-score-entry>
+    <div *ngFor="let line of statusText">
+        {{ line }}
+    </div>
 </div>

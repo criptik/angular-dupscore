@@ -15,7 +15,6 @@ var nsEndBoardMarker: number = -1;
 
 
 export class ScoreEntryComponent {
-    testStartBoardNum: number = 5;
     curBoardNum: number = 5;
     viewLines: string[] = [];
     nsOrder: number[] = [];
@@ -33,14 +32,6 @@ export class ScoreEntryComponent {
     ngOnInit() {
         // when this is called, parent is all setup
         console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
-        // temporary stuff for testing
-        const testBoardPlays  = this.gameDataPtr.boardObjs.get(this.testStartBoardNum)?.boardPlays;
-        
-        testBoardPlays?.get(1)?.addScoreInfo(1100);   // ns pair 1 on testBoardNum 
-        testBoardPlays?.get(6)?.addScoreInfo(-1100);  // ns pair 6 etc.
-        // for now leave other ns pair 4 empty
-        console.log(testBoardPlays);
-
         this.curBoardNum = 1;
         this.buildNSOrder();
         this.onNS = this.nsOrder[0];

@@ -55,17 +55,18 @@ export class BoardObj {
         this.vulEW = vulEWVals[(bdnum-1) % 16] === 1;
         // for now, we don't really need to show the dealer
         // but we'll compute it anyway
-        this.dealer = 'NESW'.charAt((this.bdnum-1) % 4);
+        this.dealer = 'NESW'.charAt((this.bdnum) % 4);
     }
 
     updateAllPlaysEntered() {
+        var allEntered = true;
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
+            // console.log(`updateAllPlaysEntered, board ${this.bdnum}, nspair:${bp.nsPair}, score:${bp.nsScore}`); 
             if (bp.nsScore === SCORE_EMPTY) {
-                this.allPlaysEntered = true;
-                return;
+                allEntered = false;
             }
         });
-        this.allPlaysEntered = true;
+        this.allPlaysEntered = allEntered;
     }
     
     getCbMap(ary: number[]) {

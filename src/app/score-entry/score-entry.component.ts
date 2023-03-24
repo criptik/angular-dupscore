@@ -16,7 +16,7 @@ var nsEndBoardMarker: number = -1;
 
 
 export class ScoreEntryComponent {
-    curBoardNum: number = 5;
+    curBoardNum: number = 0;
     viewLines: string[] = [];
     nsOrder: number[] = [];
     onNS: number = 0;
@@ -35,17 +35,24 @@ export class ScoreEntryComponent {
     ngOnInit() {
         // when this is called, parent is all setup
         console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
-        this.curBoardNum = 1;  // TODO: fix to be first incomplete board
-        if (this.gameDataPtr.gameDataSetup) {
-            this.buildNSOrder();
-            this.onNS = this.nsOrder[0];
-            console.log(this.nsOrder);
-            this.updateView();
+        if (!this.gameDataPtr.gameDataSetup) {
+            this._router.navigate(["/status"]);
         }
-        else {
-            this._router.navigate(["/status"])
-        }
-        
+
+        // set boardnum to first incomplete board
+        this.curBoardNum = 1;  // default if nothing found below
+        Array.from(this.gameDataPtr.boardObjs.values()).every( bdobj => {
+            // console.log(`board ${bdobj.bdnum}, allEntered=${bdobj.allPlaysEntered}`);
+            if (!bdobj.allPlaysEntered) {
+                this.curBoardNum = bdobj.bdnum;
+            }
+            return bdobj.allPlaysEntered;
+        });
+
+        this.buildNSOrder();
+        this.onNS = this.nsOrder[0];
+        // console.log(this.nsOrder);
+        this.updateView();
     }
 
     getVulStr(bdnum: number): string {
@@ -70,9 +77,9 @@ export class ScoreEntryComponent {
         var onEW = 0;
         // handle lines which have real ns&ew pairs (score may still be undefined)
         const boardPlays = this.getBoardPlays(this.curBoardNum);
-        Array.from(boardPlays.keys()).forEach((nsPair:number) => {
-            const boardPlay = boardPlays.get(nsPair) as BoardPlay;
-            const ewPair = boardPlay.ewPair as number;
+        Array.from(boardPlays.values()).forEach((boardPlay: BoardPlay) => {
+            const ewPair: number = boardPlay.ewPair;
+            const nsPair: number = boardPlay.nsPair;
             // console.log(nsPair, ewPair, nsScore);
             var arrow: string = `   `;
             if (nsPair === this.onNS) {
@@ -85,9 +92,9 @@ export class ScoreEntryComponent {
         if (this.onNS === nsEndBoardMarker) {
             this.gameDataPtr.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
             this.errmsg = 'Boards To Score: ';
-            Array.from(this.gameDataPtr.boardObjs.keys()).forEach( bdnum => {
-                if (!this.gameDataPtr.boardObjs.get(bdnum)?.allPlaysEntered) {
-                    this.errmsg += ` ${bdnum}`;
+            Array.from(this.gameDataPtr.boardObjs.values()).forEach( bdobj => {
+                if (!bdobj.allPlaysEntered) {
+                    this.errmsg += ` ${bdobj.bdnum}`;
                 }
             });
         }
@@ -184,6 +191,7 @@ export class ScoreEntryComponent {
         const x = this.inputElement;
         const key: string = x.key;
         var curInput: string = x.target.value;
+        console.log(`gotoBoard, key=${key}, curInput=${curInput}`);
         if (key === 'Enter') {
             this.curBoardNum = parseInt(curInput);
             x.target.value = '';
@@ -192,6 +200,10 @@ export class ScoreEntryComponent {
             this.updateView();
             return;
         }
+        else if (key === 'Escape') {
+            this._router.navigate(["/status"]);
+        }
+        
         else if (isFinite(parseInt(key))) {
             // numeric keys always ok
             console.log(`goToBoard key ${key} is a number!`);
@@ -230,6 +242,7 @@ export class ScoreEntryComponent {
         const onNSBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         console.log(`key=${key}, curInput=${curInput}, lastInput=${this.lastInput}`);
         if (key === 'Shift') return;
+
         if (key === 'ArrowDown' && curInput === '') {
             this.onNS = this.getNewNS(1);
             this.lastInput = '';
@@ -299,7 +312,11 @@ export class ScoreEntryComponent {
                 this.viewLines[this.viewLines.length - 1] = `!! ${newScore} is not possible on this board !!`;
             }
         }
-            
+        else if (key === 'Escape') {
+            this.onNS = nsEndBoardMarker;
+            this.updateView();
+        }
+        
         else if (isFinite(parseInt(key))) {
             // numeric keys always ok
             console.log(`key ${key} is a number!`);
@@ -337,11 +354,11 @@ export class ScoreEntryComponent {
 })
 export class AutofocusDirective {
     constructor(private elem : ElementRef) {
-        console.log('autofocus diretive constructor');
+        // console.log('autofocus diretive constructor');
     }
     
     ngAfterContentInit() {
-        console.log('in ngAfterContentInit');
+        // console.log('in ngAfterContentInit');
         this.elem.nativeElement.focus();
     }
 }

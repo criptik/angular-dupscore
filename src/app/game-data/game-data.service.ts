@@ -2,6 +2,59 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
 
+const debug: boolean = false;
+function dbglog(str: string) {
+    if (debug) console.log(str);
+}
+
+
+function serialize(classInstance: GameDataService): string {
+    return JSON.stringify(classInstance, (key, value) => {
+        if (key === 'http') return undefined;
+        if (value && typeof(value) === "object") {
+            value.__type = value.constructor.name;
+            if (value.__type === 'Map') {
+                const valarray = Array.from(value.entries());
+                value.__entries = valarray;
+                dbglog(`__entries: ${valarray}`);
+            }
+            else if (['InjectionToken',
+                      'R3Injector',
+            ].includes(value.__type)) {
+                dbglog(`skipping ${value.__type}`);
+                return undefined;
+            }
+
+            dbglog(`serialize: key=${key}, value=${value}, type=${typeof(value)}`);
+            dbglog(`consname=${value.constructor.name}`);
+        }
+        return value;
+    }, ' ');
+}
+
+function deserialize (jsonString: string) {
+    const classes: string[] = [
+        'BoardObj',
+        'BoardPlay',
+        'GameDataService',
+    ];
+    return JSON.parse(jsonString, (key, value) => {
+        if (value && typeof (value) === "object" && value.__type) {
+            const vtype: string = value?.__type;
+            if (vtype === 'Map') {
+                value = new Map(value.__entries);
+                delete value.__entries;
+            } else if (classes.includes(vtype)) {
+                const newobj = eval(`new ${vtype}()`);
+                value = Object.assign(newobj, value);
+            }
+            delete value.__type;
+        }
+        return value;
+    });
+}
+
+
 const SCORE_EMPTY: number = -2;
 const SCORE_SPECIAL: number = -1;
 
@@ -43,14 +96,12 @@ export class BoardObj {
     mpMap: NNMap = new Map();  // maps a score to a mp amt
     allPlaysEntered: boolean = false;
     pairToMpMap: NNMap = new Map();  // maps a pair to a mp amt
-    servicePtr: GameDataService;   // to parent  
 
     
-    constructor(bdnum: number, servicePtr: GameDataService) {
+    constructor(bdnum: number) {
         const vulNSVals = [0,1,0,1, 1,0,1,0, 0,1,0,1, 1,0,1,0];
         const vulEWVals = [0,0,1,1, 0,1,1,0, 1,1,0,0, 1,0,0,1];
         this.bdnum = bdnum;
-        this.servicePtr = servicePtr;
         this.vulNS = vulNSVals[(bdnum-1) % 16] === 1;
         this.vulEW = vulEWVals[(bdnum-1) % 16] === 1;
         // for now, we don't really need to show the dealer
@@ -98,20 +149,20 @@ export class BoardObj {
         return mpmap;
     }
 
-    buildPairToMpMap() {
+    buildPairToMpMap(boardTop: number) {
         Array.from(this.boardPlays.keys()).forEach( nsPair => {
             const bp = this.boardPlays.get(nsPair) as BoardPlay;
             const nsScore = bp.nsScore;
             const ewPair = bp.ewPair;
             const nsMps = this.mpMap.get(nsScore) as number;
-            const ewMps = this.servicePtr.boardTop - nsMps;
+            const ewMps = boardTop - nsMps;
             this.pairToMpMap.set(nsPair, nsMps);
             this.pairToMpMap.set(ewPair, ewMps);
         });
         console.log(this.pairToMpMap);
     }
     
-    computeMP() {
+    computeMP(boardTop: number) {
         // gather the nsScores from the BoardPlays that have numeric results
         const scores: number[] = [];
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
@@ -121,7 +172,7 @@ export class BoardObj {
         });
         const cbmap = this.getCbMap(scores);
         this.mpMap = this.mpMapFromCb(cbmap);
-        this.buildPairToMpMap();
+        this.buildPairToMpMap(boardTop);
     }
 }
 
@@ -174,7 +225,7 @@ export class GameDataService {
         this.numBoards = this.numRounds * this.boardsPerRound;
         // create the BoardInfo objects
         _.range(1, this.numBoards+1).forEach(bdnum => {
-            const bdobj = new BoardObj(bdnum, this);
+            const bdobj = new BoardObj(bdnum);
             this.boardObjs.set(bdnum, bdobj);
         });
         // console.log(this.boardObjs.get(1).boardPlays);
@@ -235,6 +286,17 @@ export class GameDataService {
             await new Promise(resolve => setTimeout(resolve, 300));
         };
     }
+
+    doSerialize(): string {
+        return serialize(this);
+    }
+    doDeserialize(JSONStr: string) {
+        const newobj: GameDataService = deserialize(JSONStr);
+        console.log('new deserialized:', newobj);
+        newobj.http = this.http;
+        Object.assign(this, newobj);
+    }
+
 }
 
 

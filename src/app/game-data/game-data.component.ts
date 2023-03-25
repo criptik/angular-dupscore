@@ -9,6 +9,7 @@ import { GameDataService, BoardObj } from './game-data.service';
 export class GameDataComponent {
     gameDataPtrPublic: GameDataService;
     statusText: string[] = ['Not Initialized', 'Yet'];
+    serializeText: string = '';
     
     constructor(private gameDataPtr: GameDataService) {
         // console.log(`in gameDataComponent.constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`);
@@ -44,6 +45,9 @@ export class GameDataComponent {
         // numBoards: number = 0;
         // 
         // boardTop: number = 0; 
+        this.serializeText = this.gameDataPtr?.doSerialize();
+        // console.log(this.serializeText);
+        this.gameDataPtr?.doDeserialize(this.serializeText);
     }
-    
+
 } 

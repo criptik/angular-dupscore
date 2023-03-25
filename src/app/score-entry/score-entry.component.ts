@@ -104,7 +104,7 @@ export class ScoreEntryComponent {
         if (this.onNS === nsEndBoardMarker) {
             // temporary for testing
             const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
-            bdobj.computeMP();
+            bdobj.computeMP(this.gameDataPtr.boardTop);
             console.log(bdobj.mpMap);
             this.inputLine = `Go To Board: `;
             this.inputElement.target.value = `${this.curBoardNum+1}`;

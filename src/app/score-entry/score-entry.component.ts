@@ -6,7 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { LegalScore } from './legalscore';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
 
-var nsEndBoardMarker: number = -1;
+const nsEndBoardMarker: number = -1;
 
 @Component({
     selector: 'app-score-entry',
@@ -74,14 +74,14 @@ export class ScoreEntryComponent {
         [...Array(this.gameDataPtr.numPairs).keys()].forEach(pair => {
             this.viewLines[pair+2] = `       ${'--'.repeat(5)}  `; 
         });
-        var onEW = 0;
+        let onEW = 0;
         // handle lines which have real ns&ew pairs (score may still be undefined)
         const boardPlays = this.getBoardPlays(this.curBoardNum);
         Array.from(boardPlays.values()).forEach((boardPlay: BoardPlay) => {
             const ewPair: number = boardPlay.ewPair;
             const nsPair: number = boardPlay.nsPair;
             // console.log(nsPair, ewPair, nsScore);
-            var arrow: string = `   `;
+            let arrow: string = `   `;
             if (nsPair === this.onNS) {
                 arrow = `==>`;
                 onEW = ewPair;
@@ -116,7 +116,7 @@ export class ScoreEntryComponent {
     }
 
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
-        var str = ' ';
+        let str = ' ';
         if (boardPlay?.nsScore === -2) str = ' ? ';
         else if (boardPlay?.nsScore !== -1) {
             // normal ScoreObj with a score
@@ -150,7 +150,7 @@ export class ScoreEntryComponent {
     }
 
     checkSpecialInput(curInput: string, x:any) : boolean {
-        var foundSpecial:boolean = false;
+        let foundSpecial:boolean = false;
         // get pointer to boardPlays for onNS board
         const boardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         if (curInput === 'X') {
@@ -190,7 +190,7 @@ export class ScoreEntryComponent {
     goToBoardInput() {
         const x = this.inputElement;
         const key: string = x.key;
-        var curInput: string = x.target.value;
+        let curInput: string = x.target.value;
         console.log(`gotoBoard, key=${key}, curInput=${curInput}`);
         if (key === 'Enter') {
             this.curBoardNum = parseInt(curInput);
@@ -223,7 +223,7 @@ export class ScoreEntryComponent {
         if (!this.gameDataPtr.gameDataSetup) return;
         
         const key: string = x.key;
-        var curInput: string = x.target.value;
+        let curInput: string = x.target.value;
         // check for special situation
         if (this.onNS === nsEndBoardMarker) {
             this.goToBoardInput();
@@ -238,7 +238,7 @@ export class ScoreEntryComponent {
     scoreEntryInput() {    
         const x = this.inputElement;
         const key: string = x.key;
-        var curInput: string = x.target.value;
+        let curInput: string = x.target.value;
         const onNSBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         console.log(`key=${key}, curInput=${curInput}, lastInput=${this.lastInput}`);
         if (key === 'Shift') return;

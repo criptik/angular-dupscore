@@ -110,7 +110,7 @@ export class BoardObj {
     }
 
     updateAllPlaysEntered() {
-        var allEntered = true;
+        let allEntered = true;
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
             // console.log(`updateAllPlaysEntered, board ${this.bdnum}, nspair:${bp.nsPair}, score:${bp.nsScore}`); 
             if (bp.nsScore === SCORE_EMPTY) {
@@ -218,7 +218,7 @@ export class GameDataService {
         const datsiz = abuf.byteLength - datstart;
         console.log(`rounds|boardsets=${ui8ary[4]}`);
         console.log(`datstart=${datstart}`);
-        var idx = datstart;
+        let idx = datstart;
         this.numRounds = (datsiz / this.numTables) / 3;
         const bprmap: NNMap = new Map([[10, 2], [7, 3], [3, 6]]);
         this.boardsPerRound = bprmap.get(this.numRounds) as number;

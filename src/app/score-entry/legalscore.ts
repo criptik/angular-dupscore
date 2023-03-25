@@ -39,7 +39,7 @@ export class LegalScore {
             return (-1 * downtricks * (!vul ? 50 : 100));
         }
         else {
-            var downscore;
+            let downscore;
             const downArray = (!vul ?
                                [0, 100, 300, 500, 800, 1100, 1400, 1700, 2000, 2300, 2600, 2900, 3200, 3500]
                              : [0, 200, 500, 800, 1100, 1400, 1700, 2000, 2300, 2600, 2900, 3200, 3500, 3800]); 
@@ -54,15 +54,13 @@ export class LegalScore {
              dstate : Dstate,
              madetricks : number, 
              vul : boolean, ) {
-        var firstTrickVal;
-        var trickVal;
-        trickVal = (suit === Suit.CD ? 20 : 30); 
-        firstTrickVal = (suit === Suit.NT ? 40 : trickVal); 
+        const trickVal = (suit === Suit.CD ? 20 : 30); 
+        const firstTrickVal = (suit === Suit.NT ? 40 : trickVal); 
         if (madetricks < contricks + 6) return this.dupDown(contricks + 6 - madetricks, vul, dstate);
-        var trickScore = firstTrickVal + (contricks > 1 ? contricks - 1 : 0) * trickVal;
+        let trickScore = firstTrickVal + (contricks > 1 ? contricks - 1 : 0) * trickVal;
         trickScore *= (dstate === Dstate.D ? 2 : dstate === Dstate.R ? 4 : 1);
         const gameBonus = (vul ? 500 : 300);
-        var score = (trickScore >= 100 ? trickScore + gameBonus : trickScore + 50);
+        let score = (trickScore >= 100 ? trickScore + gameBonus : trickScore + 50);
         const overtricks = madetricks-6-contricks;
         const dblOvertrickMul = (vul ? 200 : 100);
         const rdblOvertrickMul = 2 * dblOvertrickMul;

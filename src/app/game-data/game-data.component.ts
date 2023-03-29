@@ -7,13 +7,11 @@ import { GameDataService, BoardObj } from './game-data.service';
      styleUrls: ['./game-data.component.css']
 })
 export class GameDataComponent {
-    gameDataPtrPublic: GameDataService;
     statusText: string[] = ['Not Initialized', 'Yet'];
     serializeText: string = '';
     
     constructor(private gameDataPtr: GameDataService) {
         // console.log(`in gameDataComponent.constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`);
-        this.gameDataPtrPublic = gameDataPtr;
     }
 
     async ngOnInit() {
@@ -34,20 +32,10 @@ export class GameDataComponent {
         `${p.numBoards} Boards, (${p.numRounds} Rounds, ${p.boardsPerRound} Boards Per Round)`,
         `${countBoardsScored === 0 ? 'No' : countBoardsScored} Board${countBoardsScored === 1 ? '' : 's'} Scored so far`,
         ];
-        // movFileName: string = 'HCOLONEL.MOV';
-        // movFileName: string = 'H0407X.MOV';
-        // // user will eventually specify the boards per round
-        // boardsPerRound: number = 2;
-        // // other stuff is derived from the .MOV file
-        // numPairs: number = 0;
-        // numTables: number = 0;
-        // numRounds: number = 0;
-        // numBoards: number = 0;
-        // 
-        // boardTop: number = 0; 
-        this.serializeText = this.gameDataPtr?.doSerialize();
+
+        // this.serializeText = this.gameDataPtr?.doSerialize();
         // console.log(this.serializeText);
-        this.gameDataPtr?.doDeserialize(this.serializeText);
+        // this.gameDataPtr?.doDeserialize(this.serializeText);
     }
 
 } 

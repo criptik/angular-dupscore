@@ -34,7 +34,7 @@ export class ScoreEntryComponent {
 
     ngOnInit() {
         // when this is called, parent is all setup
-        console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
+        // console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
         if (!this.gameDataPtr.gameDataSetup) {
             this._router.navigate(["/status"]);
         }
@@ -105,7 +105,6 @@ export class ScoreEntryComponent {
             // temporary for testing
             const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
             bdobj.computeMP(this.gameDataPtr.boardTop);
-            console.log(bdobj.mpMap);
             this.inputLine = `Go To Board: `;
             this.inputElement.target.value = `${this.curBoardNum+1}`;
         }
@@ -191,7 +190,7 @@ export class ScoreEntryComponent {
         const x = this.inputElement;
         const key: string = x.key;
         let curInput: string = x.target.value;
-        console.log(`gotoBoard, key=${key}, curInput=${curInput}`);
+        // console.log(`gotoBoard, key=${key}, curInput=${curInput}`);
         if (key === 'Enter') {
             this.curBoardNum = parseInt(curInput);
             x.target.value = '';
@@ -206,13 +205,13 @@ export class ScoreEntryComponent {
         
         else if (isFinite(parseInt(key))) {
             // numeric keys always ok
-            console.log(`goToBoard key ${key} is a number!`);
-            console.log(`input is now ${x.target.value}`);
+            // console.log(`goToBoard key ${key} is a number!`);
+            // console.log(`input is now ${x.target.value}`);
         }
         else {
             // ignore anything else
             x.target.value = '';
-            console.log(`input is now ${x.target.value}`);
+            // console.log(`input is now ${x.target.value}`);
         }
         
     }
@@ -240,7 +239,7 @@ export class ScoreEntryComponent {
         const key: string = x.key;
         let curInput: string = x.target.value;
         const onNSBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
-        console.log(`key=${key}, curInput=${curInput}, lastInput=${this.lastInput}`);
+        // console.log(`key=${key}, curInput=${curInput}, lastInput=${this.lastInput}`);
         if (key === 'Shift') return;
 
         if (key === 'ArrowDown' && curInput === '') {
@@ -319,8 +318,8 @@ export class ScoreEntryComponent {
         
         else if (isFinite(parseInt(key))) {
             // numeric keys always ok
-            console.log(`key ${key} is a number!`);
-            console.log(`input is now ${x.target.value}`);
+            // console.log(`key ${key} is a number!`);
+            // console.log(`input is now ${x.target.value}`);
         }
         else if ('XLNA'.includes(key.toUpperCase()) && x.target.value.toUpperCase() === key.toUpperCase()) {
             x.target.value = key.toUpperCase()
@@ -328,9 +327,9 @@ export class ScoreEntryComponent {
         
         else {
             // ignore non-numeric keys
-            console.log(`key ${key} is not a number!`);
+            // console.log(`key ${key} is not a number!`);
             x.target.value = x.target.value.slice(0, -1);
-            console.log(`input is now ${x.target.value}`);
+            // console.log(`input is now ${x.target.value}`);
         }
     }
 

@@ -93,7 +93,6 @@ export class BoardObj {
     vulEW: boolean;
     dealer: string; 
     boardPlays: Map<number, BoardPlay>  = new Map();
-    mpMap: NNMap = new Map();  // maps a score to a mp amt
     allPlaysEntered: boolean = false;
     pairToMpMap: NNMap = new Map();  // maps a pair to a mp amt
 
@@ -110,14 +109,9 @@ export class BoardObj {
     }
 
     updateAllPlaysEntered() {
-        let allEntered = true;
-        Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
-            // console.log(`updateAllPlaysEntered, board ${this.bdnum}, nspair:${bp.nsPair}, score:${bp.nsScore}`); 
-            if (bp.nsScore === SCORE_EMPTY) {
-                allEntered = false;
-            }
+        this.allPlaysEntered = Array.from(this.boardPlays.values()).every( (bp: BoardPlay) => {
+            return (bp.nsScore !== SCORE_EMPTY);
         });
-        this.allPlaysEntered = allEntered;
     }
     
     getCbMap(ary: number[]) {
@@ -135,7 +129,7 @@ export class BoardObj {
             const countForKey: number|undefined  = cbmap.get(key);
             if (countForKey === undefined) return 0;
             else {
-                return mp + (key < testval ? countForKey : (key == testval ? (countForKey - 1)*0.5 : 0));
+                return mp + (key < testval ? countForKey : (key === testval ? (countForKey - 1)*0.5 : 0));
             }
         }, 0));
     }
@@ -149,15 +143,17 @@ export class BoardObj {
         return mpmap;
     }
 
-    buildPairToMpMap(boardTop: number) {
-        Array.from(this.boardPlays.keys()).forEach( nsPair => {
-            const bp = this.boardPlays.get(nsPair) as BoardPlay;
-            const nsScore = bp.nsScore;
+    buildPairToMpMap(mpMap: NNMap, boardTop: number) {
+        Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
+            const nsPair = bp.nsPair;
             const ewPair = bp.ewPair;
-            const nsMps = this.mpMap.get(nsScore) as number;
-            const ewMps = boardTop - nsMps;
-            this.pairToMpMap.set(nsPair, nsMps);
-            this.pairToMpMap.set(ewPair, ewMps);
+            const nsScore = bp.nsScore;
+            if (nsScore !== SCORE_EMPTY && bp.kindNS === '') {
+                const nsMps = mpMap.get(nsScore) as number;
+                const ewMps = boardTop - nsMps;
+                this.pairToMpMap.set(nsPair, nsMps);
+                this.pairToMpMap.set(ewPair, ewMps);
+            }
         });
         console.log(this.pairToMpMap);
     }
@@ -165,14 +161,39 @@ export class BoardObj {
     computeMP(boardTop: number) {
         // gather the nsScores from the BoardPlays that have numeric results
         const scores: number[] = [];
+        let actualPlays: number = 0;
+        let expectedPlays: number = 0;
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
-            if (bp.kindNS === '') {
+            if (bp.nsScore !== SCORE_EMPTY && bp.kindNS === '') {
                 scores.push(bp.nsScore);
+                actualPlays++;
             }
+            expectedPlays++;
         });
-        const cbmap = this.getCbMap(scores);
-        this.mpMap = this.mpMapFromCb(cbmap);
-        this.buildPairToMpMap(boardTop);
+        // shortcircuit if not enough scores to matter
+        if (actualPlays <= 1) {
+            this.pairToMpMap = new Map();
+        }
+        else {
+            const cbmap = this.getCbMap(scores);
+            // console.log(`board ${this.bdnum}, cbmap=`, cbmap);
+            const mpMap = this.mpMapFromCb(cbmap);
+            // console.log(`board ${this.bdnum}, mpMap=`, mpMap);
+            this.buildPairToMpMap(mpMap, actualPlays-1);  // boardTop based on actualPlays
+        }
+
+        // factoring up via Neuberg for 2 or more results
+        if (actualPlays < expectedPlays) {
+            const A = actualPlays;
+            const E = expectedPlays;
+            Array.from(this.pairToMpMap.entries()).forEach( ([pairId, mps]) => {
+                const newMps = (mps + 0.5) * E/A - 0.5;
+                // console.log(`neuberg: mps:${mps} ${E}/${A} newmps:${newMps}`);
+                this.pairToMpMap.set(pairId, newMps);
+            });
+            // console.log(`factored pairToMpMap ${this.pairToMpMap}`);
+        }
+        
     }
 }
 
@@ -196,6 +217,7 @@ export class GameDataService {
     
     boardTop: number = 0; 
     boardObjs: Map<number, BoardObj> = new Map();
+    pairIds: number[] = [];
     gameDataSetup: boolean = false;
     
     constructor(private http: HttpClient) {
@@ -210,6 +232,8 @@ export class GameDataService {
         // stuff from the beginning of the .mov file
         this.numTables = ui8ary[3];
         this.numPairs = 2 * this.numTables;
+        // for now, build up pairIds array;  fix for mitchell.
+        this.pairIds = _.range(1, this.numPairs+1);
         this.boardTop = this.numPairs/2 - 1;
 
         // find the round info
@@ -252,13 +276,13 @@ export class GameDataService {
     
     Initialize2() {
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
-            console.log('in subscribe, res=', res, typeof res);
+            // console.log('in subscribe, res=', res, typeof res);
             const reader = new FileReader();
             reader.onloadend = (x) => {
                 const abuf: ArrayBuffer = reader.result as ArrayBuffer;
                 console.log('onloadend', abuf, abuf.byteLength);
             }
-            console.log('before read');
+            // console.log('before read');
             reader.readAsArrayBuffer(res.body as Blob);
         });
     }
@@ -266,14 +290,14 @@ export class GameDataService {
     async Initialize() {
         console.log('in Initialize');
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
-            console.log('in subscribe, res=', res, typeof res);
+            // console.log('in subscribe, res=', res, typeof res);
             // const reader = new FileReader();
             // const awres: Blob = res.body as Blob;
             // reader.readAsDataURL(awres);
             // console.log('awres', awres, typeof awres);
             // console.log('awres.text', await awres.slice(0));
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
-            console.log(`before parseAbuf`);
+            // console.log(`before parseAbuf`);
             this.parseAbuf(abuf);
             
             // now set a variable so the other users know we are setup
@@ -282,7 +306,7 @@ export class GameDataService {
         });
         // wait for gameDataSetup
         while (!this.gameDataSetup) {
-            console.log(`wait a bit`);
+            // console.log(`wait a bit`);
             await new Promise(resolve => setTimeout(resolve, 300));
         };
     }
@@ -292,7 +316,7 @@ export class GameDataService {
     }
     doDeserialize(JSONStr: string) {
         const newobj: GameDataService = deserialize(JSONStr);
-        console.log('new deserialized:', newobj);
+        // console.log('new deserialized:', newobj);
         newobj.http = this.http;
         Object.assign(this, newobj);
     }

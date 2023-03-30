@@ -12,6 +12,7 @@ class MpRec {
     }
 }
 
+const debug: boolean = false;
 
 @Component({
     selector: 'app-game-summary',
@@ -25,11 +26,24 @@ export class GameSummaryComponent {
         // console.log(`Summary Constructor`);
     }
 
-    outputPairMpRecs(pairMpRecs: Map<number, MpRec>) {
+    outputPairMpRecs(pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
+        const aryMpRecEntries = Array.from(pairMpRecs.entries());
+        const sortedEntries  = aryMpRecEntries.sort((a, b) => {
+            return (a[1].total < b[1].total ? 1: -1)
+        });
+
+        this.summaryText += `
+  Place    Pct   Score   Pair`;
+        
         // testing , show records
-        Array.from(pairMpRecs.entries()).forEach( ([pairId, mpRec]) => {
+        let place = 1;
+        sortedEntries.forEach( ([pairId, mpRec]) => {
+            const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
+            const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(1) + '%').padStart(6, ' ');
             this.summaryText += `
-            pair: ${pairId}, mps:${mpRec.total.toFixed(2)}, boards:${mpRec.boards}`;
+  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}   ${pairId.toString().padStart(4,' ')}`;
+            if (debug) this.summaryText += `   boards:${mpRec.boards}`;
+                place++;
         });
     }
     
@@ -44,9 +58,12 @@ export class GameSummaryComponent {
         
         const pairMpRecs: Map<number, MpRec> = new Map();
         p.pairIds.forEach( pairId => pairMpRecs.set(pairId, new MpRec()));
-        
+
+        let boardsScored = 0;
         Array.from(p.boardObjs.values()).forEach( boardObj => {
             if (boardObj.allPlaysEntered) fullyEnteredBoards++;
+            if (Array.from(boardObj.pairToMpMap.keys()).length > 0) boardsScored ++;
+            
             // for each pair, get totals of mps and number of boards
             Array.from(boardObj.pairToMpMap.entries()).forEach( ([pairId, mp]) => {
                 // console.log(`board ${boardObj.bdnum}, pair ${pairId}, ${mp}`);
@@ -55,8 +72,11 @@ export class GameSummaryComponent {
             });
         });
 
+        // compute Top overall score to get percentages
+        const boardsScoredTop = boardsScored * p.boardTop;
+
         this.summaryText = `${fullyEnteredBoards} Boards have been fully scored...`;
-        this.outputPairMpRecs(pairMpRecs);
+        if (debug) this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
         
         // find out which pair has played the most boards
         let maxBoards = 0;
@@ -70,10 +90,11 @@ export class GameSummaryComponent {
                 mpRec.boards = maxBoards;
             }
         });
-        
+
+      
         // testing , show records
-        this.summaryText += `
+        if (debug) this.summaryText += `
         =====================`;
-        this.outputPairMpRecs(pairMpRecs);
+        this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
     }
 }

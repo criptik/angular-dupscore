@@ -157,20 +157,40 @@ export class BoardObj {
         });
         console.log(this.pairToMpMap);
     }
+
+    getSpecialMP(kind: string, boardTop: number): number {
+        if (kind === 'AVE') return boardTop * 0.5;
+        if (kind === 'AVE+') return boardTop * 0.6;
+        if (kind === 'AVE-') return boardTop * 0.4;
+        // unknown, return -1;
+        return -1;
+    }
     
     computeMP(boardTop: number) {
         // gather the nsScores from the BoardPlays that have numeric results
         const scores: number[] = [];
         let actualPlays: number = 0;
         let expectedPlays: number = 0;
+        let specialMap: NNMap = new Map();
+        
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
+            expectedPlays++;
+            // normal results to be matchpointed
             if (bp.nsScore !== SCORE_EMPTY && bp.kindNS === '') {
                 scores.push(bp.nsScore);
                 actualPlays++;
             }
-            expectedPlays++;
+            // other kinds of scores like A+, A-, etc. can be computed right now
+            else if (bp.nsScore === SCORE_SPECIAL) {
+                const mpNS = this.getSpecialMP(bp.kindNS, boardTop);
+                const mpEW = this.getSpecialMP(bp.kindEW, boardTop);
+                if (mpNS !== -1) specialMap.set(bp.nsPair, mpNS);
+                if (mpEW !== -1) specialMap.set(bp.ewPair, mpEW);
+                // console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
+            }
+            
         });
-        // shortcircuit if not enough scores to matter
+            // shortcircuit if not enough scores to matter
         if (actualPlays <= 1) {
             this.pairToMpMap = new Map();
         }
@@ -188,12 +208,17 @@ export class BoardObj {
             const E = expectedPlays;
             Array.from(this.pairToMpMap.entries()).forEach( ([pairId, mps]) => {
                 const newMps = (mps + 0.5) * E/A - 0.5;
-                // console.log(`neuberg: mps:${mps} ${E}/${A} newmps:${newMps}`);
+                console.log(`neuberg: mps:${mps} ${E}/${A} newmps:${newMps}`);
                 this.pairToMpMap.set(pairId, newMps);
             });
             // console.log(`factored pairToMpMap ${this.pairToMpMap}`);
         }
-        
+        if (actualPlays > 1) {
+            // merge in special scores (after Neuberg stuff)
+            Array.from(specialMap.entries()).forEach( ([pairId, mps]) => {
+                this.pairToMpMap.set(pairId, mps);
+            });
+        }
     }
 }
 

@@ -3,18 +3,18 @@
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Courier+Prime">
 </head>
-<div style="font-family: 'Courier Prime', monospace; font-size:30px; white-space:pre-wrap; color:white; background:blue">
+<div>
     <!-- <div>012345678901234567890123456789</div> -->
 
     <ng-container  *ngFor="let viewline of viewLines">
         <ng-container *ngIf="viewline.substring(0,1) === '=' else Normal">
-            <div><span style="color:black; background:white">==></span>{{viewline.substring(3)}}
+            <div> <span class="inverse">==></span>{{viewline.substring(3)}}
             </div>
         </ng-container>
         <ng-template #Normal>
             <div>{{viewline}}</div>
         </ng-template>
     </ng-container>
-    <div>{{inputLine}} <input autofocus (keyup)="onInputKeyUp($event)" size="5" style="font-size:30px"></div>
+    <div>{{inputLine}}<input autofocus (keyup)="onInputKeyUp($event)" size="5"></div>
 </div>
 

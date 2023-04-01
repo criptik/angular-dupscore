@@ -1,0 +1,16 @@
+div {
+    font-family: 'Courier Prime', monospace;
+    font-size:    30px;
+    white-space:  pre-wrap;
+    color:        white;
+    background:   blue
+}
+
+input {
+    font-size:30px;
+}
+
+.inverse {
+    color:black;
+    background:white
+}

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
@@ -264,7 +264,7 @@ class GoToBoardInputHandler extends InputHandler {
     styleUrls: ['./score-entry.component.css']
 })
 
-export class ScoreEntryComponent {
+export class ScoreEntryComponent implements AfterViewInit {
     curBoardNum: number = 0;
     viewLines: string[] = [];
     nsOrder: number[] = [];
@@ -277,6 +277,11 @@ export class ScoreEntryComponent {
     inputHandler: InputHandler = new ScoreEntryInputHandler(this);
     publicGameDataPtr: GameDataService;
     publicRouter: Router;
+    @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLSelectElement>;
+    boardsToDoList: number[] = [];
+    boardsToDoMsg: string = '';
+    dialogClosedViaButton: boolean = false;
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
@@ -286,11 +291,16 @@ export class ScoreEntryComponent {
         this.publicRouter = _router
     }
 
+    ngAfterViewInit() {
+        console.log(this.gotoBoardDialog);
+    }
+    
     ngOnInit() {
         // when this is called, parent is all setup
         // console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
         if (!this.gameDataPtr.gameDataSetup) {
             this._router.navigate(["/status"]);
+            return;
         }
 
         // set boardnum to first incomplete board
@@ -343,19 +353,63 @@ export class ScoreEntryComponent {
             this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(boardPlay, true)} ${this.scoreStr(boardPlay, false)}  ${ewPair.toString().padStart(2,' ')}    `;
         });
         this.viewLines.push(` `); 
-        if (this.onNS === nsEndBoardMarker) {
+        if (this.onNS !== nsEndBoardMarker) {
+            // note: genPrompt might update errmsg so call it first
+            this.inputLine = this.inputHandler.genPrompt();
+            this.viewLines.push(this.errmsg);
+            this.errmsg = '  ';
+        }
+        else {
             this.gameDataPtr.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
             const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
             bdobj.computeMP(this.gameDataPtr.boardTop);
-            this.inputHandler = new GoToBoardInputHandler(this);
+            // build the modal dialog box info
+            this.boardsToDoList = [];
+            this.boardsToDoMsg = 'Boards To Score: ';
+            let completedBoardsList: number[] = [];
+            Array.from(this.gameDataPtr.boardObjs.values()).forEach( bdobj => {
+                if (!bdobj.allPlaysEntered) {
+                    this.boardsToDoMsg += ` ${bdobj.bdnum}`;
+                    this.boardsToDoList.push(bdobj.bdnum);
+                }
+                else {
+                    completedBoardsList.push(bdobj.bdnum);
+                }
+            });
+            // put completed boards at the end
+            completedBoardsList.forEach(bdnum => {
+                this.boardsToDoList.push(bdnum);
+                this.boardsToDoMsg += ` ${bdnum}`;
+            });
+            
+            // this.inputHandler = new GoToBoardInputHandler(this);
+            this.dialogClosedViaButton = false;
+            this.gotoBoardDialog.nativeElement.showModal();
+            this.gotoBoardDialog.nativeElement.addEventListener("close", (event: any) => {
+                console.log(`boardSelect: dialogClosedButton=${this.dialogClosedViaButton}`, this.boardSelect.nativeElement.value);
+                if (this.dialogClosedViaButton) {
+                    this.onNS = this.nsOrder[0];
+                    this.curBoardNum = parseInt(this.boardSelect.nativeElement.value);
+                    this.inputElement.target.value = '';
+                    this.lastInput = '';
+                    this.buildNSOrder();
+                    this.onNS = this.nsOrder[0];
+                    this.updateView();
+                }
+                else {
+                    // dialog was closed via escape key
+                    this._router.navigate(["/status"]);
+                }
+            });
         }
-        // note: genPrompt might update errmsg so call it first
-        this.inputLine = this.inputHandler.genPrompt();
-        this.viewLines.push(this.errmsg);
-        this.errmsg = '  '; 
-
     }
 
+    closeGoToBoardDialog() {
+        this.dialogClosedViaButton = true;
+        this.gotoBoardDialog.nativeElement.close();
+
+    }
+    
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
         let str = ' ';
         if (boardPlay?.nsScore === -2) str = ' ? ';

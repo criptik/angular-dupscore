@@ -18,3 +18,22 @@
     <div>{{inputLine}}<input autofocus (keyup)="onInputKeyUp($event)" size="5"></div>
 </div>
 
+<dialog class="px20" #gotoBoardDialog>
+    <p> {{boardsToDoMsg}} </p>
+    <p>
+        <label for="boardSelect"> GoTo Board: </label>
+        <select class="px20" id="boardSelect" #boardSelect>
+            <ng-container  *ngFor="let boardnum of boardsToDoList">
+                <option value = {{boardnum}}> {{boardnum}} </option>
+            </ng-container>
+        </select>
+        <button class="px20" autofocus (click)="closeGoToBoardDialog()">
+            OK
+        </button>
+    </p>
+</dialog>
+<!--
+<div>
+    <h5> {{mySelectValue}} </h5>
+</div>
+-->

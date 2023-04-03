@@ -10,6 +10,13 @@ input {
     font-size:30px;
 }
 
+.px20 {
+    font-size:20px;
+}
+button.px20 {
+    margin:20px;
+}
+
 .inverse {
     color:black;
     background:white

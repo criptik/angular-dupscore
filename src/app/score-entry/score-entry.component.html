@@ -15,25 +15,16 @@
             <div>{{viewline}}</div>
         </ng-template>
     </ng-container>
-    <div>{{inputLine}}<input autofocus (keyup)="onInputKeyUp($event)" size="5"></div>
+    <div>{{inputLine}}<input autofocus (keyup)="onScoreEntryInputKeyUp($event)" size="5"></div>
 </div>
 
 <dialog class="px20" #gotoBoardDialog>
-    <p> Boards Remaining </p>
-    <p> {{boardsToDoMsg}} </p>
-    <p>
-        <label for="boardSelect"> GoTo Board: </label>
-        <input class="px20" id="boardSelect" #boardSelect>
-
-            <!--
-                 <select class="px20" id="boardSelect" #boardSelect>
-                 <ng-container  *ngFor="let boardnum of boardsToDoList">
-                 <option value = {{boardnum}}> {{boardnum}} </option>
-                 </ng-container>
-                 </select>
-            -->
-        <button class="px20" autofocus (click)="closeGoToBoardDialog()">
-            OK
-        </button>
-    </p>
+    <section>
+        <p> Boards Remaining </p>
+        <p> {{boardsToDoMsg}} </p>
+        <p>
+            <label for="boardSelect"> GoTo Board: </label>
+            <input class="px20" id="boardSelect" #boardSelect autofocus (keyup)="onGoToBoardInputKeyUp($event)">
+        </p>
+    </section>
 </dialog>

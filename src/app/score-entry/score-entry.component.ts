@@ -8,256 +8,6 @@ import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.ser
 
 const nsEndBoardMarker: number = -1;
 
-abstract class InputHandler {
-    parent: ScoreEntryComponent;
-
-    constructor(parent: ScoreEntryComponent) {
-        this.parent = parent;
-    }
-    
-    genBoardInfoPrompt(): string {
-        const p:ScoreEntryComponent = this.parent;
-
-        // get boardplay for onNS
-        const curBoardPlay = p.getBoardPlay(p.curBoardNum, p.onNS);
-        const onEW: number = curBoardPlay.ewPair;
-        const bdvulStr = p.getVulStr(p.curBoardNum);
-        return `Board: ${p.curBoardNum}  NS:${p.onNS}  EW:${onEW}  Vul:${bdvulStr}`;
-    }
-    
-    abstract genPrompt(): string;
-
-    abstract processKey(): void;
-    
-//    abstract handleInput(curInput: string, endKey: string): void;
-}
-
-class ScoreEntryInputHandler extends InputHandler {
-    override genPrompt(): string {
-        return `${this.genBoardInfoPrompt()}  SCORE:`  
-    }
-
-    checkSpecialInput(curInput: string, x:any) : boolean {
-        const p: ScoreEntryComponent = this.parent;
-        let foundSpecial:boolean = false;
-        // get pointer to boardPlays for onNS board
-        const boardPlay = p.getBoardPlay(p.curBoardNum, p.onNS);
-        if (curInput === 'X') {
-            boardPlay.addScoreInfo(-2);
-            foundSpecial = true;
-        }
-        if (curInput === 'N') {
-            boardPlay.addScoreInfo(-1, 'NP ');
-            foundSpecial = true;
-        }
-        if (curInput === 'L') {
-            boardPlay.addScoreInfo(-1, 'LATE');
-            foundSpecial = true;
-        }
-        if (curInput === 'A') {
-            boardPlay.addScoreInfo(-1, 'AVE', 'AVE');
-            foundSpecial = true;
-        }
-        if (curInput === 'A+') {
-            boardPlay.addScoreInfo(-1, 'AVE+', 'AVE-');
-            foundSpecial = true;
-        }
-        if (curInput === 'A-') {
-            boardPlay.addScoreInfo(-1, 'AVE-', 'AVE+');
-            foundSpecial = true;
-        }
-        if (curInput === 'S') {
-            // unbalanced Special not handled yet
-        }
-            
-        if (foundSpecial) {
-            x.target.value = '';
-            p.lastInput = '';
-            p.onNS = p.getNewNS(1);
-            p.updateView();
-        }
-        return foundSpecial;
-            
-            // code for inUnbalancedKind == NS or EW
-            // let val: string = '';
-            // if (curInput === 'A') {
-            //     val = 'AVE';
-            //     foundSpecial = true;
-            // }
-            // if (curInput === 'A+') {
-            //     val = 'AVE+';
-            //     foundSpecial = true;
-            // }
-            // if (curInput === 'A-') {
-            //     val = 'AVE-';
-            //     foundSpecial = true;
-            // }
-            // if (foundSpecial) {
-            //     if (p.unbalancedSpecialKind === 'NS') {
-            //         p.unbalancedSpecialNS = val;
-            //         p.unbalancedSpecialKind = 'EW';
-            //     } else if (p.unbalancedSpecialKind === 'EW') {
-            //         boardPlay.addScoreInfo(-1, p.unbalancedSpecialNS, val);
-            //         p.unbalancedSpecialKind = '';
-            //     }
-            // }
-            // 
-            // return foundSpecial;
-            //         }
-    }
-
-    override processKey() {
-        const p: ScoreEntryComponent = this.parent;
-        const x = p.inputElement;
-        const key: string = x.key;
-        let curInput: string = x.target.value;
-        const onNSBoardPlay = p.getBoardPlay(p.curBoardNum, p.onNS);
-        // console.log(`key=${key}, curInput=${curInput}, lastInput=${p.lastInput}`);
-        if (key === 'Shift') return;
-
-        if (key === 'ArrowDown' && curInput === '') {
-            p.onNS = p.getNewNS(1);
-            p.lastInput = '';
-            // console.log(`new onNS = ${p.onNS}`);
-            p.updateView();
-        }
-        else if (key === 'ArrowUp' && curInput === '') {
-            p.onNS = p.getNewNS(-1);
-            p.lastInput = '';
-            // console.log(`new onNS = ${p.onNS}`);
-            p.updateView();
-        }
-        else if (key === 'Enter') {
-            if (curInput !== '') {
-                if (this.checkSpecialInput(curInput, x)) return;
-                // score entered
-                const newScore : number = parseInt(`${curInput}0`);
-                if (p.checkScoreLegality(newScore)) {
-                    p.lastInput = curInput;
-                    x.target.value = '';
-                    onNSBoardPlay.addScoreInfo(newScore);
-                    p.onNS = p.getNewNS(1);
-                    p.updateView();
-                }
-                else {
-                    x.target.value = '';
-                    p.errmsg = `!! ${newScore} is not possible on this board !!`;
-                    p.updateView();
-                }
-            } else if (p.lastInput !== '') {
-                const newScore : number = parseInt(`${p.lastInput}0`);
-                x.target.value = '';
-                onNSBoardPlay.addScoreInfo(newScore);
-                p.onNS = p.getNewNS(1);
-                p.updateView();
-            }
-        }
-        else if (key === '+') {
-            // A+ is a legal input
-            if (curInput === 'A+') return;
-        }
-        else if (key === '-') {
-                if (curInput === '-') {
-                x.target.value = '';
-                return;
-            }
-            if (curInput === 'A-') {
-                // a legal combo for ns=avg-, ew=avg+
-                return;
-            }
-            // now we know there is a non-empty input
-            // negative score entered
-            // move - sign from end of input to beginning
-            curInput = `-${curInput.slice(0, -1)}`;
-            const newScore : number = parseInt(`${curInput}0`);
-            if (p.checkScoreLegality(newScore)) {
-                p.lastInput = curInput;
-                x.target.value = '';
-                onNSBoardPlay.addScoreInfo(newScore);
-                p.onNS = p.getNewNS(1);
-                // console.log(`new onNS = ${p.onNS}`);
-                p.updateView();
-            }
-            else {
-                x.target.value = '';
-                p.errmsg = `!! ${newScore} is not possible on this board !!`;
-            }
-        }
-        else if (key === 'Escape') {
-            p.onNS = nsEndBoardMarker;
-            p.updateView();
-        }
-        
-        else if (isFinite(parseInt(key))) {
-            // numeric keys always ok
-            // console.log(`key ${key} is a number!`);
-            // console.log(`input is now ${x.target.value}`);
-        }
-        else if ('XLNAS'.includes(key.toUpperCase()) && x.target.value.toUpperCase() === key.toUpperCase()) {
-            x.target.value = key.toUpperCase()
-        }
-        
-        else {
-            // ignore non-numeric keys
-            // console.log(`key ${key} is not a number!`);
-            x.target.value = x.target.value.slice(0, -1);
-            // console.log(`input is now ${x.target.value}`);
-        }
-    }
-    
-    
-//    override handleInput(curInput: string, endKey: string) {
-//    }
-}
-
-class GoToBoardInputHandler extends InputHandler {
-    override genPrompt(): string {
-        const p: ScoreEntryComponent = this.parent;
-        // as a side effect we build the incomplete board list
-        p.errmsg = 'Boards To Score: ';
-        Array.from(p.publicGameDataPtr.boardObjs.values()).forEach( bdobj => {
-            if (!bdobj.allPlaysEntered) {
-                p.errmsg += ` ${bdobj.bdnum}`;
-            }
-        });
-        p.inputElement.target.value = `${p.curBoardNum+1}`; // TODO, should go to next incomplete board
-        return `Go To Board: `  
-    }
-
-    override processKey() {
-        const p: ScoreEntryComponent = this.parent;
-        const x = p.inputElement;
-        const key: string = x.key;
-        let curInput: string = x.target.value;
-        // console.log(`gotoBoard, key=${key}, curInput=${curInput}`);
-        if (key === 'Enter') {
-            p.curBoardNum = parseInt(curInput);
-            x.target.value = '';
-            p.buildNSOrder();
-            p.onNS = p.nsOrder[0];
-            p.inputHandler = new ScoreEntryInputHandler(p);
-            p.updateView();
-            return;
-        }
-        else if (key === 'Escape') {
-            p.publicRouter.navigate(["/status"]);
-        }
-        
-        else if (isFinite(parseInt(key))) {
-            // numeric keys always ok
-            // console.log(`goToBoard key ${key} is a number!`);
-            // console.log(`input is now ${x.target.value}`);
-        }
-        else {
-            // ignore anything else
-            x.target.value = '';
-            // console.log(`input is now ${x.target.value}`);
-        }
-        
-    }
-}
-
-
 @Component({
     selector: 'app-score-entry',
     templateUrl: './score-entry.component.html',
@@ -274,24 +24,17 @@ export class ScoreEntryComponent implements AfterViewInit {
     lastInput: string = '';
     legalScoreObj : LegalScore = new LegalScore();
     errmsg: string = '  ';
-    inputHandler: InputHandler = new ScoreEntryInputHandler(this);
-    publicGameDataPtr: GameDataService;
-    publicRouter: Router;
     @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLSelectElement>;
     boardsToDoMsg: string = '';
-    dialogClosedViaButton: boolean = false;
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,)  {
         // console.log(`in constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
-        this.publicGameDataPtr = gameDataPtr;
-        this.publicRouter = _router
     }
 
     ngAfterViewInit() {
-        console.log(this.gotoBoardDialog);
     }
     
     ngOnInit() {
@@ -353,12 +96,17 @@ export class ScoreEntryComponent implements AfterViewInit {
         });
         this.viewLines.push(` `); 
         if (this.onNS !== nsEndBoardMarker) {
-            // note: genPrompt might update errmsg so call it first
-            this.inputLine = this.inputHandler.genPrompt();
+            // normal prompt for score for current boardplay
+            // get boardplay for onNS
+            const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
+            const onEW: number = curBoardPlay.ewPair;
+            const bdvulStr = this.getVulStr(this.curBoardNum);
+            this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  Vul:${bdvulStr}  SCORE:`;
             this.viewLines.push(this.errmsg);
             this.errmsg = '  ';
         }
         else {
+            // at the end of a board, initiate gotoBoard dialog
             this.gameDataPtr.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
             const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
             bdobj.computeMP(this.gameDataPtr.boardTop);
@@ -372,33 +120,32 @@ export class ScoreEntryComponent implements AfterViewInit {
                 }
             });
             
-            // this.inputHandler = new GoToBoardInputHandler(this);
-            this.dialogClosedViaButton = false;
             this.boardSelect.nativeElement.value = (defaultNextBoard === 0) ? '1' : defaultNextBoard.toString();            
             this.gotoBoardDialog.nativeElement.showModal();
-            this.gotoBoardDialog.nativeElement.addEventListener("close", (event: any) => {
-                console.log(`boardSelect: dialogClosedButton=${this.dialogClosedViaButton}`, this.boardSelect.nativeElement.value);
-                if (this.dialogClosedViaButton) {
-                    this.onNS = this.nsOrder[0];
-                    this.curBoardNum = parseInt(this.boardSelect.nativeElement.value);
-                    this.inputElement.target.value = '';
-                    this.lastInput = '';
-                    this.buildNSOrder();
-                    this.onNS = this.nsOrder[0];
-                    this.updateView();
-                }
-                else {
-                    // dialog was closed via escape key
-                    this._router.navigate(["/status"]);
-                }
-            });
         }
     }
 
-    closeGoToBoardDialog() {
-        this.dialogClosedViaButton = true;
-        this.gotoBoardDialog.nativeElement.close();
 
+    onGoToBoardInputKeyUp(x : any) {   
+        const key: string = x.key;
+        let curInput: string = x.target.value;
+        console.log(`boardSelect: key=${key}, curinput=${curInput}`);
+        if (key === 'Enter') {
+            const inputNum = parseInt(curInput);
+            x.target.value = '';
+            if (inputNum > 0 && inputNum <= this.gameDataPtr.numBoards) {
+                this.curBoardNum = inputNum;
+                this.buildNSOrder();
+                this.onNS = this.nsOrder[0];
+                this.gotoBoardDialog.nativeElement.close();
+                this.updateView();
+            }
+        }
+        else if (key === 'Escape') {
+            // dialog was closed via escape key
+            this.gotoBoardDialog.nativeElement.close();
+            this._router.navigate(["/status"]);
+        }
     }
     
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
@@ -434,24 +181,155 @@ export class ScoreEntryComponent implements AfterViewInit {
         const boardPlay = this.getBoardPlays(bdnum).get(nsPair) as BoardPlay;
         return boardPlay;
     }
+
+    checkSpecialInput(curInput: string, x:any) : boolean {
+        let foundSpecial:boolean = false;
+        // get pointer to boardPlays for onNS board
+        const boardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
+        if (curInput === 'X') {
+            boardPlay.addScoreInfo(-2);
+            foundSpecial = true;
+        }
+        if (curInput === 'N') {
+            boardPlay.addScoreInfo(-1, 'NP ');
+            foundSpecial = true;
+        }
+        if (curInput === 'L') {
+            boardPlay.addScoreInfo(-1, 'LATE');
+            foundSpecial = true;
+        }
+        if (curInput === 'A') {
+            boardPlay.addScoreInfo(-1, 'AVE', 'AVE');
+            foundSpecial = true;
+        }
+        if (curInput === 'A+') {
+            boardPlay.addScoreInfo(-1, 'AVE+', 'AVE-');
+            foundSpecial = true;
+        }
+        if (curInput === 'A-') {
+            boardPlay.addScoreInfo(-1, 'AVE-', 'AVE+');
+            foundSpecial = true;
+        }
+        if (curInput === 'S') {
+            // unbalanced Special not handled yet
+        }
+            
+        if (foundSpecial) {
+            x.target.value = '';
+            this.lastInput = '';
+            this.onNS = this.getNewNS(1);
+            this.updateView();
+        }
+        return foundSpecial;
+    }
+
+    scoreEntryInput() {
+        const x = this.inputElement;
+        const key: string = x.key;
+        let curInput: string = x.target.value;
+        const onNSBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
+        // console.log(`key=${key}, curInput=${curInput}, lastInput=${this.lastInput}`);
+        if (key === 'Shift') return;
+
+        if (key === 'ArrowDown' && curInput === '') {
+            this.onNS = this.getNewNS(1);
+            this.lastInput = '';
+            // console.log(`new onNS = ${this.onNS}`);
+            this.updateView();
+        }
+        else if (key === 'ArrowUp' && curInput === '') {
+            this.onNS = this.getNewNS(-1);
+            this.lastInput = '';
+            // console.log(`new onNS = ${this.onNS}`);
+            this.updateView();
+        }
+        else if (key === 'Enter') {
+            if (curInput !== '') {
+                if (this.checkSpecialInput(curInput, x)) return;
+                // score entered
+                const newScore : number = parseInt(`${curInput}0`);
+                if (this.checkScoreLegality(newScore)) {
+                    this.lastInput = curInput;
+                    x.target.value = '';
+                    onNSBoardPlay.addScoreInfo(newScore);
+                    this.onNS = this.getNewNS(1);
+                    this.updateView();
+                }
+                else {
+                    x.target.value = '';
+                    this.errmsg = `!! ${newScore} is not possible on this board !!`;
+                    this.updateView();
+                }
+            } else if (this.lastInput !== '') {
+                const newScore : number = parseInt(`${this.lastInput}0`);
+                x.target.value = '';
+                onNSBoardPlay.addScoreInfo(newScore);
+                this.onNS = this.getNewNS(1);
+                this.updateView();
+            }
+        }
+        else if (key === '+') {
+            // A+ is a legal input
+            if (curInput === 'A+') return;
+        }
+        else if (key === '-') {
+                if (curInput === '-') {
+                x.target.value = '';
+                return;
+            }
+            if (curInput === 'A-') {
+                // a legal combo for ns=avg-, ew=avg+
+                return;
+            }
+            // now we know there is a non-empty input
+            // negative score entered
+            // move - sign from end of input to beginning
+            curInput = `-${curInput.slice(0, -1)}`;
+            const newScore : number = parseInt(`${curInput}0`);
+            if (this.checkScoreLegality(newScore)) {
+                this.lastInput = curInput;
+                x.target.value = '';
+                onNSBoardPlay.addScoreInfo(newScore);
+                this.onNS = this.getNewNS(1);
+                // console.log(`new onNS = ${this.onNS}`);
+                this.updateView();
+            }
+            else {
+                x.target.value = '';
+                this.errmsg = `!! ${newScore} is not possible on this board !!`;
+            }
+        }
+        else if (key === 'Escape') {
+            this.onNS = nsEndBoardMarker;
+            this.updateView();
+        }
+        
+        else if (isFinite(parseInt(key))) {
+            // numeric keys always ok
+            // console.log(`key ${key} is a number!`);
+            // console.log(`input is now ${x.target.value}`);
+        }
+        else if ('XLNAS'.includes(key.toUpperCase()) && x.target.value.toUpperCase() === key.toUpperCase()) {
+            x.target.value = key.toUpperCase()
+        }
+        
+        else {
+            // ignore non-numeric keys
+            // console.log(`key ${key} is not a number!`);
+            x.target.value = x.target.value.slice(0, -1);
+            // console.log(`input is now ${x.target.value}`);
+        }
+    }
     
-    onInputKeyUp(x : any) {
+    onScoreEntryInputKeyUp(x : any) {
         this.inputElement = x;  // save this
         // ignore if gameData not set up yet
         if (!this.gameDataPtr.gameDataSetup) return;
 
-        this.inputHandler.processKey();
+        // the associated input element is only used for
+        // score entries for a particular boardplay
+        this.scoreEntryInput();
         return;
-        
-        // check for special situation
-        // if (this.onNS === nsEndBoardMarker) {
-        //     this.goToBoardInput();
-        //     return;
-        // }
-        // else {
-        //     this.scoreEntryInput();
-        //     return;
-        // }
     }
     
     getNewNS(dir: number) : number {

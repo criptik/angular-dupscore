@@ -279,7 +279,6 @@ export class ScoreEntryComponent implements AfterViewInit {
     publicRouter: Router;
     @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLSelectElement>;
-    boardsToDoList: number[] = [];
     boardsToDoMsg: string = '';
     dialogClosedViaButton: boolean = false;
     
@@ -364,26 +363,18 @@ export class ScoreEntryComponent implements AfterViewInit {
             const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
             bdobj.computeMP(this.gameDataPtr.boardTop);
             // build the modal dialog box info
-            this.boardsToDoList = [];
-            this.boardsToDoMsg = 'Boards To Score: ';
-            let completedBoardsList: number[] = [];
+            let defaultNextBoard: number = 0;
+            this.boardsToDoMsg = '';
             Array.from(this.gameDataPtr.boardObjs.values()).forEach( bdobj => {
                 if (!bdobj.allPlaysEntered) {
                     this.boardsToDoMsg += ` ${bdobj.bdnum}`;
-                    this.boardsToDoList.push(bdobj.bdnum);
+                    if (defaultNextBoard === 0) defaultNextBoard = bdobj.bdnum;
                 }
-                else {
-                    completedBoardsList.push(bdobj.bdnum);
-                }
-            });
-            // put completed boards at the end
-            completedBoardsList.forEach(bdnum => {
-                this.boardsToDoList.push(bdnum);
-                this.boardsToDoMsg += ` ${bdnum}`;
             });
             
             // this.inputHandler = new GoToBoardInputHandler(this);
             this.dialogClosedViaButton = false;
+            this.boardSelect.nativeElement.value = (defaultNextBoard === 0) ? '1' : defaultNextBoard.toString();            
             this.gotoBoardDialog.nativeElement.showModal();
             this.gotoBoardDialog.nativeElement.addEventListener("close", (event: any) => {
                 console.log(`boardSelect: dialogClosedButton=${this.dialogClosedViaButton}`, this.boardSelect.nativeElement.value);

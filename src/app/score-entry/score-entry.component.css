@@ -16,6 +16,9 @@ input {
 button.px20 {
     margin:20px;
 }
+input.px20 {
+    width: 60px;
+}
 
 .inverse {
     color:black;

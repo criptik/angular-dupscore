@@ -25,8 +25,16 @@ export class ScoreEntryComponent implements AfterViewInit {
     legalScoreObj : LegalScore = new LegalScore();
     errmsg: string = '  ';
     @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
-    @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLSelectElement>;
+    @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLInputElement>;
+    @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('specialNS') specialNS!: ElementRef<HTMLInputElement>;
+    @ViewChild('specialEW') specialEW!: ElementRef<HTMLInputElement>;
     boardsToDoMsg: string = '';
+    specialNSStr: string = '';
+    specialEWStr: string = '';
+    unbalancedSpecialNSPrompt: string = '';
+    unbalancedSpecialEWPrompt: string = '';
+    dialogClosedByEnter: boolean = false;
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
@@ -121,6 +129,13 @@ export class ScoreEntryComponent implements AfterViewInit {
             });
             
             this.boardSelect.nativeElement.value = (defaultNextBoard === 0) ? '1' : defaultNextBoard.toString();            
+            this.dialogClosedByEnter = false;
+            this.gotoBoardDialog.nativeElement.onclose = () => {
+                if (!this.dialogClosedByEnter) {
+                    // dialog was closed via escape key
+                    this._router.navigate(["/status"]);
+                }
+            };
             this.gotoBoardDialog.nativeElement.showModal();
         }
     }
@@ -137,17 +152,83 @@ export class ScoreEntryComponent implements AfterViewInit {
                 this.curBoardNum = inputNum;
                 this.buildNSOrder();
                 this.onNS = this.nsOrder[0];
+                this.dialogClosedByEnter = true;
                 this.gotoBoardDialog.nativeElement.close();
                 this.updateView();
             }
         }
-        else if (key === 'Escape') {
-            // dialog was closed via escape key
-            this.gotoBoardDialog.nativeElement.close();
-            this._router.navigate(["/status"]);
+    }
+
+    checkUnbalancedSpecialInputs(): boolean {
+        console.log(`checkUnbalanced: NS=${this.specialNSStr}, EW=${this.specialEWStr}`);
+        if (this.specialNSStr === '') {
+            this.specialNS.nativeElement.focus();
+            return false;
         }
+        if (this.specialEWStr === '') {
+            this.specialEW.nativeElement.focus();
+            return false;
+        }
+        const strMap: Map<string, string> = new Map<string, string> (
+            [['A', 'AVE'],
+             ['A+', 'AVE+'],
+             ['A-', 'AVE-'],
+            ]
+        );
+        const legals = Array.from(strMap.keys());
+        if (!legals.includes(this.specialNSStr)) {
+            this.specialNS.nativeElement.value = '';
+            return false;
+        }
+        if (!legals.includes(this.specialEWStr)) {
+            this.specialEW.nativeElement.value = '';
+            return false;
+        }
+        
+        // now know both are legal special inputs
+        this.specialNS.nativeElement.value = '';
+        this.specialEW.nativeElement.value = '';
+        const strNS = strMap.get(this.specialNSStr);
+        const strEW = strMap.get(this.specialEWStr);
+        console.log('strs', strNS, strEW);
+        const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
+        curBoardPlay.addScoreInfo(-1, strNS, strEW);
+        this.onNS = this.getNewNS(1);
+        this.updateView();
+        return true;
     }
     
+    onSpecialNSInputKeyUp(x : any) {   
+        console.log('nsinputkeyup', this.specialNS, this.specialEW);
+        const key: string = x.key;
+        let curInput: string = x.target.value;
+        console.log(`SpecialNS: key=${key}, curinput=${curInput}`);
+        if (key === 'Enter') {
+            this.specialNSStr = curInput;
+            const ok = this.checkUnbalancedSpecialInputs();
+            if (ok) this.unbalancedSpecialDialog.nativeElement.close();
+        }
+        else if (key === 'Escape') {
+            // dialog was closed via escape key
+            this.unbalancedSpecialDialog.nativeElement.close();
+        }
+    }
+
+    onSpecialEWInputKeyUp(x : any) {
+        const key: string = x.key;
+        let curInput: string = x.target.value;
+        console.log(`SpecialEW: key=${key}, curinput=${curInput}`);
+        if (key === 'Enter') {
+            this.specialEWStr = curInput;
+            const ok = this.checkUnbalancedSpecialInputs();
+            if (ok) this.unbalancedSpecialDialog.nativeElement.close();
+        }
+        else if (key === 'Escape') {
+            // dialog was closed via escape key
+            this.unbalancedSpecialDialog.nativeElement.close();
+        }
+    }
+
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
         let str = ' ';
         if (boardPlay?.nsScore === -2) str = ' ? ';
@@ -210,10 +291,6 @@ export class ScoreEntryComponent implements AfterViewInit {
             boardPlay.addScoreInfo(-1, 'AVE-', 'AVE+');
             foundSpecial = true;
         }
-        if (curInput === 'S') {
-            // unbalanced Special not handled yet
-        }
-            
         if (foundSpecial) {
             x.target.value = '';
             this.lastInput = '';
@@ -246,6 +323,23 @@ export class ScoreEntryComponent implements AfterViewInit {
         else if (key === 'Enter') {
             if (curInput !== '') {
                 if (this.checkSpecialInput(curInput, x)) return;
+                if (curInput === 'S') {
+                    x.target.value = '';
+                    const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
+                    this.unbalancedSpecialNSPrompt = `Board ${this.curBoardNum}, NS Pair ${curBoardPlay.nsPair}:`
+                    this.unbalancedSpecialEWPrompt = `Board ${this.curBoardNum}, EW Pair ${curBoardPlay.ewPair}:`
+                    this.dialogClosedByEnter = false;
+                    this.unbalancedSpecialDialog.nativeElement.onclose = () => {
+                        if (!this.dialogClosedByEnter) {
+                            // dialog was closed via escape key
+                            // stay on this onNS, nothing to do?
+                            return;
+                        }
+                    };
+                    this.unbalancedSpecialDialog.nativeElement.showModal();
+                    return;
+                }
+                
                 // score entered
                 const newScore : number = parseInt(`${curInput}0`);
                 if (this.checkScoreLegality(newScore)) {

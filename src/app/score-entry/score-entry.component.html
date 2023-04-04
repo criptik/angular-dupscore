@@ -28,3 +28,19 @@
         </p>
     </section>
 </dialog>
+
+<dialog class="px20" #unbalancedSpecialDialog>
+    <section>
+        <p>
+            Enter Special Scores:
+        </p>
+        <p>
+            <label for="specialNS"> {{unbalancedSpecialNSPrompt}} </label>
+            <input class="px20" id="specialNS" #specialNS (keyup)="onSpecialNSInputKeyUp($event)">
+        </p>
+        <p>
+            <label for="specialEW"> {{unbalancedSpecialEWPrompt}} </label>
+            <input class="px20" id="specialEW" #specialEW  (keyup)="onSpecialEWInputKeyUp($event)">
+        </p>
+    </section>
+</dialog>

@@ -35,6 +35,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     unbalancedSpecialNSPrompt: string = '';
     unbalancedSpecialEWPrompt: string = '';
     dialogClosedByEnter: boolean = false;
+    escapedFromUnbalanced: boolean = false;
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
@@ -144,7 +145,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     onGoToBoardInputKeyUp(x : any) {   
         const key: string = x.key;
         let curInput: string = x.target.value;
-        console.log(`boardSelect: key=${key}, curinput=${curInput}`);
+        // console.log(`boardSelect: key=${key}, curinput=${curInput}`);
         if (key === 'Enter') {
             const inputNum = parseInt(curInput);
             x.target.value = '';
@@ -160,7 +161,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
 
     checkUnbalancedSpecialInputs(): boolean {
-        console.log(`checkUnbalanced: NS=${this.specialNSStr}, EW=${this.specialEWStr}`);
+        // console.log(`checkUnbalanced: NS=${this.specialNSStr}, EW=${this.specialEWStr}`);
         if (this.specialNSStr === '') {
             this.specialNS.nativeElement.focus();
             return false;
@@ -190,7 +191,6 @@ export class ScoreEntryComponent implements AfterViewInit {
         this.specialEW.nativeElement.value = '';
         const strNS = strMap.get(this.specialNSStr);
         const strEW = strMap.get(this.specialEWStr);
-        console.log('strs', strNS, strEW);
         const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         curBoardPlay.addScoreInfo(-1, strNS, strEW);
         this.onNS = this.getNewNS(1);
@@ -198,15 +198,24 @@ export class ScoreEntryComponent implements AfterViewInit {
         return true;
     }
     
-    onSpecialNSInputKeyUp(x : any) {   
-        console.log('nsinputkeyup', this.specialNS, this.specialEW);
+    onSpecialInputKeyUpCommon(kind: string, x: any) {
+        // console.log(`${kind}InputKeyUp, ${this.specialNS}, ${this.specialEW}`);
         const key: string = x.key;
+        x.target.value = x.target.value.toUpperCase();
         let curInput: string = x.target.value;
-        console.log(`SpecialNS: key=${key}, curinput=${curInput}`);
+        // console.log(`Special${kind}: key=${key}, curinput=${curInput}`);
         if (key === 'Enter') {
-            this.specialNSStr = curInput;
+            if (kind === 'NS') {
+                this.specialNSStr = curInput;
+            }
+            else {
+                this.specialEWStr = curInput;
+            }
             const ok = this.checkUnbalancedSpecialInputs();
-            if (ok) this.unbalancedSpecialDialog.nativeElement.close();
+            if (ok) {
+                this.dialogClosedByEnter = true;
+                this.unbalancedSpecialDialog.nativeElement.close();
+            }
         }
         else if (key === 'Escape') {
             // dialog was closed via escape key
@@ -214,19 +223,12 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
     }
 
+    onSpecialNSInputKeyUp(x : any) {
+         this.onSpecialInputKeyUpCommon('NS', x);
+    }
+
     onSpecialEWInputKeyUp(x : any) {
-        const key: string = x.key;
-        let curInput: string = x.target.value;
-        console.log(`SpecialEW: key=${key}, curinput=${curInput}`);
-        if (key === 'Enter') {
-            this.specialEWStr = curInput;
-            const ok = this.checkUnbalancedSpecialInputs();
-            if (ok) this.unbalancedSpecialDialog.nativeElement.close();
-        }
-        else if (key === 'Escape') {
-            // dialog was closed via escape key
-            this.unbalancedSpecialDialog.nativeElement.close();
-        }
+        this.onSpecialInputKeyUpCommon('EW', x);
     }
 
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
@@ -333,6 +335,7 @@ export class ScoreEntryComponent implements AfterViewInit {
                         if (!this.dialogClosedByEnter) {
                             // dialog was closed via escape key
                             // stay on this onNS, nothing to do?
+                            this.escapedFromUnbalanced = true;
                             return;
                         }
                     };
@@ -394,7 +397,10 @@ export class ScoreEntryComponent implements AfterViewInit {
             }
         }
         else if (key === 'Escape') {
-            this.onNS = nsEndBoardMarker;
+            if (!this.escapedFromUnbalanced) {
+                this.onNS = nsEndBoardMarker;
+            }
+            this.escapedFromUnbalanced = false;
             this.updateView();
         }
         

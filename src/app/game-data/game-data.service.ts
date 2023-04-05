@@ -208,7 +208,7 @@ export class BoardObj {
             const E = expectedPlays;
             Array.from(this.pairToMpMap.entries()).forEach( ([pairId, mps]) => {
                 const newMps = (mps + 0.5) * E/A - 0.5;
-                console.log(`neuberg: mps:${mps} ${E}/${A} newmps:${newMps}`);
+                // console.log(`neuberg: mps:${mps} ${E}/${A} newmps:${newMps}`);
                 this.pairToMpMap.set(pairId, newMps);
             });
             // console.log(`factored pairToMpMap ${this.pairToMpMap}`);

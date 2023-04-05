@@ -8,6 +8,7 @@ import { ScoreEntryComponent, AutofocusDirective } from './score-entry/score-ent
 import { GameDataComponent } from './game-data/game-data.component';
 import { GameDataService } from './game-data/game-data.service';
 import { GameSummaryComponent } from './game-summary/game-summary.component';
+import { NamesEntryComponent } from './names-entry/names-entry.component';
 
 @NgModule({
     declarations: [
@@ -16,6 +17,7 @@ import { GameSummaryComponent } from './game-summary/game-summary.component';
         GameDataComponent,
         AutofocusDirective,
         GameSummaryComponent,
+        NamesEntryComponent,
     ],
     imports: [
         BrowserModule,

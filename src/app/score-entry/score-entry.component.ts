@@ -29,9 +29,8 @@ export class ScoreEntryComponent implements AfterViewInit {
     @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('specialNS') specialNS!: ElementRef<HTMLInputElement>;
     @ViewChild('specialEW') specialEW!: ElementRef<HTMLInputElement>;
+    unbalancedInputs: Object = {};
     boardsToDoMsg: string = '';
-    specialNSStr: string = '';
-    specialEWStr: string = '';
     unbalancedSpecialNSPrompt: string = '';
     unbalancedSpecialEWPrompt: string = '';
     dialogClosedByEnter: boolean = false;
@@ -44,6 +43,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
+        // console.log(this.specialNS, this.specialEW);
     }
     
     ngOnInit() {
@@ -161,36 +161,29 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
 
     checkUnbalancedSpecialInputs(): boolean {
-        // console.log(`checkUnbalanced: NS=${this.specialNSStr}, EW=${this.specialEWStr}`);
-        if (this.specialNSStr === '') {
-            this.specialNS.nativeElement.focus();
-            return false;
-        }
-        if (this.specialEWStr === '') {
-            this.specialEW.nativeElement.focus();
-            return false;
-        }
+        // if we find one that is empty, focus there and return false
+        const inputElems: ElementRef<HTMLInputElement>[] = [this.specialNS, this.specialEW];
         const strMap: Map<string, string> = new Map<string, string> (
             [['A', 'AVE'],
              ['A+', 'AVE+'],
-             ['A-', 'AVE-'],
-            ]
-        );
+             ['A-', 'AVE-']]);
         const legals = Array.from(strMap.keys());
-        if (!legals.includes(this.specialNSStr)) {
-            this.specialNS.nativeElement.value = '';
-            return false;
-        }
-        if (!legals.includes(this.specialEWStr)) {
-            this.specialEW.nativeElement.value = '';
-            return false;
+        let elem: ElementRef<HTMLInputElement>;
+        for (elem of inputElems) {
+            if (!legals.includes(elem.nativeElement.value)) {
+                elem.nativeElement.value = '';
+            }                
+            if (elem.nativeElement.value === '') {
+                elem.nativeElement.focus();
+                return false;
+            }
         }
         
         // now know both are legal special inputs
+        const strNS = strMap.get(this.specialNS.nativeElement.value);
+        const strEW = strMap.get(this.specialEW.nativeElement.value);
         this.specialNS.nativeElement.value = '';
         this.specialEW.nativeElement.value = '';
-        const strNS = strMap.get(this.specialNSStr);
-        const strEW = strMap.get(this.specialEWStr);
         const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         curBoardPlay.addScoreInfo(-1, strNS, strEW);
         this.onNS = this.getNewNS(1);
@@ -199,19 +192,10 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
     
     onSpecialInputKeyUpCommon(kind: string, x: any) {
-        // console.log(`${kind}InputKeyUp, ${this.specialNS}, ${this.specialEW}`);
         const key: string = x.key;
         x.target.value = x.target.value.toUpperCase();
-        let curInput: string = x.target.value;
-        // console.log(`Special${kind}: key=${key}, curinput=${curInput}`);
         if (key === 'Enter') {
-            if (kind === 'NS') {
-                this.specialNSStr = curInput;
-            }
-            else {
-                this.specialEWStr = curInput;
-            }
-            const ok = this.checkUnbalancedSpecialInputs();
+            const ok: boolean = this.checkUnbalancedSpecialInputs();
             if (ok) {
                 this.dialogClosedByEnter = true;
                 this.unbalancedSpecialDialog.nativeElement.close();
@@ -330,6 +314,8 @@ export class ScoreEntryComponent implements AfterViewInit {
                     const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
                     this.unbalancedSpecialNSPrompt = `Board ${this.curBoardNum}, NS Pair ${curBoardPlay.nsPair}:`
                     this.unbalancedSpecialEWPrompt = `Board ${this.curBoardNum}, EW Pair ${curBoardPlay.ewPair}:`
+                    this.specialNS.nativeElement.value = '';
+                    this.specialEW.nativeElement.value = '';
                     this.dialogClosedByEnter = false;
                     this.unbalancedSpecialDialog.nativeElement.onclose = () => {
                         if (!this.dialogClosedByEnter) {

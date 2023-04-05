@@ -1,0 +1,13 @@
+.px30 {
+    font-size:30px;
+}
+.px20 {
+    font-size:20px;
+    margin: 10px;
+}
+button.px20 {
+    margin:20px;
+}
+input.px20 {
+    width: 20rem;
+}

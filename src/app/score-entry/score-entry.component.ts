@@ -29,7 +29,6 @@ export class ScoreEntryComponent implements AfterViewInit {
     @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('specialNS') specialNS!: ElementRef<HTMLInputElement>;
     @ViewChild('specialEW') specialEW!: ElementRef<HTMLInputElement>;
-    unbalancedInputs: Object = {};
     boardsToDoMsg: string = '';
     unbalancedSpecialNSPrompt: string = '';
     unbalancedSpecialEWPrompt: string = '';

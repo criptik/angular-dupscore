@@ -1,1 +1,28 @@
-<p>names-entry works!</p>
+<div>
+    <ng-container  *ngFor="let pairnum of pairNumArray">
+        <div>
+            <button class="px30">
+                {{pairnum}}&nbsp;&nbsp;&nbsp;&nbsp;Joe Smith - Jill Smith
+            </button>
+        </div>
+    </ng-container>
+
+<dialog class="px20" #nameEntryDialog>
+    <section>
+        <p>
+            {{ nameEntryDialogHeader }}
+        </p>
+        <pre>
+      LAST                       FIRST
+        </pre>
+        1
+        <input class="px20" id="lastName1" #lastName1 (keyup)="onLastName1InputKeyUp($event)">
+        <input class="px20" id="firsttName1" #firstName1 (keyup)="onFirstName1InputKeyUp($event)">
+        <br/>
+        2
+        <input class="px20" id="lastName2" #lastName2 (keyup)="onLastName2InputKeyUp($event)">
+        <input class="px20" id="firsttName2" #firstName2 (keyup)="onFirstName2InputKeyUp($event)">
+        <p>
+        </p>
+    </section>
+</dialog>

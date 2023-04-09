@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GameDataService, BoardObj } from '../game-data/game-data.service';
+import { GameDataService, BoardObj, Pair } from '../game-data/game-data.service';
 import * as _ from 'lodash';
 
 class MpRec {
@@ -40,8 +40,10 @@ export class GameSummaryComponent {
         sortedEntries.forEach( ([pairId, mpRec]) => {
             const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
             const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(1) + '%').padStart(6, ' ');
+            const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairId);  
+            const nameStr: string = (pairObj ? pairObj.shortString() : '');
             this.summaryText += `
-  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}   ${pairId.toString().padStart(4,' ')}`;
+  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}   ${pairId.toString().padStart(4,' ')} ${nameStr}`;
             if (debug) this.summaryText += `   boards:${mpRec.boards}`;
                 place++;
         });

@@ -141,7 +141,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
 
 
-    onGoToBoardInputKeyUp(x : any) {   
+    onGoToBoardInputKeyUp(x: any) {   
         const key: string = x.key;
         let curInput: string = x.target.value;
         // console.log(`boardSelect: key=${key}, curinput=${curInput}`);

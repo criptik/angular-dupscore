@@ -8,7 +8,7 @@ function dbglog(str: string) {
 }
 
 
-function serialize(classInstance: GameDataService): string {
+export function serialize(classInstance: any): string {
     return JSON.stringify(classInstance, (key, value) => {
         if (key === 'http') return undefined;
         if (value && typeof(value) === "object") {
@@ -32,8 +32,10 @@ function serialize(classInstance: GameDataService): string {
     }, ' ');
 }
 
-function deserialize (jsonString: string) {
+export function deserialize (jsonString: string) {
     const classes: string[] = [
+        'Pair',
+        'Person',
         'BoardObj',
         'BoardPlay',
         'GameDataService',
@@ -222,6 +224,32 @@ export class BoardObj {
     }
 }
 
+export class Person {
+    last: string;
+    first: string;
+    constructor (first: string, last: string) {
+        this.first = first;
+        this.last = last;
+    }
+}
+
+export class Pair {
+    A: Person;
+    B: Person;
+    constructor (A: Person, B: Person) {
+        this.A = A;
+        this.B = B;
+    }
+
+    fullString(): string {
+        return `${this.A.first} ${this.A.last} - ${this.B.first} ${this.B.last}`;
+    }
+    
+    shortString(): string {
+        return `${this.A.last}-${this.B.last}`;
+    }
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -244,6 +272,7 @@ export class GameDataService {
     boardObjs: Map<number, BoardObj> = new Map();
     pairIds: number[] = [];
     gameDataSetup: boolean = false;
+    pairNameMap: Map<number, Pair> = new Map();
     
     constructor(private http: HttpClient) {
         // console.log('in game-data.service constructor');

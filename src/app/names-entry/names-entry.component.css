@@ -8,6 +8,10 @@
 button.px20 {
     margin:20px;
 }
+button.px30 {
+    width: 40rem;
+    text-align: left;
+}
 input.px20 {
     width: 20rem;
 }

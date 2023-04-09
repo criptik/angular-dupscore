@@ -1,13 +1,13 @@
 <div>
     <ng-container  *ngFor="let pairnum of pairNumArray">
         <div>
-            <button class="px30">
-                {{pairnum}}&nbsp;&nbsp;&nbsp;&nbsp;Joe Smith - Jill Smith
+            <button id="{{'name' + pairnum}}" class="px30" (click)="onNameButtonClick($event)">
+                {{pairnum}}&nbsp;&nbsp;&nbsp;&nbsp;{{pairNameStrArray[pairnum-1]}}
             </button>
         </div>
     </ng-container>
-
-<dialog class="px20" #nameEntryDialog>
+    
+    <dialog class="px20" #nameEntryDialog>
     <section>
         <p>
             {{ nameEntryDialogHeader }}
@@ -16,13 +16,24 @@
       LAST                       FIRST
         </pre>
         1
-        <input class="px20" id="lastName1" #lastName1 (keyup)="onLastName1InputKeyUp($event)">
-        <input class="px20" id="firsttName1" #firstName1 (keyup)="onFirstName1InputKeyUp($event)">
+        <input class="px20" type="text" id="lastName1" name="last1" list="nameCompleterList" #lastName1
+               (keyup)="onLastNameInputKeyUp($event)" (focus)="onLastNameFocus($event)" autocomplete="off"
+        />
+        <input class="px20" type="text" id="firstName1" name="first1" list="nameCompleterList" #firstName1
+               (keyup)="onFirstNameInputKeyUp($event)" (focus)="onFirstNameFocus($event)" autocomplete="off">
         <br/>
         2
-        <input class="px20" id="lastName2" #lastName2 (keyup)="onLastName2InputKeyUp($event)">
-        <input class="px20" id="firsttName2" #firstName2 (keyup)="onFirstName2InputKeyUp($event)">
+        <input class="px20" type="text" id="lastName2" name="last2" list="nameCompleterList" #lastName2
+               (keyup)="onLastNameInputKeyUp($event)" (focus)="onLastNameFocus($event)" autocomplete="off"
+        />
+        <input class="px20" type="text" id="firstName2" name="first2" list="nameCompleterList" #firstName2
+               (keyup)="onFirstNameInputKeyUp($event)" (focus)="onFirstNameFocus($event)" autocomplete="off">
+
+        <datalist id="nameCompleterList">
+            <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
+        </datalist>
         <p>
+            <button class="px30" id="dialogOK" #dialogOK (click)="onDialogOKClick($event)"> OK </button>
         </p>
     </section>
 </dialog>

@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { GameDataService } from '../game-data/game-data.service';
+import { GameDataService, Person, Pair, serialize } from '../game-data/game-data.service';
 import * as _ from 'lodash';
 
 @Component({
@@ -17,12 +17,60 @@ export class NamesEntryComponent implements AfterViewInit {
     @ViewChild('firstName2') firstName2!: ElementRef<HTMLInputElement>;
     nameEntryDialogHeader: string = '';
     pairNumArray: number[] = [];
+    pairNameStrArray: string[] = [];
+
+    allNames :Person[] = [
+        new Person('Linda', 'James'),
+        new Person('Fred', 'James'),
+        new Person('Tom', 'Jackson'),
+        new Person('Linda', 'Jackson'),
+        new Person('Chris', 'Farley'),
+        new Person('Don', 'Johnson'),
+        new Person('Linda', 'Johnson'),
+        new Person('Tom', 'Johnson'),
+        new Person('Tom', 'Deneau'),
+        new Person('Gul', 'Deneau'),
+        new Person('Kam', 'Harris'),
+        new Person('Joe', 'Biden'),
+        new Person('Amy', 'Seitz'),
+        new Person('Dan', 'Seitz'),
+    ];
+    
+    allLastNames: string[] = [];
+    nameCompletion: string[] = [];
+    lastFirstMap: Map<string, string[]> = new Map();
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,)  {
+        console.log(this.allNames);
+        console.log(serialize(this.allNames));
     }
 
+    onMyCompleterKeyUp(x: any) {
+    }
+
+    parseNumberFrom(str: string): number {
+        return (parseInt(str.replace(/\D/g, '')));
+    }
+    
+    
+    onNameButtonClick(x: any) {
+        console.log('target.id', x.target.id);
+        // parse number from id which is nameXX
+        const pairnum = this.parseNumberFrom(x.target.id);
+        this.nameEntryDialogHeader = `Names for Pair ${pairnum}`;
+        this.nameEntryDialog.nativeElement.showModal();
+    }
+
+    updatePairNameStrArray() {
+        this.pairNameStrArray = this.pairNumArray.map( pairnum => {
+            const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairnum);
+            const nameStr: string = (pairObj ? pairObj.fullString() : '');
+            return nameStr;
+        });
+    }
+    
     ngOnInit() {
         // when this is called, parent is all setup
         // console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
@@ -31,23 +79,76 @@ export class NamesEntryComponent implements AfterViewInit {
             return;
         }
         this.pairNumArray = _.range(1, this.gameDataPtr.numPairs+1);
+        this.updatePairNameStrArray();
+        
+        // for testing name completion
+        this.allLastNames = _.uniq(this.allNames.map( person => person.last));
+        console.log('allLast', this.allLastNames);
+        this.lastFirstMap = new Map();
+        this.allNames.forEach( (person) => {
+            const anow = this.lastFirstMap.get(person.last) ?? [];
+            anow.push(person.first);
+            this.lastFirstMap.set(person.last, anow);
+        });
+        console.log('lastFirstMap', this.lastFirstMap);
+        
     }
 
     ngAfterViewInit() {
     }
 
-    onClick() {
-        this.nameEntryDialogHeader = 'Names for Pair 1';
-        this.nameEntryDialog.nativeElement.showModal();
+    genLastNameCompletionList(x: any) {
+        if (x.target.value.length >= 2) {
+            const completionList = this.allLastNames.filter( name => name.toUpperCase().startsWith(x.target.value.toUpperCase()));
+            this.nameCompletion = completionList;
+            // keep track of the cases where there is only one entry
+            const exactArray: string[] = x.target.exactArray ?? [];
+            // console.log('exact', exactArray, completionList[0]);
+            if (completionList.length === 1 && !exactArray.includes(completionList[0])) {
+                x.target.value = completionList[0];
+                exactArray.push(completionList[0]);
+                x.target.exactArray = exactArray;
+            }
+        }
+        else {
+            this.nameCompletion = [];
+        }
     }
     
-    onLastName1InputKeyUp(x: any) {
+    onLastNameInputKeyUp(x: any) {
+        const key: string = x.key;
+        this.genLastNameCompletionList(x);
     }
-    onFirstName1InputKeyUp(x: any) {
+
+    onLastNameFocus(x: any) {
+        this.genLastNameCompletionList(x);
     }
-    onLastName2InputKeyUp(x: any) {
+    
+    genFirstNameCompletionList(x: any) {
+        const idx = this.parseNumberFrom(x.target.name);
+        const lastName = (idx === 1 ? this.lastName1.nativeElement.value : this.lastName2.nativeElement.value);
+        this.nameCompletion = this.lastFirstMap.get(lastName) ?? [];
     }
-    onFirstName2InputKeyUp(x: any) {
+    
+    onFirstNameInputKeyUp(x: any) {
+        const key: string = x.key;
+        this.genFirstNameCompletionList(x);
+    }
+
+    onFirstNameFocus(x: any) {
+        this.genFirstNameCompletionList(x);
+    }
+    
+    onDialogOKClick(x: any) {
+        // here we will copy out the fields
+        const pairnum = this.parseNumberFrom(this.nameEntryDialogHeader);
+        const playerA: Person = new Person(this.firstName1.nativeElement.value, this.lastName1.nativeElement.value);
+        const playerB: Person = new Person(this.firstName2.nativeElement.value, this.lastName2.nativeElement.value);
+        const newPair = new Pair(playerA, playerB);
+        this.gameDataPtr.pairNameMap.set(pairnum, newPair);
+        console.log(newPair);
+        this.nameEntryDialog.nativeElement.close();
+        this.updatePairNameStrArray();
     }
     
 }

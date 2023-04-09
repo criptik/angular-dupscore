@@ -1,60 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { SerializerService } from '../serializer/serializer.service';
 import * as _ from 'lodash';
-
-const debug: boolean = false;
-function dbglog(str: string) {
-    if (debug) console.log(str);
-}
-
-
-export function serialize(classInstance: any): string {
-    return JSON.stringify(classInstance, (key, value) => {
-        if (key === 'http') return undefined;
-        if (value && typeof(value) === "object") {
-            value.__type = value.constructor.name;
-            if (value.__type === 'Map') {
-                const valarray = Array.from(value.entries());
-                value.__entries = valarray;
-                dbglog(`__entries: ${valarray}`);
-            }
-            else if (['InjectionToken',
-                      'R3Injector',
-            ].includes(value.__type)) {
-                dbglog(`skipping ${value.__type}`);
-                return undefined;
-            }
-
-            dbglog(`serialize: key=${key}, value=${value}, type=${typeof(value)}`);
-            dbglog(`consname=${value.constructor.name}`);
-        }
-        return value;
-    }, ' ');
-}
-
-export function deserialize (jsonString: string) {
-    const classes: string[] = [
-        'Pair',
-        'Person',
-        'BoardObj',
-        'BoardPlay',
-        'GameDataService',
-    ];
-    return JSON.parse(jsonString, (key, value) => {
-        if (value && typeof (value) === "object" && value.__type) {
-            const vtype: string = value?.__type;
-            if (vtype === 'Map') {
-                value = new Map(value.__entries);
-                delete value.__entries;
-            } else if (classes.includes(vtype)) {
-                const newobj = eval(`new ${vtype}()`);
-                value = Object.assign(newobj, value);
-            }
-            delete value.__type;
-        }
-        return value;
-    });
-}
 
 
 const SCORE_EMPTY: number = -2;
@@ -274,7 +221,10 @@ export class GameDataService {
     gameDataSetup: boolean = false;
     pairNameMap: Map<number, Pair> = new Map();
     
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private _serializer: SerializerService,
+    ) {
         // console.log('in game-data.service constructor');
     }
 
@@ -366,10 +316,16 @@ export class GameDataService {
     }
 
     doSerialize(): string {
-        return serialize(this);
+        return this._serializer.serialize(this, ['InjectionToken', 'R3Injector']);
     }
     doDeserialize(JSONStr: string) {
-        const newobj: GameDataService = deserialize(JSONStr);
+        const newobj: GameDataService = this._serializer.deserialize(JSONStr, [
+            'Pair',
+            'Person',
+            'BoardObj',
+            'BoardPlay',
+            'GameDataService',
+        ]);
         // console.log('new deserialized:', newobj);
         newobj.http = this.http;
         Object.assign(this, newobj);

@@ -1,7 +1,8 @@
 import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { GameDataService, Person, Pair, serialize } from '../game-data/game-data.service';
+import { GameDataService, Person, Pair } from '../game-data/game-data.service';
+import { SerializerService } from '../serializer/serializer.service';
 import * as _ from 'lodash';
 
 @Component({
@@ -42,9 +43,10 @@ export class NamesEntryComponent implements AfterViewInit {
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
-                private _activatedRoute: ActivatedRoute,)  {
+                private _activatedRoute: ActivatedRoute,
+                private _serializer: SerializerService, )  {
         console.log(this.allNames);
-        console.log(serialize(this.allNames));
+        console.log(this._serializer.serialize(this.allNames));
     }
 
     onMyCompleterKeyUp(x: any) {

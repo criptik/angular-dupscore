@@ -1,8 +1,12 @@
+import { Injectable } from '@angular/core';
 import * as _ from "lodash";
 
 enum Suit {CD, HS, NT};
 enum Dstate {'N', 'D', 'R'};  // undoubled, doubled, redoubled
 
+@Injectable({
+    providedIn: 'root'
+})
 export class LegalScore {
     legalScoresNotVul : Set<any> = new Set<any>();
     legalScoresVul : Set<any> = new Set<any>();
@@ -19,13 +23,15 @@ export class LegalScore {
             //console.table(Array.from(this.legalScoresNotVul.values()).sort((a:number, b:number) => a-b));
             //console.table(Array.from(this.legalScoresVul.values()).sort((a:number, b:number) => a-b));
             // tests
-            console.assert(this.checkNSScoreLegal(110, false, false));
-            console.assert(this.checkNSScoreLegal(1200, false, false));
-            console.assert(!this.checkNSScoreLegal(1300, false, false));
-            console.assert(this.checkNSScoreLegal(1300, false, true));
-            console.assert(!this.checkNSScoreLegal(420, true, true));
-            console.assert(this.checkNSScoreLegal(350, true, true));
-            console.assert(this.checkNSScoreLegal(650, true, true));
+            this.checkResult( 110,  false, false,    true);
+            this.checkResult(1200,  false, false,    true);
+            this.checkResult(1300,  false, false,    false);
+            this.checkResult(1300,  false, true,     true);  // ew could get -13 vulnerable
+            this.checkResult(-1300, false, true,     false);
+            this.checkResult(-1300, true,  true,     false);
+            this.checkResult( 420,  true,  true,     false);
+            this.checkResult( 350,  true,  true,     false);
+            this.checkResult( 650,  true,  true,     true);
         }
     }
 
@@ -109,10 +115,26 @@ export class LegalScore {
         const nsMap = (!nsvul ? this.scoreMapNotVul : this.scoreMapVul);
         const ewMap = (!ewvul ? this.scoreMapNotVul : this.scoreMapVul);
         const retval: boolean = (nsSet.has(score) || ewSet.has(-1*score));
-        if (this.debug) console.log(score, nsvul, ewvul, retval, nsMap.get(score), ewMap.get(-1*score));
+        // if (this.debug) console.log(score, nsvul, ewvul, retval, nsMap.get(score), ewMap.get(-1*score));
         // console.log(score, nsvul, ewvul, retval);
         return retval;
     }
+
+    checkResult(nsScore:number, nsvul:boolean, ewvul:boolean, expected:boolean) {
+        const result: boolean = this.checkNSScoreLegal(nsScore, nsvul, ewvul);
+        console.assert(result === expected,
+                       `checkNSScoreLegal Assertion Error for (${nsScore},${nsvul},${ewvul}), expected ${expected}`);
+        if (result && !expected) {
+            const nsMap = (!nsvul ? this.scoreMapNotVul : this.scoreMapVul);
+            const ewMap = (!ewvul ? this.scoreMapNotVul : this.scoreMapVul);
+            const nsMapFound = nsMap.get(nsScore);
+            const ewMapFound = ewMap.get(-1*nsScore);
+            if (nsMapFound) console.log('nsMapFound: ', nsMapFound);
+            if (ewMapFound) console.log('ewMapFound: ', ewMapFound);
+        }
+        
+    }
+    
 } // end of class
 
 

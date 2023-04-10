@@ -3,7 +3,7 @@ import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { Router, ActivatedRoute } from '@angular/router';
-import { LegalScore } from './legalscore';
+import { LegalScore } from '../legal-score/legal-score.service';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
 
 const nsEndBoardMarker: number = -1;
@@ -22,7 +22,6 @@ export class ScoreEntryComponent implements AfterViewInit {
     inputElement: any = 1;
     inputLine: string = ' ';
     lastInput: string = '';
-    legalScoreObj : LegalScore = new LegalScore();
     errmsg: string = '  ';
     @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLInputElement>;
@@ -36,6 +35,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     escapedFromUnbalanced: boolean = false;
     
     constructor(private gameDataPtr: GameDataService,
+                private _legalScore: LegalScore,
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,)  {
         // console.log(`in constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
@@ -235,7 +235,7 @@ export class ScoreEntryComponent implements AfterViewInit {
         const bdobj: BoardObj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
         const vulNS = bdobj.vulNS;
         const vulEW = bdobj.vulEW;
-        return this.legalScoreObj.checkNSScoreLegal(newScore, vulNS, vulEW);
+        return this._legalScore.checkNSScoreLegal(newScore, vulNS, vulEW);
     }
 
     getBoardPlays(bdnum: number): Map<number, BoardPlay> {

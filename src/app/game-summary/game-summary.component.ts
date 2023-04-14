@@ -93,10 +93,10 @@ export class GameSummaryComponent {
             }
         });
 
-      
+       
         // testing , show records
-        if (debug) this.summaryText += `
-        =====================`;
-        this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
+        if (fullyEnteredBoards !== 0) {
+            this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
+        }
     }
 }

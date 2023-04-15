@@ -1,0 +1,41 @@
+<div>
+    <button id="gameNew" class="gameTypeButton" value="New" name="gameType" (click)="gameTypeButtonClick($event)">
+        Setup New Game
+    </button>
+</div>
+<div>
+    <button id="gameLoad" class="gameTypeButton" value="Load" name="gameType"  (click)="gameTypeButtonClick($event)">
+        Load Existing Game
+    </button>
+</div>
+
+<dialog class="px20" #newGameDialog>
+    <form [formGroup]="newGameForm" (ngSubmit)="onNewGameFormSubmit()">
+        <div class="dialog-div">
+            <label for="gameName"> Game FileName </label>
+            <input type="text" id="gameName" name="gameName" formControlName="gameName" >
+        </div>
+        <div class="dialog-div">
+            <label for="movement"> Movement:  </label>
+            <select type="text" id="movement" name="movement" formControlName="movement" >
+              <!--  <option> 2 Table Howell </option> -->
+                <option value="HCOLONEL"> 3 Table Howell, no board sharing </option>
+                <option value="H0407X"> 4 Table Howell </option>
+            </select>
+        </div>
+        <ng-container *ngIf="totBoardsArray.length > 0">
+            <div >
+                <label for="totBoards"> Total Boards:  </label>
+                <select type="text" [(ngModel)]="totBoardsSelect" id="totBoards" name="totBoards" formControlName="totBoards"  >
+                    <option *ngFor="let tot of totBoardsArray; index as idx"
+                            [value]="tot">
+                        {{tot}}
+                    </option>
+                </select>
+            </div>
+        </ng-container>
+        <div>
+            <button style="margin-top:2rem"> Submit </button>
+        </div>
+    </form>
+</dialog>

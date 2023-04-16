@@ -121,6 +121,7 @@ export class ScoreEntryComponent implements AfterViewInit {
             // build the modal dialog box info
             let defaultNextBoard: number = 0;
             this.boardsToDoMsg = '';
+            console.log('boardObjs len: ', Array.from(this.gameDataPtr.boardObjs.values()).length);
             Array.from(this.gameDataPtr.boardObjs.values()).forEach( bdobj => {
                 if (!bdobj.allPlaysEntered) {
                     this.boardsToDoMsg += ` ${bdobj.bdnum}`;
@@ -133,6 +134,7 @@ export class ScoreEntryComponent implements AfterViewInit {
             this.gotoBoardDialog.nativeElement.onclose = () => {
                 if (!this.dialogClosedByEnter) {
                     // dialog was closed via escape key
+                    // this.gameDataPtr.testSerAndDeser();
                     this._router.navigate(["/status"]);
                 }
             };

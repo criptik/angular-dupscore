@@ -2,8 +2,6 @@
     <button id="gameNew" class="gameTypeButton" value="New" name="gameType" (click)="gameTypeButtonClick($event)">
         Setup New Game
     </button>
-</div>
-<div>
     <button id="gameLoad" class="gameTypeButton" value="Load" name="gameType"  (click)="gameTypeButtonClick($event)">
         Load Existing Game
     </button>
@@ -13,7 +11,7 @@
     <form [formGroup]="newGameForm" (ngSubmit)="onNewGameFormSubmit()">
         <div class="dialog-div">
             <label for="gameName"> Game FileName </label>
-            <input type="text" id="gameName" name="gameName" formControlName="gameName" >
+            <input type="text" [(ngModel)]="gameNameInput" id="gameName" name="gameName" formControlName="gameName" >
         </div>
         <div class="dialog-div">
             <label for="movement"> Movement:  </label>
@@ -24,7 +22,7 @@
             </select>
         </div>
         <ng-container *ngIf="totBoardsArray.length > 0">
-            <div >
+            <div class="dialog-div">
                 <label for="totBoards"> Total Boards:  </label>
                 <select type="text" [(ngModel)]="totBoardsSelect" id="totBoards" name="totBoards" formControlName="totBoards"  >
                     <option *ngFor="let tot of totBoardsArray; index as idx"

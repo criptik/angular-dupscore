@@ -16,8 +16,6 @@ export class BoardPlay {
     nsScore:number;
     kindNS:string = '';
     kindEW:string = '';
-    nsMP: number|null = null;
-    ewMP: number|null = null;
     
     constructor(nsPair: number, ewPair: number, round: number) {
         this.nsPair = nsPair;
@@ -31,7 +29,6 @@ export class BoardPlay {
         this.kindNS = kindNS;
         this.kindEW = kindEW;
     }
-    
 }
 
 type NNMap = Map<number, number>;
@@ -178,6 +175,11 @@ export class Person {
         this.first = first;
         this.last = last;
     }
+
+    matches(otherPerson: Person) {
+        return (this.first === otherPerson.first && this.last === otherPerson.last);
+    }
+    
 }
 
 export class Pair {
@@ -205,10 +207,10 @@ export class GameDataService {
     // for current testing, just set some data here
     // later these will be derived from the game setup info and the .MOV file
 
-    // movFileName: string = 'HCOLONEL.MOV';
-    movFileName: string = 'H0407X.MOV';
+    gameFileName: string = '';
+    movFileName: string = '';
     // user will eventually specify the boards per round
-    boardsPerRound: number = 2;
+    boardsPerRound: number = 0;
     // other stuff is derived from the .MOV file
     numPairs: number = 0;
     numTables: number = 0;
@@ -226,9 +228,19 @@ export class GameDataService {
         private _serializer: SerializerService,
     ) {
         // console.log('in game-data.service constructor');
+        // const str: string = this.doSerialize();
+        // console.log('serialized:', str);
+        // const newobj: GameDataService = this._serializer.deserialize(str, [
+        //     'Pair',
+        //     'Person',
+        //     'BoardObj',
+        //     'BoardPlay',
+        //     'GameDataService',
+        // ]);
+        // console.log('new deserialized:', newobj);
     }
 
-    parseAbuf(abuf: ArrayBuffer) {
+    parseAbuf(abuf: ArrayBuffer, totBoards: number) {
         // now set up ui8ary, datstart
         console.log(`abuf=${abuf}, len=${abuf.byteLength}`);
         const ui8ary : Uint8Array = new Uint8Array(abuf);
@@ -248,14 +260,15 @@ export class GameDataService {
         console.log(`datstart=${datstart}`);
         let idx = datstart;
         this.numRounds = (datsiz / this.numTables) / 3;
-        const bprmap: NNMap = new Map([[10, 2], [7, 3], [3, 6]]);
-        this.boardsPerRound = bprmap.get(this.numRounds) as number;
-        this.numBoards = this.numRounds * this.boardsPerRound;
+        this.numBoards = totBoards;
+        this.boardsPerRound = this.numBoards / this.numRounds;
+        
         // create the BoardInfo objects
         _.range(1, this.numBoards+1).forEach(bdnum => {
             const bdobj = new BoardObj(bdnum);
             this.boardObjs.set(bdnum, bdobj);
         });
+        
         // console.log(this.boardObjs.get(1).boardPlays);
         // inspect the triplets to determine the maximum pair #
         
@@ -277,7 +290,8 @@ export class GameDataService {
             });
         });
     }
-    
+
+    // not used but kept here for reference
     Initialize2() {
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
             // console.log('in subscribe, res=', res, typeof res);
@@ -291,18 +305,14 @@ export class GameDataService {
         });
     }
 
-    async Initialize() {
+    async Initialize(gameName: string, movement: string, totBoards: number) {
         console.log('in Initialize');
+        this.gameFileName = gameName;
+        this.movFileName = `${movement}.MOV`;
+        
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
-            // console.log('in subscribe, res=', res, typeof res);
-            // const reader = new FileReader();
-            // const awres: Blob = res.body as Blob;
-            // reader.readAsDataURL(awres);
-            // console.log('awres', awres, typeof awres);
-            // console.log('awres.text', await awres.slice(0));
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
-            // console.log(`before parseAbuf`);
-            this.parseAbuf(abuf);
+            this.parseAbuf(abuf, totBoards);
             
             // now set a variable so the other users know we are setup
             this.gameDataSetup = true;
@@ -315,11 +325,19 @@ export class GameDataService {
         };
     }
 
+    // testing, try to serialize and deserialize
+    testSerAndDeser() {
+        const jsonStr = this.doSerialize();
+        // console.log('jsonStr', jsonStr);
+        this.doDeserialize(jsonStr);
+        console.log('deserialized', this);
+    }
+    
     doSerialize(): string {
-        return this._serializer.serialize(this, ['InjectionToken', 'R3Injector']);
+        return this._serializer.serialize(this, ['SerializerService', 'InjectionToken', 'R3Injector']);
     }
     doDeserialize(JSONStr: string) {
-        const newobj: GameDataService = this._serializer.deserialize(JSONStr, [
+        const newobj: Object = this._serializer.deserialize(JSONStr, [
             'Pair',
             'Person',
             'BoardObj',
@@ -327,7 +345,8 @@ export class GameDataService {
             'GameDataService',
         ]);
         // console.log('new deserialized:', newobj);
-        newobj.http = this.http;
+        // newobj.http = this.http;
+        // newobj._serializer = this._serializer;
         Object.assign(this, newobj);
     }
 

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { GameDataService } from './game-data/game-data.service';
 
 @Component({
     selector: 'app-root',
@@ -7,4 +8,8 @@ import { Component } from '@angular/core';
 })
 
 export class AppComponent {
+    
+    constructor(public gameDataPtr: GameDataService) {
+    }
+    
 }

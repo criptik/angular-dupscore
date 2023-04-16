@@ -20,21 +20,26 @@ export class NamesEntryComponent implements AfterViewInit {
     pairNumArray: number[] = [];
     pairNameStrArray: string[] = [];
 
-    allNames :Person[] = [
-        new Person('Linda', 'James'),
-        new Person('Fred', 'James'),
-        new Person('Tom', 'Jackson'),
-        new Person('Linda', 'Jackson'),
-        new Person('Chris', 'Farley'),
-        new Person('Don', 'Johnson'),
-        new Person('Linda', 'Johnson'),
-        new Person('Tom', 'Johnson'),
+    locStorageKey: string = 'dupscore-Names';
+    
+    allNames :Person[] = [];
+    
+
+    allNamesSeed: Person[] = [
         new Person('Tom', 'Deneau'),
         new Person('Gul', 'Deneau'),
-        new Person('Kam', 'Harris'),
+        new Person('Kamala', 'Harris'),
         new Person('Joe', 'Biden'),
         new Person('Amy', 'Seitz'),
         new Person('Dan', 'Seitz'),
+        new Person('Sandy', 'Worley'),
+        new Person('Dennis', 'Worley'),
+        new Person('McMillen', 'Evelyn'),
+        new Person('Roebuck', 'Ernie'),
+        new Person('McColl', 'Kathy'),
+        new Person('McColl', 'Joel'),
+        new Person('Hamman', 'Mary Dee'),
+        new Person('Davis', 'David'),
     ];
     
     allLastNames: string[] = [];
@@ -45,8 +50,8 @@ export class NamesEntryComponent implements AfterViewInit {
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,
                 private _serializer: SerializerService, )  {
-        console.log(this.allNames);
-        console.log(this._serializer.serialize(this.allNames));
+        // console.log(this.allNames);
+        // console.log(this._serializer.serialize(this.allNames));
     }
 
     onMyCompleterKeyUp(x: any) {
@@ -58,7 +63,7 @@ export class NamesEntryComponent implements AfterViewInit {
     
     
     onNameButtonClick(x: any) {
-        console.log('target.id', x.target.id);
+        // console.log('target.id', x.target.id);
         // parse number from id which is nameXX
         const pairnum = this.parseNumberFrom(x.target.id);
         this.nameEntryDialogHeader = `Names for Pair ${pairnum}`;
@@ -72,6 +77,17 @@ export class NamesEntryComponent implements AfterViewInit {
             return nameStr;
         });
     }
+
+    fillAllNames() {
+        const jsonStr: string = window.localStorage.getItem(this.locStorageKey) ?? '';
+        if (jsonStr === '') {
+            this.allNames = this.allNamesSeed;
+        }
+        else {
+            this.allNames = this._serializer.deserialize(jsonStr, ['Person']);
+        }
+        console.log(this.allNames);
+    }
     
     ngOnInit() {
         // when this is called, parent is all setup
@@ -80,19 +96,23 @@ export class NamesEntryComponent implements AfterViewInit {
             this._router.navigate(["/status"]);
             return;
         }
+
+        // read in the Name DataBase, or seed if not there
+        this.fillAllNames();
+        
         this.pairNumArray = _.range(1, this.gameDataPtr.numPairs+1);
         this.updatePairNameStrArray();
         
         // for testing name completion
         this.allLastNames = _.uniq(this.allNames.map( person => person.last));
-        console.log('allLast', this.allLastNames);
+        // console.log('allLast', this.allLastNames);
         this.lastFirstMap = new Map();
         this.allNames.forEach( (person) => {
             const anow = this.lastFirstMap.get(person.last) ?? [];
             anow.push(person.first);
             this.lastFirstMap.set(person.last, anow);
         });
-        console.log('lastFirstMap', this.lastFirstMap);
+        // console.log('lastFirstMap', this.lastFirstMap);
         
     }
 
@@ -140,6 +160,14 @@ export class NamesEntryComponent implements AfterViewInit {
     onFirstNameFocus(x: any) {
         this.genFirstNameCompletionList(x);
     }
+
+    addToAllNames(player: Person) {
+        // add it if it is not already there
+        const notIn: boolean = this.allNames.every( (curPerson) => !curPerson.matches(player));
+        if (notIn) {
+            this.allNames.push(player);
+        }
+    }
     
     onDialogOKClick(x: any) {
         // here we will copy out the fields
@@ -147,11 +175,13 @@ export class NamesEntryComponent implements AfterViewInit {
         const playerA: Person = new Person(this.firstName1.nativeElement.value, this.lastName1.nativeElement.value);
         const playerB: Person = new Person(this.firstName2.nativeElement.value, this.lastName2.nativeElement.value);
         const newPair = new Pair(playerA, playerB);
+        this.addToAllNames(playerA);
+        this.addToAllNames(playerB);
         this.gameDataPtr.pairNameMap.set(pairnum, newPair);
-        console.log(newPair);
+        // console.log(newPair);
         this.nameEntryDialog.nativeElement.close();
         this.updatePairNameStrArray();
+        window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
     }
-    
 }
 

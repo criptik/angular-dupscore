@@ -1,11 +1,11 @@
 .gameTypeButton {
-    font-size: 25px;
+    font-size: 18px;
     padding: 1rem;
-    margin: 1rem;
-    min-width: 20rem; 
+    margin: 0.5rem;
+    min-width: 12rem; 
 }
 
-.px20, select {
+.px20, .px20 input, .px20 select, .px20 button{
     font-size: 25px;
 }
 

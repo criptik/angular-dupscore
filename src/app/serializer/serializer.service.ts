@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
+import {Pair, Person, BoardObj, BoardPlay, GameDataService} from '../game-data/game-data.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SerializerService {
     debug: boolean = false;
-
-    constructor() { }
+    // testp: Person;
+    
+    constructor() {
+        // this.testp = Function('return new Person('a','b');')
+    }
 
     dbglog(str: string) {
         if (this.debug) console.log(str);
@@ -42,10 +46,30 @@ export class SerializerService {
                     value = new Map(value.__entries);
                     delete value.__entries;
                 } else if (includedClasses.includes(vtype)) {
-                    const newobj = eval(`new ${vtype}()`);
+                    let newobj: Object;
+                    switch (vtype) {
+                        case 'Person':
+                            newobj = new Person('x','y');
+                            break;
+                        case 'Pair':
+                            newobj = new Pair(new Person('x','y'), new Person('x','y'));
+                            break;
+                        case 'BoardObj':
+                            newobj = new BoardObj(1);
+                            break;
+                        case 'BoardPlay':
+                            newobj = new BoardPlay(1,2,3);
+                            break;
+                        case 'GameDataService':
+                            newobj = {};
+                            break;
+                        default:
+                            newobj = {};
+                    }
+                    // console.log('includedClass', value.__type, newobj);
+                    delete value.__type;
                     value = Object.assign(newobj, value);
                 }
-                delete value.__type;
             }
             return value;
         });

@@ -1,16 +1,18 @@
 import { Component } from '@angular/core';
 import { GameDataService, BoardObj } from './game-data.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
-     selector: 'app-game-data',
-     templateUrl: './game-data.component.html',
-     styleUrls: ['./game-data.component.css']
+    selector: 'app-game-data',
+    templateUrl: './game-data.component.html',
+    styleUrls: ['./game-data.component.css']
 })
 export class GameDataComponent {
     statusText: string[] = ['Not Initialized', 'Yet'];
     serializeText: string = '';
     
-    constructor(private gameDataPtr: GameDataService) {
+    constructor(private gameDataPtr: GameDataService,
+                private _router: Router) {
         // console.log(`in gameDataComponent.constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`);
     }
 
@@ -18,9 +20,7 @@ export class GameDataComponent {
         const p: GameDataService = this.gameDataPtr;
         // temporarily we just automatically invoke the setup the first time
         if (!p.gameDataSetup) {
-            // console.log(`in gameDataComponent.ngOnInit before Initialize, gameDataSetup = ${p.gameDataSetup}`);
-            const prom = await this.gameDataPtr.Initialize();
-            // console.log(`in gameDataComponent.ngOnInit after Initialize, prom=${prom}, gameDataSetup = ${p.gameDataSetup}`);
+            this._router.navigate(["/setup"]);
         }
         const countBoardsScored = Array.from(p.boardObjs.values()).reduce ((tot, boardObj) => {
             return tot + (boardObj.allPlaysEntered ? 1 : 0);

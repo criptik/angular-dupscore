@@ -350,6 +350,15 @@ export class GameDataService {
         Object.assign(this, newobj);
     }
 
+    saveToLocalStorage() {
+        window.localStorage.setItem(`game-${this.gameFileName}`, this.doSerialize());
+    }
+
+    getFromLocalStorage(gameFileName: string) {
+        const jsonStr: string = window.localStorage.getItem(`game-${gameFileName}`) ?? '';
+        this.doDeserialize(jsonStr);
+    }
+
 }
 
 

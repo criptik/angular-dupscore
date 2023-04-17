@@ -5,6 +5,7 @@ import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LegalScore } from '../legal-score/legal-score.service';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
+import * as _ from 'lodash';
 
 const nsEndBoardMarker: number = -1;
 
@@ -135,6 +136,8 @@ export class ScoreEntryComponent implements AfterViewInit {
                 if (!this.dialogClosedByEnter) {
                     // dialog was closed via escape key
                     // this.gameDataPtr.testSerAndDeser();
+                    this.gameDataPtr.saveToLocalStorage();
+                    _.range(window.localStorage.length).forEach( n=> console.log(n, window.localStorage.key(n)));
                     this._router.navigate(["/status"]);
                 }
             };

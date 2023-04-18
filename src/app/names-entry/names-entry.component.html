@@ -6,34 +6,33 @@
             </button>
         </div>
     </ng-container>
-    
-    <dialog class="px20" #nameEntryDialog>
-    <section>
-        <p>
-            {{ nameEntryDialogHeader }}
-        </p>
-        <pre>
-      LAST                       FIRST
-        </pre>
-        1
-        <input class="px20" type="text" id="lastName1" name="last1" list="nameCompleterList" #lastName1
-               (keyup)="onLastNameInputKeyUp($event)" (focus)="onLastNameFocus($event)" autocomplete="off"
-        />
-        <input class="px20" type="text" id="firstName1" name="first1" list="nameCompleterList" #firstName1
-               (keyup)="onFirstNameInputKeyUp($event)" (focus)="onFirstNameFocus($event)" autocomplete="off">
-        <br/>
-        2
-        <input class="px20" type="text" id="lastName2" name="last2" list="nameCompleterList" #lastName2
-               (keyup)="onLastNameInputKeyUp($event)" (focus)="onLastNameFocus($event)" autocomplete="off"
-        />
-        <input class="px20" type="text" id="firstName2" name="first2" list="nameCompleterList" #firstName2
-               (keyup)="onFirstNameInputKeyUp($event)" (focus)="onFirstNameFocus($event)" autocomplete="off">
+</div>
 
-        <datalist id="nameCompleterList">
-            <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
-        </datalist>
-        <p>
-            <button class="px30" id="dialogOK" #dialogOK (click)="onDialogOKClick($event)"> OK </button>
-        </p>
-    </section>
-</dialog>
+    <dialog class="px20" #nameEntryDialog>
+        <form [formGroup]="nameEntryForm" id="nameEntryForm" (submit)="onNameEntryFormSubmit()">
+            <p>
+                {{ nameEntryDialogHeader }}
+            </p>
+            <pre>
+      LAST                       FIRST
+            </pre>
+            1
+            <input class="px20" type="text" id="lastName1" name="lastName1" formControlName="lastName1" list="nameCompleterList"
+                   (focus)="onLastNameFocus($event)" autocomplete="off">
+            <input class="px20" type="text" id="firstName1" name="firstName1" formControlName="firstName1" list="nameCompleterList"
+                   (focus)="onFirstNameFocus($event)"  autocomplete="off">
+            <br/>
+            2
+            <input class="px20" type="text" id="lastName2" name="lastName2" formControlName="lastName2" list="nameCompleterList"
+                   (focus)="onLastNameFocus($event)" autocomplete="off" >
+            <input class="px20" type="text" id="firstName2" name="firstName2" formControlName="firstName2" list="nameCompleterList"
+                   (focus)="onFirstNameFocus($event)"  autocomplete="off">
+            
+            <datalist id="nameCompleterList">
+                <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
+            </datalist>
+            <p>
+                <button type="submit" form="nameEntryForm" class="px30"> Submit </button>
+            </p>
+        </form>
+    </dialog>

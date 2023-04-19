@@ -177,7 +177,12 @@ export class Person {
     }
 
     matches(otherPerson: Person) {
+        // console.log(`matching ${this.toString()} vs. ${otherPerson.toString()}`);
         return (this.first === otherPerson.first && this.last === otherPerson.last);
+    }
+
+    toString() {
+        return `${this.first} ${this.last}`;
     }
     
 }
@@ -191,7 +196,7 @@ export class Pair {
     }
 
     fullString(): string {
-        return `${this.A.first} ${this.A.last} - ${this.B.first} ${this.B.last}`;
+        return `${this.A.toString()} - ${this.B.toString()}`;
     }
     
     shortString(): string {

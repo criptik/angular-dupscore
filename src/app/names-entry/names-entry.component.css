@@ -15,3 +15,6 @@ button.px30 {
 input.px20 {
     width: 20rem;
 }
+.error-msg-alert {
+    color: red;
+}

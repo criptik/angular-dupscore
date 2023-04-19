@@ -31,6 +31,10 @@
             <datalist id="nameCompleterList">
                 <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
             </datalist>
+
+            <div *ngFor="let msg of formErrorMsgAry" class="error-msg-alert">
+                {{msg}}
+            </div>
             <p>
                 <button type="submit" form="nameEntryForm" class="px30"> Submit </button>
             </p>

@@ -5,15 +5,18 @@ import { GameDataService, Person, Pair } from '../game-data/game-data.service';
 import { SerializerService } from '../serializer/serializer.service';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule,
          AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {trigger, state, style, animate, transition} from '@angular/animations';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'app-names-entry',
     templateUrl: './names-entry.component.html',
-    styleUrls: ['./names-entry.component.css']
+    styleUrls: ['./names-entry.component.css'],
 })
+
 export class NamesEntryComponent implements AfterViewInit {
     @ViewChild('nameEntryDialog') nameEntryDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('swapPairsDialog') swapPairsDialog!: ElementRef<HTMLDialogElement>;
     nameEntryDialogHeader: string = '';
     pairNumArray: number[] = [];
     pairNameStrArray: string[] = [];
@@ -21,7 +24,7 @@ export class NamesEntryComponent implements AfterViewInit {
     locStorageKey: string = 'dupscore-Names';
     
     allNames :Person[] = [];
-    
+    swapPairFirst: number = 0;
 
     allNamesSeed: Person[] = [
         new Person('Tom', 'Deneau'),
@@ -52,6 +55,11 @@ export class NamesEntryComponent implements AfterViewInit {
         firstName2:  new FormControl(),
     });
 
+    swapPairsForm = new FormGroup({
+        pair1:  new FormControl(),
+        pair2:  new FormControl(),
+    });
+
     formErrorMsgAry: string[] = [];
 
     constructor(private gameDataPtr: GameDataService,
@@ -68,10 +76,20 @@ export class NamesEntryComponent implements AfterViewInit {
     
     
     onNameButtonClick(x: any) {
+        this.swapPairFirst = 0;
         // console.log('target.id', x.target.id);
         // parse number from id which is nameXX
         const pairnum = this.parseNumberFrom(x.target.id);
         this.nameEntryDialogHeader = `Names for Pair ${pairnum}`;
+        // seed form if names already exist for that pair
+        const checkPair: Pair|null|undefined = this.gameDataPtr.pairNameMap.get(pairnum);
+        if (checkPair) {
+            this.nameEntryForm.get('lastName1')?.setValue( checkPair.A.last );
+            this.nameEntryForm.get('firstName1')?.setValue( checkPair.A.first );
+            this.nameEntryForm.get('lastName2')?.setValue( checkPair.B.last );
+            this.nameEntryForm.get('firstName2')?.setValue( checkPair.B.first );
+        }
+        
         this.nameEntryForm.get('lastName1')?.valueChanges.subscribe( curInput => this.genLastNameCompletionList(curInput, 1) );
         this.nameEntryForm.get('lastName2')?.valueChanges.subscribe( curInput => this.genLastNameCompletionList(curInput, 2) );
         this.nameEntryForm.get('firstName1')?.valueChanges.subscribe( curInput => this.genFirstNameCompletionList(curInput, 1) );
@@ -80,6 +98,37 @@ export class NamesEntryComponent implements AfterViewInit {
         this.nameEntryDialog.nativeElement.showModal();
     }
 
+    swapPairs(firstPair: number, secondPair: number) {
+        console.log(`swapping pairs ${firstPair}, ${secondPair}`);
+        const pairA: Pair|undefined = this.gameDataPtr.pairNameMap.get(firstPair);
+        const pairB: Pair|undefined = this.gameDataPtr.pairNameMap.get(secondPair);
+        if (pairA) {
+            this.gameDataPtr.pairNameMap.set(secondPair, pairA);
+        }
+        else {
+            this.gameDataPtr.pairNameMap.delete(secondPair);
+        }
+        if (pairB) {
+            this.gameDataPtr.pairNameMap.set(firstPair, pairB);
+        }
+        else {
+            this.gameDataPtr.pairNameMap.delete(firstPair);
+        }
+        this.updatePairNameStrArray();
+    }
+    
+    onNameButtonRightClick(x: any) {
+        const pairnum = this.parseNumberFrom(x.target.id);
+        if (this.swapPairFirst === 0) {
+            this.swapPairFirst = pairnum;
+            console.log(`setting swapPairFirst to ${this.swapPairFirst}`);
+        }
+        else {
+            this.swapPairs(this.swapPairFirst, pairnum);
+            this.swapPairFirst = 0;
+        }
+        return false;
+    }
     
     // returns pair number if Person name already in pairMap
     personAlreadyInPairNameMap(checkPerson: Person): number {
@@ -127,7 +176,6 @@ export class NamesEntryComponent implements AfterViewInit {
         this.fillAllNames();
         
         this.pairNumArray = _.range(1, this.gameDataPtr.numPairs+1);
-        this.updatePairNameStrArray();
         
         // for testing name completion
         this.allLastNames = _.uniq(this.allNames.map( person => person.last));
@@ -145,6 +193,10 @@ export class NamesEntryComponent implements AfterViewInit {
         const playerB: Person = new Person('Gul', 'Deneau');
         const newPair = new Pair(playerA, playerB);
         this.gameDataPtr.pairNameMap.set(1, newPair);
+        const playerA2: Person = new Person('Joe', 'Biden');
+        const playerB2: Person = new Person('Kamala', 'Harris');
+        const newPair2 = new Pair(playerA2, playerB2);
+        this.gameDataPtr.pairNameMap.set(4, newPair2);
         this.updatePairNameStrArray();
     }
 
@@ -154,7 +206,7 @@ export class NamesEntryComponent implements AfterViewInit {
     genLastNameCompletionList(curInput: string|null, id: number) {
         // console.log('genLastNameCompletionList', curInput, id);
         if (curInput === null) return;
-        if (curInput.length >= 2) {
+        if (curInput.length >= 3) {
             const completionList: string[] = this.allLastNames.filter( name =>
                 name.toUpperCase().startsWith(curInput.toUpperCase()));
             this.nameCompletion = completionList;
@@ -261,8 +313,20 @@ export class NamesEntryComponent implements AfterViewInit {
         window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
     }
 
+    onSwapPairsButtonClick(x: any) {
+        this.swapPairsDialog.nativeElement.showModal();
+    }
+    
+    onSwapPairsFormSubmit() {
+        const pair1: number|null|undefined = this.swapPairsForm.get('pair1')?.value;
+        const pair2: number|null|undefined = this.swapPairsForm.get('pair2')?.value;
+        if (!pair1 || !pair2) return;
+        const pairAry: number[] = _.range(1, this.gameDataPtr.numPairs + 1);
+        if (!pairAry.includes(pair1) || !pairAry.includes(pair2)) return;
+    }
+
+    // notInUseValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => { 
 
 }
 
-// notInUseValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => { 
 

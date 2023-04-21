@@ -1,13 +1,28 @@
 <div>
+    <br/>
+    <br/>
+    <div>
+        Use right-click to swap pairs...
+    </div>
+    <br/>
+    <br/>
     <ng-container  *ngFor="let pairnum of pairNumArray">
         <div>
-            <button id="{{'name' + pairnum}}" class="px30" (click)="onNameButtonClick($event)">
+            <ng-container *ngIf="swapPairFirst===pairnum"> --> </ng-container>            
+            <button id="{{'name' + pairnum}}"
+                    (click)="onNameButtonClick($event)"
+                    (contextmenu)="onNameButtonRightClick($event)"
+                    [attr.class]="swapPairFirst===pairnum ? 'px30 highlighted' : 'px30'"
+            >
                 {{pairnum}}&nbsp;&nbsp;&nbsp;&nbsp;{{pairNameStrArray[pairnum-1]}}
             </button>
         </div>
     </ng-container>
 </div>
 
+<!--
+     <button class="px20" (click)="onSwapPairsButtonClick($event)"> Swap Pairs </button>
+-->
     <dialog class="px20" #nameEntryDialog>
         <form [formGroup]="nameEntryForm" id="nameEntryForm" (submit)="onNameEntryFormSubmit()">
             <p>
@@ -23,7 +38,7 @@
                    (focus)="onFirstNameFocus($event)"  autocomplete="off">
             <br/>
             2
-            <input class="px20" type="text" id="lastName2" name="lastName2" formControlName="lastName2" list="nameCompleterList"
+            <input class="px20" type="text" id="lastName2" name="lastName2" formControlName="lastName2" e list="nameCompleterList"
                    (focus)="onLastNameFocus($event)" autocomplete="off" >
             <input class="px20" type="text" id="firstName2" name="firstName2" formControlName="firstName2" list="nameCompleterList"
                    (focus)="onFirstNameFocus($event)"  autocomplete="off">
@@ -40,3 +55,12 @@
             </p>
         </form>
     </dialog>
+
+    <div>
+        <dialog class="px20" #swapPairsDialog>
+            <form [formGroup]="swapPairsForm" id="swapPairsForm" (submit)="onSwapPairsFormSubmit()">
+                Swap Pair <input class="swap-input" type="text" id="pair1" name="pair1" formControlName="pair1">
+                with <input  class="swap-input" type="text" id="pair2" name="pair2" formControlName="pair2">
+            </form>
+        </dialog>
+    </div>

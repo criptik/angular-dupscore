@@ -1,6 +1,15 @@
 .px30 {
     font-size:30px;
 }
+
+.blinky {
+  animation: blink 1s infinite;
+}
+
+.highlighted {
+    background-color: yellow;
+}
+
 .px20 {
     font-size:20px;
     margin: 10px;
@@ -8,13 +17,18 @@
 button.px20 {
     margin:20px;
 }
-button.px30 {
+button.px30, button.p30-blinky {
     width: 40rem;
     text-align: left;
 }
 input.px20 {
     width: 20rem;
 }
+.swap-input {
+    width: 2rem;
+    font-size: 20px;
+}
+
 .error-msg-alert {
     color: red;
 }

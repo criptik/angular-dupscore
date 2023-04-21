@@ -27,9 +27,10 @@ export class GameDataComponent {
         }, 0);
         
         this.statusText = [
-        `Movement File: ${p.movFileName}`,
+            `Movement File: ${p.movFileName}`,
         `${p.numTables} Tables, ${p.numPairs} Pairs, (Top on Board is ${p.boardTop})`,
         `${p.numBoards} Boards, (${p.numRounds} Rounds, ${p.boardsPerRound} Boards Per Round)`,
+        `${p.pairNameMap.size} Pair Names Entered out of ${p.numPairs}`,
         `${countBoardsScored === 0 ? 'No' : countBoardsScored} Board${countBoardsScored === 1 ? '' : 's'} Scored so far`,
         ];
 

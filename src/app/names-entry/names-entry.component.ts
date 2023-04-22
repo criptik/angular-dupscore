@@ -18,8 +18,8 @@ export class NamesEntryComponent implements AfterViewInit {
     @ViewChild('nameEntryDialog') nameEntryDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('swapPairsDialog') swapPairsDialog!: ElementRef<HTMLDialogElement>;
     nameEntryDialogHeader: string = '';
-    pairNumArray: number[] = [];
-    pairNameStrArray: string[] = [];
+    pairNameStrArrayNS: string[] = [];
+    pairNameStrArrayEW: string[] = [];
 
     locStorageKey: string = 'dupscore-Names';
     
@@ -46,23 +46,27 @@ export class NamesEntryComponent implements AfterViewInit {
     allLastNames: string[] = [];
     nameCompletion: string[] = [];
     lastFirstMap: Map<string, string[]> = new Map();
-    exactArrays: Map<number, string[]> = new Map();
+    exactArraysLastName: Map<number, string[]> = new Map();
+    exactArraysFirstName: Map<number, string[]> = new Map();
 
     nameEntryForm = new FormGroup({
-        lastName1:  new FormControl(),
-        firstName1:  new FormControl(),
-        lastName2:  new FormControl(),
-        firstName2:  new FormControl(),
+        lastName1:  new FormControl(''),
+        firstName1:  new FormControl(''),
+        lastName2:  new FormControl(''),
+        firstName2:  new FormControl(''),
     });
-
+    nameEntryFormPairnum: number = 0;
+    
     swapPairsForm = new FormGroup({
         pair1:  new FormControl(),
         pair2:  new FormControl(),
     });
 
     formErrorMsgAry: string[] = [];
+    blankPair: Pair = new Pair(new Person('', ''), new Person('', ''));
 
-    constructor(private gameDataPtr: GameDataService,
+
+    constructor(public   gameDataPtr: GameDataService,
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,
                 private _serializer: SerializerService, )  {
@@ -70,8 +74,8 @@ export class NamesEntryComponent implements AfterViewInit {
         // this.nameEntryForm.setValidators(this.notInUseValidator);
     }
 
-    parseNumberFrom(str: string): number {
-        return (parseInt(str.replace(/\D/g, '')));
+    pairnumFromId(str: string): number {
+        return (parseInt(str.replace(/[a-zA-Z ]/g, '')));
     }
     
     
@@ -79,16 +83,17 @@ export class NamesEntryComponent implements AfterViewInit {
         this.swapPairFirst = 0;
         // console.log('target.id', x.target.id);
         // parse number from id which is nameXX
-        const pairnum = this.parseNumberFrom(x.target.id);
-        this.nameEntryDialogHeader = `Names for Pair ${pairnum}`;
+        const pairnum = this.pairnumFromId(x.target.id);
+        const pairText: string = (this.gameDataPtr.isHowell ? `${pairnum}` : (pairnum > 0 ? `NS ${pairnum}` : `EW ${-1*pairnum}`));
+        this.nameEntryDialogHeader = `Names for Pair ${pairText}`;
+        this.nameEntryFormPairnum = pairnum;
         // seed form if names already exist for that pair
-        const checkPair: Pair|null|undefined = this.gameDataPtr.pairNameMap.get(pairnum);
-        if (checkPair) {
-            this.nameEntryForm.get('lastName1')?.setValue( checkPair.A.last );
-            this.nameEntryForm.get('firstName1')?.setValue( checkPair.A.first );
-            this.nameEntryForm.get('lastName2')?.setValue( checkPair.B.last );
-            this.nameEntryForm.get('firstName2')?.setValue( checkPair.B.first );
-        }
+        const checkPair: Pair = this.gameDataPtr.pairNameMap.get(pairnum) ?? this.blankPair;
+        // console.log(x.target.id, pairnum, checkPair);
+        this.nameEntryForm.get('lastName1')?.setValue( checkPair.A.last );
+        this.nameEntryForm.get('firstName1')?.setValue( checkPair.A.first );
+        this.nameEntryForm.get('lastName2')?.setValue( checkPair.B.last );
+        this.nameEntryForm.get('firstName2')?.setValue( checkPair.B.first );
         
         this.nameEntryForm.get('lastName1')?.valueChanges.subscribe( curInput => this.genLastNameCompletionList(curInput, 1) );
         this.nameEntryForm.get('lastName2')?.valueChanges.subscribe( curInput => this.genLastNameCompletionList(curInput, 2) );
@@ -118,10 +123,10 @@ export class NamesEntryComponent implements AfterViewInit {
     }
     
     onNameButtonRightClick(x: any) {
-        const pairnum = this.parseNumberFrom(x.target.id);
+        const pairnum = this.pairnumFromId(x.target.id);
         if (this.swapPairFirst === 0) {
             this.swapPairFirst = pairnum;
-            console.log(`setting swapPairFirst to ${this.swapPairFirst}`);
+            // console.log(`setting swapPairFirst to ${this.swapPairFirst}`);
         }
         else {
             this.swapPairs(this.swapPairFirst, pairnum);
@@ -146,11 +151,17 @@ export class NamesEntryComponent implements AfterViewInit {
     }
     
     updatePairNameStrArray() {
-        this.pairNameStrArray = this.pairNumArray.map( pairnum => {
+        this.pairNameStrArrayNS = this.gameDataPtr.pairIdsNS.map( pairnum => {
             const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairnum);
             const nameStr: string = (pairObj ? pairObj.fullString() : '');
             return nameStr;
         });
+        this.pairNameStrArrayEW = this.gameDataPtr.pairIdsEW.map( pairnum => {
+            const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairnum);
+            const nameStr: string = (pairObj ? pairObj.fullString() : '');
+            return nameStr;
+        });
+        // console.log(this.pairNameStrArray);
     }
 
     fillAllNames() {
@@ -174,8 +185,6 @@ export class NamesEntryComponent implements AfterViewInit {
 
         // read in the Name DataBase, or seed if not there
         this.fillAllNames();
-        
-        this.pairNumArray = _.range(1, this.gameDataPtr.numPairs+1);
         
         // for testing name completion
         this.allLastNames = _.uniq(this.allNames.map( person => person.last));
@@ -203,31 +212,36 @@ export class NamesEntryComponent implements AfterViewInit {
     ngAfterViewInit() {
     }
 
+    handleExactCompletionList(id: number, lastFirstStr: string, curInput: string,
+                              completionList: string[], savedExactArrays: Map<number, string[]>) {
+        // keep track of the cases where there is only one entry
+        const exactArray: string[] = savedExactArrays.get(id) ?? [];
+        // console.log('exact', exactArray, completionList[0]);
+        if (completionList.length === 1 && !exactArray.includes(completionList[0]) && curInput !== completionList[0]) {
+            // const control = (id === 1 ? this.nameEntryForm.get('lastName1') : this.nameEntryForm.get('lastName2'));
+            const control = this.nameEntryForm.get(`${lastFirstStr}Name${id}`);
+            control?.setValue(completionList[0] as never);
+            // console.log('set Exact', control, completionList[0]);
+            exactArray.push(completionList[0]);
+            savedExactArrays.set(id, exactArray);
+        }
+    }        
+
     genLastNameCompletionList(curInput: string|null, id: number) {
         // console.log('genLastNameCompletionList', curInput, id);
+        this.nameCompletion = [];
         if (curInput === null) return;
-        if (curInput.length >= 3) {
-            const completionList: string[] = this.allLastNames.filter( name =>
-                name.toUpperCase().startsWith(curInput.toUpperCase()));
-            this.nameCompletion = completionList;
-            // keep track of the cases where there is only one entry
-            const exactArray: string[] = this.exactArrays.get(id) ?? [];
-            // console.log('exact', exactArray, completionList[0]);
-            if (completionList.length === 1 && !exactArray.includes(completionList[0]) && curInput !== completionList[0]) {
-                const control = (id === 1 ? this.nameEntryForm.get('lastName1') : this.nameEntryForm.get('lastName2'));
-                control?.setValue(completionList[0] as never);
-                exactArray.push(completionList[0]);
-                this.exactArrays.set(id, exactArray);
-            }
-        }
-        else {
-            this.nameCompletion = [];
-        }
+        if (curInput.length < 3) return;
+
+        const completionList: string[] = this.allLastNames.filter( name =>
+            name.toUpperCase().startsWith(curInput.toUpperCase()));
+        this.nameCompletion = completionList;
+        this.handleExactCompletionList(id, 'last', curInput, completionList, this.exactArraysLastName)
     }
     
     onLastNameFocus(x: any) {
-        console.log('onLastNameFocus', this.nameEntryForm.errors);
-        this.genLastNameCompletionList(x.target.value, this.parseNumberFrom(x.target.id));
+        // console.log('onLastNameFocus', this.nameEntryForm.errors);
+        this.genLastNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
     }
     
     genFirstNameCompletionList(curInput: string|null, id: number) {
@@ -235,12 +249,17 @@ export class NamesEntryComponent implements AfterViewInit {
         if (curInput === null) return;
         const lastName: string|null|undefined = this.nameEntryForm.get(`lastName${id}`)?.value;
         if (!lastName) return;
-        this.nameCompletion = this.lastFirstMap.get(lastName) ?? [];
+        let completionList: string[] = this.lastFirstMap.get(lastName) ?? [];
+        completionList = completionList.filter( name =>
+            name.toUpperCase().startsWith(curInput.toUpperCase()));
+
+        // console.log('firstNameCompletionList', completionList);
+        this.nameCompletion = completionList;
+        this.handleExactCompletionList(id, 'first', curInput, completionList, this.exactArraysFirstName)
     }
     
     onFirstNameFocus(x: any) {
-        console.log('onLastNameFocus', this.nameEntryForm.errors);
-        this.genFirstNameCompletionList(x.target.value, this.parseNumberFrom(x.target.id));
+        this.genFirstNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
     }
 
     addToAllNames(player: Person) {
@@ -282,7 +301,7 @@ export class NamesEntryComponent implements AfterViewInit {
             const matchPairNum: number = this.personAlreadyInPairNameMap(checkPerson);
             if (matchPairNum !== 0) {
                 const errorstr: string = `${checkPerson.toString()} already in use in pair ${matchPairNum}`;
-                console.log(errorstr);
+                // console.log(errorstr);
                 formErrorMessages.add(errorstr);
             }
         } // for n
@@ -297,7 +316,7 @@ export class NamesEntryComponent implements AfterViewInit {
         }
 
         // here we will copy out the fields
-        const pairnum = this.parseNumberFrom(this.nameEntryDialogHeader);
+        const pairnum = this.nameEntryFormPairnum;
         const playerA: Person = new Person(this.nameEntryForm.value.firstName1!, this.nameEntryForm.value.lastName1!);
         const playerB: Person = new Person(this.nameEntryForm.value.firstName2!, this.nameEntryForm.value.lastName2!);
         const newPair = new Pair(playerA, playerB);

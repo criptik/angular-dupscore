@@ -86,7 +86,7 @@ export class ScoreEntryComponent implements AfterViewInit {
         this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${bdvulStr}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
-        [...Array(this.gameDataPtr.numPairs).keys()].forEach(pair => {
+        [...Array(this.gameDataPtr.numNSPairs).keys()].forEach(pair => {
             this.viewLines[pair+2] = `       ${'--'.repeat(5)}  `; 
         });
         let onEW = 0;
@@ -101,7 +101,7 @@ export class ScoreEntryComponent implements AfterViewInit {
                 arrow = `==>`;
                 onEW = ewPair;
             }
-            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(boardPlay, true)} ${this.scoreStr(boardPlay, false)}  ${ewPair.toString().padStart(2,' ')}    `;
+            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(boardPlay, true)} ${this.scoreStr(boardPlay, false)}  ${Math.abs(ewPair).toString().padStart(2,' ')}    `;
         });
         this.viewLines.push(` `); 
         if (this.onNS !== nsEndBoardMarker) {

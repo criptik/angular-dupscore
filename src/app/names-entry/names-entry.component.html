@@ -1,21 +1,39 @@
 <div>
     <br/>
     <br/>
-    <div>
+    <div class="px20">
         Use right-click to swap pairs...
     </div>
     <br/>
     <br/>
-    <ng-container  *ngFor="let pairnum of pairNumArray">
+    <ng-container *ngIf="!gameDataPtr.isHowell">
+        <pre class="px20">
+         NS                              EW
+        </pre>
+    </ng-container>            
+    <ng-container  *ngFor="let pairnum of gameDataPtr.pairIdsNS">
         <div>
             <ng-container *ngIf="swapPairFirst===pairnum"> --> </ng-container>            
-            <button id="{{'name' + pairnum}}"
+            <button id="{{'pair' + pairnum}}"
                     (click)="onNameButtonClick($event)"
                     (contextmenu)="onNameButtonRightClick($event)"
                     [attr.class]="swapPairFirst===pairnum ? 'px30 highlighted' : 'px30'"
             >
-                {{pairnum}}&nbsp;&nbsp;&nbsp;&nbsp;{{pairNameStrArray[pairnum-1]}}
+                {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayNS[pairnum-1]}}
             </button>
+            <!-- second button if in Mitchell Mode -->
+            <ng-container *ngIf="!gameDataPtr.isHowell">
+                <ng-container *ngIf="swapPairFirst===-1*pairnum"> --> </ng-container>            
+                <button id="{{'pair' + (-1*pairnum)}}"
+                        (click)="onNameButtonClick($event)"
+                        (contextmenu)="onNameButtonRightClick($event)"
+                        [attr.class]="swapPairFirst===(-1*pairnum) ? 'px30 highlighted' : 'px30'"
+                >
+                    {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayEW[pairnum-1]}}
+                </button>
+                
+            </ng-container>            
+            
         </div>
     </ng-container>
 </div>

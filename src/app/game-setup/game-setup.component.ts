@@ -34,6 +34,7 @@ export class GameSetupComponent {
     movMap: Map<string, number[]> = new Map([
         ['HCOLONEL', [20, 30]],
         ['H0407X',   [21, 28, 14]],
+        ['M0505X',   [20, 25, 30]],
     ]);
 
     movInfoStr: string = '';

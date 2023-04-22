@@ -218,15 +218,19 @@ export class GameDataService {
     boardsPerRound: number = 0;
     // other stuff is derived from the .MOV file
     numPairs: number = 0;
+    numNSPairs: number = 0;
     numTables: number = 0;
     numRounds: number = 0;
     numBoards: number = 0;
     
     boardTop: number = 0; 
     boardObjs: Map<number, BoardObj> = new Map();
+    pairIdsNS: number[] = [];
+    pairIdsEW: number[] = [];
     pairIds: number[] = [];
     gameDataSetup: boolean = false;
     pairNameMap: Map<number, Pair> = new Map();
+    isHowell: boolean = true;
     
     constructor(
         private http: HttpClient,
@@ -251,10 +255,14 @@ export class GameDataService {
         const ui8ary : Uint8Array = new Uint8Array(abuf);
         const asStr:string = new TextDecoder('utf-8').decode(ui8ary);
         // stuff from the beginning of the .mov file
+        this.isHowell = (ui8ary[2] === 1);
         this.numTables = ui8ary[3];
         this.numPairs = 2 * this.numTables;
-        // for now, build up pairIds array;  fix for mitchell.
-        this.pairIds = _.range(1, this.numPairs+1);
+        this.numNSPairs = (this.isHowell ? this.numPairs : this.numPairs/2);
+        // for now, build up pairIds array
+        this.pairIdsNS = _.range(1, this.numNSPairs+1);
+        this.pairIdsEW = (this.isHowell ? [] : this.pairIdsNS.map( id => -1*id));
+        this.pairIds = this.pairIds.concat(this.pairIdsNS, this.pairIdsEW);
         this.boardTop = this.numPairs/2 - 1;
 
         // find the round info
@@ -274,41 +282,38 @@ export class GameDataService {
             this.boardObjs.set(bdnum, bdobj);
         });
         
-        // console.log(this.boardObjs.get(1).boardPlays);
-        // inspect the triplets to determine the maximum pair #
-        
-        
+        // inspect the triplets to get the boardPlays for each boardObj
         console.log(`tables = ${this.numTables}, rounds=${this.numRounds}, numBoards=${this.numBoards}, datsiz=${datsiz}`);
         _.range(1,this.numTables+1).forEach(itable => {
             _.range(1,this.numRounds+1).forEach(iround => {
                 // console.log(`T${itable}, R${iround}`, ui8ary[idx], ui8ary[idx+1], ui8ary[idx+2]);
                 const nsPair = ui8ary[idx+0];
-                const ewPair = ui8ary[idx+1];
+                // EW pair marked as negative if it is Mitchell
+                const ewPair = ui8ary[idx+1] * (this.isHowell ? 1 : -1);
                 const boardset = ui8ary[idx+2];
                 _.range(1, this.boardsPerRound+1).forEach(idxbd => {
                     const bdnum = (boardset-1)*this.boardsPerRound + idxbd;
                     const bp = new BoardPlay(nsPair, ewPair, iround);
                     this.boardObjs.get(bdnum)?.boardPlays.set(nsPair, bp);
                 });
-                
                 idx+=3;
             });
         });
     }
 
     // not used but kept here for reference
-    Initialize2() {
-        this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
-            // console.log('in subscribe, res=', res, typeof res);
-            const reader = new FileReader();
-            reader.onloadend = (x) => {
-                const abuf: ArrayBuffer = reader.result as ArrayBuffer;
-                console.log('onloadend', abuf, abuf.byteLength);
-            }
-            // console.log('before read');
-            reader.readAsArrayBuffer(res.body as Blob);
-        });
-    }
+    // Initialize2() {
+    //     this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+    //         // console.log('in subscribe, res=', res, typeof res);
+    //         const reader = new FileReader();
+    //         reader.onloadend = (x) => {
+    //             const abuf: ArrayBuffer = reader.result as ArrayBuffer;
+    //             console.log('onloadend', abuf, abuf.byteLength);
+    //         }
+    //         // console.log('before read');
+    //         reader.readAsArrayBuffer(res.body as Blob);
+    //     });
+    // }
 
     async Initialize(gameName: string, movement: string, totBoards: number) {
         console.log('in Initialize');

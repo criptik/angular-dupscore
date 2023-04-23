@@ -229,8 +229,10 @@ export class GameDataService {
     pairIdsEW: number[] = [];
     pairIds: number[] = [];
     gameDataSetup: boolean = false;
+    earlyGameDataSetup: boolean = false;
     pairNameMap: Map<number, Pair> = new Map();
     isHowell: boolean = true;
+    phantomPair: number = 0;
     
     constructor(
         private http: HttpClient,
@@ -249,12 +251,9 @@ export class GameDataService {
         // console.log('new deserialized:', newobj);
     }
 
-    parseAbuf(abuf: ArrayBuffer, totBoards: number) {
-        // now set up ui8ary, datstart
-        console.log(`abuf=${abuf}, len=${abuf.byteLength}`);
-        const ui8ary : Uint8Array = new Uint8Array(abuf);
-        const asStr:string = new TextDecoder('utf-8').decode(ui8ary);
+    parseAbufEarly(abuf: ArrayBuffer) {
         // stuff from the beginning of the .mov file
+        const ui8ary : Uint8Array = new Uint8Array(abuf);
         this.isHowell = (ui8ary[2] === 1);
         this.numTables = ui8ary[3];
         this.numPairs = 2 * this.numTables;
@@ -262,9 +261,21 @@ export class GameDataService {
         // for now, build up pairIds array
         this.pairIdsNS = _.range(1, this.numNSPairs+1);
         this.pairIdsEW = (this.isHowell ? [] : this.pairIdsNS.map( id => -1*id));
-        this.pairIds = this.pairIds.concat(this.pairIdsNS, this.pairIdsEW);
+        this.pairIds = this.pairIdsNS.concat(this.pairIdsEW);
+        console.log('end of early');
+        this.earlyGameDataSetup = true;
+    }
+    
+    parseAbuf(abuf: ArrayBuffer, totBoards: number) {
+        // now set up ui8ary, datstart
+        console.log(`abuf=${abuf}, len=${abuf.byteLength}`);
+        // stuff from the beginning of the .mov file
+        const ui8ary : Uint8Array = new Uint8Array(abuf);
+        const asStr:string = new TextDecoder('utf-8').decode(ui8ary);
+        this.parseAbufEarly(ui8ary);
         this.boardTop = this.numPairs/2 - 1;
-
+        if (this.phantomPair !== 0) this.boardTop--;
+        
         // find the round info
         const pattern = '\x21\x22\x23\x24';
         const datstart = asStr.lastIndexOf(pattern) + pattern.length;
@@ -291,11 +302,14 @@ export class GameDataService {
                 // EW pair marked as negative if it is Mitchell
                 const ewPair = ui8ary[idx+1] * (this.isHowell ? 1 : -1);
                 const boardset = ui8ary[idx+2];
-                _.range(1, this.boardsPerRound+1).forEach(idxbd => {
-                    const bdnum = (boardset-1)*this.boardsPerRound + idxbd;
-                    const bp = new BoardPlay(nsPair, ewPair, iround);
-                    this.boardObjs.get(bdnum)?.boardPlays.set(nsPair, bp);
-                });
+                // ignore triplet if phantomPair is in this one
+                if (nsPair !== this.phantomPair && ewPair !== this.phantomPair) {
+                    _.range(1, this.boardsPerRound+1).forEach(idxbd => {
+                        const bdnum = (boardset-1)*this.boardsPerRound + idxbd;
+                        const bp = new BoardPlay(nsPair, ewPair, iround);
+                        this.boardObjs.get(bdnum)?.boardPlays.set(nsPair, bp);
+                    });
+                }                
                 idx+=3;
             });
         });
@@ -315,10 +329,11 @@ export class GameDataService {
     //     });
     // }
 
-    async Initialize(gameName: string, movement: string, totBoards: number) {
+    async Initialize(gameName: string, movement: string, totBoards: number, phantomPair: number) {
         console.log('in Initialize');
         this.gameFileName = gameName;
         this.movFileName = `${movement}.MOV`;
+        this.phantomPair = phantomPair;
         
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
@@ -335,6 +350,20 @@ export class GameDataService {
         };
     }
 
+    async parseEarly(movement: string) {
+        this.movFileName = `${movement}.MOV`;
+        
+        this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+            const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
+            this.parseAbufEarly(abuf);
+        });
+        // wait for gameDataSetup
+        while (!this.earlyGameDataSetup) {
+            // console.log(`wait a bit`);
+            await new Promise(resolve => setTimeout(resolve, 300));
+        };
+    }
+    
     // testing, try to serialize and deserialize
     testSerAndDeser() {
         const jsonStr = this.doSerialize();
@@ -369,6 +398,12 @@ export class GameDataService {
         this.doDeserialize(jsonStr);
     }
 
+    pairnumToString(pairnum: number): string {
+        if (pairnum === 0) return 'None';
+        if (this.isHowell) return `${pairnum}`;
+        if (pairnum > 0) return `NS ${pairnum}`;
+        else return `EW ${-1*pairnum}`;
+    }
 }
 
 

@@ -2,7 +2,13 @@ import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { GameDataService } from '../game-data/game-data.service';
+import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
+
+interface phantPairObj {
+    num: number;
+    str: string;
+};
 
 @Component({
     selector: 'app-game-setup',
@@ -13,6 +19,7 @@ export class GameSetupComponent {
     @ViewChild('newGameDialog') newGameDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('loadGameDialog') loadGameDialog!: ElementRef<HTMLDialogElement>;
     totBoardsArray: number[] = [];
+    phantomPairArray: phantPairObj[] = [];
     existingGameList: string[] = [];
 
     // interface newGameFields {
@@ -25,6 +32,7 @@ export class GameSetupComponent {
         gameName:  new FormControl(),
         movement:  new FormControl(),
         totBoards: new FormControl(),
+        phantomPair: new FormControl(),
     });
 
     loadGameForm = new FormGroup({
@@ -32,34 +40,44 @@ export class GameSetupComponent {
     });
     
     movMap: Map<string, number[]> = new Map([
+        ['H0203X', [18, 21, 24, 27, 30]],
         ['HCOLONEL', [20, 30]],
         ['H0407X',   [21, 28, 14]],
         ['M0505X',   [20, 25, 30]],
     ]);
-
+    
     movInfoStr: string = '';
     
-    constructor(private gameDataPtr: GameDataService) {    
+    constructor(
+        public gameDataPtr: GameDataService,
+        private _router: Router) {    
     }
 
     async onNewGameFormSubmit() {
         console.log('onNewGameFormSubmit',
                     this.newGameForm.value,
                     this.newGameForm.value.movement,
+                    this.newGameForm.value.totBoards,
+                    this.newGameForm.value.phantomPair,
         );
         this.newGameDialog.nativeElement.close();
+        
         await this.gameDataPtr.Initialize(
             this.newGameForm.value.gameName,
             this.newGameForm.value.movement,
-            parseInt(this.newGameForm.value.totBoards)
+            parseInt(this.newGameForm.value.totBoards),
+            parseInt(this.newGameForm.value.phantomPair),
         );
+        this._router.navigate(["/status"]);
     }
 
     onLoadGameFormSubmit() {
         console.log('onLoadGameFormSubmit');
+        this.gameDataPtr.getFromLocalStorage(this.loadGameForm.value.loadGameName);
         this.loadGameDialog.nativeElement.close();
+        this._router.navigate(["/status"]);
     }
-            
+    
     newGameSetup() {
         // seed the filename with today's date, etc.
         const now = new Date();
@@ -70,13 +88,35 @@ export class GameSetupComponent {
         this.newGameForm.get('gameName')?.setValue(
             `${year}${mon.toString().padStart(2,'0')}${day.toString().padStart(2,'0')}${hourCode}`);
         this.newGameDialog.nativeElement.showModal();
-        this.newGameForm.get('movement')?.valueChanges.subscribe( mov => {
+        this.newGameForm.get('movement')?.valueChanges.subscribe( async mov => {
             console.log('valueChanges', mov, this.newGameForm.value);
             setTimeout(() => {
                 console.log('after tick', this.newGameForm.value)   //shows the latest 
             });
+
+            // get total boards choices and set default to first element
             this.totBoardsArray = this.movMap.get(mov) ?? [];
             this.newGameForm.get('totBoards')?.setValue(this.totBoardsArray[0].toString());
+            // build phantomPair Option List
+            // parse enough to get numPairs and isHowell
+            await this.gameDataPtr.parseEarly(mov);
+            
+            this.phantomPairArray = [];
+            this.phantomPairArray.push({num: 0, str: 'None'});
+            if (this.gameDataPtr.isHowell) {
+                this.gameDataPtr.pairIdsNS.forEach(num => {
+                    this.phantomPairArray.push({num: num, str: `${num}`});
+                });
+            } else {
+                this.gameDataPtr.pairIdsNS.forEach(num => {
+                    this.phantomPairArray.push({num: num, str: `NS ${num}`});
+                });
+                this.gameDataPtr.pairIdsEW.forEach(num => {
+                    this.phantomPairArray.push({num: num, str: `EW ${-1*num}`});
+                });
+            }
+            console.log('phantomPairArray', this.gameDataPtr.pairIdsNS, this.gameDataPtr.pairIdsEW, this.phantomPairArray);
+            this.newGameForm.get('phantomPair')?.setValue(0);
         });
     }
 

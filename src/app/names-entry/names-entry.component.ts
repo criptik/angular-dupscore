@@ -84,7 +84,7 @@ export class NamesEntryComponent implements AfterViewInit {
         // console.log('target.id', x.target.id);
         // parse number from id which is nameXX
         const pairnum = this.pairnumFromId(x.target.id);
-        const pairText: string = (this.gameDataPtr.isHowell ? `${pairnum}` : (pairnum > 0 ? `NS ${pairnum}` : `EW ${-1*pairnum}`));
+        const pairText:string = this.gameDataPtr.pairnumToString(pairnum);
         this.nameEntryDialogHeader = `Names for Pair ${pairText}`;
         this.nameEntryFormPairnum = pairnum;
         // seed form if names already exist for that pair
@@ -198,14 +198,16 @@ export class NamesEntryComponent implements AfterViewInit {
         // console.log('lastFirstMap', this.lastFirstMap);
 
         // to speed up testing
-        const playerA: Person = new Person('Tom', 'Deneau');
-        const playerB: Person = new Person('Gul', 'Deneau');
-        const newPair = new Pair(playerA, playerB);
-        this.gameDataPtr.pairNameMap.set(1, newPair);
-        const playerA2: Person = new Person('Joe', 'Biden');
-        const playerB2: Person = new Person('Kamala', 'Harris');
-        const newPair2 = new Pair(playerA2, playerB2);
-        this.gameDataPtr.pairNameMap.set(4, newPair2);
+        if (false) {
+            const playerA: Person = new Person('Tom', 'Deneau');
+            const playerB: Person = new Person('Gul', 'Deneau');
+            const newPair = new Pair(playerA, playerB);
+            this.gameDataPtr.pairNameMap.set(1, newPair);
+            const playerA2: Person = new Person('Joe', 'Biden');
+            const playerB2: Person = new Person('Kamala', 'Harris');
+            const newPair2 = new Pair(playerA2, playerB2);
+            this.gameDataPtr.pairNameMap.set(4, newPair2);
+        }
         this.updatePairNameStrArray();
     }
 

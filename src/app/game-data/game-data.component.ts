@@ -29,10 +29,13 @@ export class GameDataComponent {
         this.statusText = [
             `Movement File: ${p.movFileName}`,
         `${p.numTables} Tables, ${p.numPairs} Pairs, (Top on Board is ${p.boardTop})`,
-        `${p.numBoards} Boards, (${p.numRounds} Rounds, ${p.boardsPerRound} Boards Per Round)`,
-        `${p.pairNameMap.size} Pair Names Entered out of ${p.numPairs}`,
-        `${countBoardsScored === 0 ? 'No' : countBoardsScored} Board${countBoardsScored === 1 ? '' : 's'} Scored so far`,
         ];
+        if (p.phantomPair !== 0) this.statusText.push(`Phantom Pair at Pair ${p.pairnumToString(p.phantomPair)}`);
+        this.statusText = this.statusText.concat([`${p.numBoards} Boards, (${p.numRounds} Rounds, ${p.boardsPerRound} Boards Per Round)`,
+                                                 `${p.pairNameMap.size} Pair Names Entered out of ${p.numPairs}`,
+                                                 `${countBoardsScored === 0 ? 'No' : countBoardsScored} Board${countBoardsScored === 1 ? '' : 's'} Scored so far`,
+        ]);
+        
 
         // this.serializeText = this.gameDataPtr?.doSerialize();
         // console.log(this.serializeText);

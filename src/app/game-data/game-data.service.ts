@@ -352,14 +352,14 @@ export class GameDataService {
 
     async parseEarly(movement: string) {
         this.movFileName = `${movement}.MOV`;
-        
+        this.earlyGameDataSetup = false;
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
-            const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
+                const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
             this.parseAbufEarly(abuf);
         });
         // wait for gameDataSetup
         while (!this.earlyGameDataSetup) {
-            // console.log(`wait a bit`);
+            console.log(`wait a bit`);
             await new Promise(resolve => setTimeout(resolve, 300));
         };
     }

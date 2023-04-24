@@ -16,11 +16,10 @@
         <div class="dialog-div">
             <label for="movement"> Movement:  </label>
             <select type="text" id="movement" name="movement" formControlName="movement" >
-                <!--  <option> 2 Table Howell </option> -->
-                <option value="H0203X"> 2 Table Howell, 2NS vs. 3EW at T2 </option>
-                <option value="HCOLONEL"> 3 Table Howell, no board sharing </option>
-                <option value="H0407X"> 4 Table Howell, 7 rounds </option>
-                <option value="M0505X"> 5 Table Mitchell, 5 rounds </option>
+                <option *ngFor="let mov of movInfoKeys"
+                        [value]="mov">
+                    {{movMap.get(mov)?.desc ?? ''}}
+                </option>
             </select>
         </div>
         <ng-container *ngIf="totBoardsArray.length > 0">
@@ -36,9 +35,9 @@
             <div class="dialog-div">
                 <label for="phantomPair"> Phantom Pair?:  </label>
                 <select type="text" id="phantomPair" name="phantomPair" formControlName="phantomPair"  >
-                    <option *ngFor="let phantObj of phantomPairArray"
-                            [value]="phantObj.num">
-                        {{gameDataPtr.pairnumToString(phantObj.num)}}
+                    <option *ngFor="let phantPairNum of phantomPairArray"
+                            [value]="phantPairNum">
+                        {{gameDataPtr.pairnumToString(phantPairNum)}}
                     </option>
                 </select>
             </div>

@@ -5,10 +5,10 @@ import { GameDataService } from '../game-data/game-data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
 
-interface phantPairObj {
-    num: number;
-    str: string;
-};
+interface MovInfoObj {
+    desc: string;
+    tot: number[];
+}
 
 @Component({
     selector: 'app-game-setup',
@@ -19,7 +19,7 @@ export class GameSetupComponent {
     @ViewChild('newGameDialog') newGameDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('loadGameDialog') loadGameDialog!: ElementRef<HTMLDialogElement>;
     totBoardsArray: number[] = [];
-    phantomPairArray: phantPairObj[] = [];
+    phantomPairArray: number[] = [];
     existingGameList: string[] = [];
 
     // interface newGameFields {
@@ -39,20 +39,24 @@ export class GameSetupComponent {
         loadGameName:  new FormControl(),
     });
     
-    movMap: Map<string, number[]> = new Map([
-        ['H0203X', [18, 21, 24, 27, 30]],
-        ['HCOLONEL', [20, 30]],
-        ['H0407X',   [21, 28, 14]],
-        ['M0505X',   [20, 25, 30]],
-    ]);
-    
-    movInfoStr: string = '';
+    movMap: Map<string, MovInfoObj> = new Map();
+    movInfoKeys: string[] = [];
     
     constructor(
         public gameDataPtr: GameDataService,
         private _router: Router) {    
+        // construct map of movement info
+        this.addMovInfo('H0203X', '2 Table Howell, 2NS vs. 3EW at T2', [18, 21, 24, 27, 30]);
+        this.addMovInfo('HCOLONEL', '3 Table Howell, no board sharing', [20, 30]);
+        this.addMovInfo('H0407X', '4 Table Howell, 7 rounds',  [21, 28, 14]);
+        this.addMovInfo('M0505X', '5 Table Mitchell, 5 rounds', [20, 25, 30]);
+        this.movInfoKeys = Array.from(this.movMap.keys());
     }
 
+    addMovInfo(mov: string, desc: string, tot: number[]) {
+        this.movMap.set(mov, {desc, tot});
+    }
+    
     async onNewGameFormSubmit() {
         console.log('onNewGameFormSubmit',
                     this.newGameForm.value,
@@ -95,27 +99,14 @@ export class GameSetupComponent {
             });
 
             // get total boards choices and set default to first element
-            this.totBoardsArray = this.movMap.get(mov) ?? [];
+            this.totBoardsArray = this.movMap.get(mov)?.tot ?? [];
             this.newGameForm.get('totBoards')?.setValue(this.totBoardsArray[0].toString());
             // build phantomPair Option List
             // parse enough to get numPairs and isHowell
             await this.gameDataPtr.parseEarly(mov);
-            
-            this.phantomPairArray = [];
-            this.phantomPairArray.push({num: 0, str: 'None'});
-            if (this.gameDataPtr.isHowell) {
-                this.gameDataPtr.pairIdsNS.forEach(num => {
-                    this.phantomPairArray.push({num: num, str: `${num}`});
-                });
-            } else {
-                this.gameDataPtr.pairIdsNS.forEach(num => {
-                    this.phantomPairArray.push({num: num, str: `NS ${num}`});
-                });
-                this.gameDataPtr.pairIdsEW.forEach(num => {
-                    this.phantomPairArray.push({num: num, str: `EW ${-1*num}`});
-                });
-            }
-            console.log('phantomPairArray', this.gameDataPtr.pairIdsNS, this.gameDataPtr.pairIdsEW, this.phantomPairArray);
+
+            this.phantomPairArray = [0].concat(this.gameDataPtr.pairIds);
+            // console.log('phantomPairArray', this.phantomPairArray);
             this.newGameForm.get('phantomPair')?.setValue(0);
         });
     }

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { GameDataService } from './game-data/game-data.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-root',
@@ -9,7 +10,13 @@ import { GameDataService } from './game-data/game-data.service';
 
 export class AppComponent {
     
-    constructor(public gameDataPtr: GameDataService) {
+    constructor(
+        public gameDataPtr: GameDataService,
+        private _router: Router) {    
+        if (!this.gameDataPtr.gameDataSetup) {
+            this._router.navigate(["/setup"]);
+        }
+        
     }
     
 }

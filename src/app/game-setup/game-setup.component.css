@@ -1,3 +1,20 @@
+nav a {
+    padding: 1rem;
+    font-size: 20px
+}
+
+a:link, a:visited, a:active {
+  color: blue;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color: red;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
 .gameTypeButton {
     font-size: 18px;
     padding: 1rem;

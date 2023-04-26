@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, ViewChild, AfterViewInit, AfterContentInit, AfterContentChecked } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { GameDataService } from '../game-data/game-data.service';
@@ -15,19 +15,14 @@ interface MovInfoObj {
     templateUrl: './game-setup.component.html',
     styleUrls: ['./game-setup.component.css']
 })
-export class GameSetupComponent {
+export class GameSetupComponent  implements AfterViewInit {
     @ViewChild('newGameDialog') newGameDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('loadGameDialog') loadGameDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('deleteGameDialog') deleteGameDialog!: ElementRef<HTMLDialogElement>;
     totBoardsArray: number[] = [];
     phantomPairArray: number[] = [];
     existingGameList: string[] = [];
 
-    // interface newGameFields {
-    //     gameName: string;
-    //     movement: string;
-    //     totBoards: string;
-    // }
-    
     newGameForm = new FormGroup({
         gameName:  new FormControl(),
         movement:  new FormControl(),
@@ -38,23 +33,61 @@ export class GameSetupComponent {
     loadGameForm = new FormGroup({
         loadGameName:  new FormControl(),
     });
+
+    deleteGameForm = new FormGroup({
+    });
+
     
     movMap: Map<string, MovInfoObj> = new Map();
     movInfoKeys: string[] = [];
+    action: string = '';
     
     constructor(
         public gameDataPtr: GameDataService,
-        private _router: Router) {    
+        private _router: Router,
+        private _route: ActivatedRoute) {
+        this._router.routeReuseStrategy.shouldReuseRoute = function () {
+            return false;
+        };
         // construct map of movement info
         this.addMovInfo('H0203X', '2 Table Howell, 2NS vs. 3EW at T2', [18, 21, 24, 27, 30]);
         this.addMovInfo('HCOLONEL', '3 Table Howell, no board sharing', [20, 30]);
         this.addMovInfo('H0407X', '4 Table Howell, 7 rounds',  [21, 28, 14]);
         this.addMovInfo('M0505X', '5 Table Mitchell, 5 rounds', [20, 25, 30]);
         this.movInfoKeys = Array.from(this.movMap.keys());
+
+        this.buildExistingGameList();
+        this.existingGameList.forEach( name => {
+            this.deleteGameForm.addControl(name, new FormControl(false));
+        });
+        this.gameDataPtr.gameDataSetup = false;
+        this._route.params.subscribe( params => {
+            this.action = params['action'] ?? '';
+        });
+        console.log('action:', this.action);
     }
 
     addMovInfo(mov: string, desc: string, tot: number[]) {
         this.movMap.set(mov, {desc, tot});
+    }
+
+    buildExistingGameList() {
+        // get list of existing games
+        const existingGameList: string[] = [];
+        _.range(window.localStorage.length).forEach( n => {
+            const key: string = window.localStorage.key(n) ?? '';
+            if (key.startsWith('game-')) {
+                const fname = key.slice(5);
+                existingGameList.push(fname);
+            }
+        });
+        this.existingGameList = existingGameList.sort();
+    }
+    
+    ngAfterViewInit() {
+        if (this.action === 'new') this.newGameSetup();
+        else if (this.action === 'load') this.loadGameSetup();
+        else if (this.action === 'delete') this.deleteGameSetup();
     }
     
     async onNewGameFormSubmit() {
@@ -82,6 +115,22 @@ export class GameSetupComponent {
         this._router.navigate(["/status"]);
     }
     
+    onDeleteGameFormSubmit() {
+        // type ValBool = {[key: string]: boolean};
+        // const formVal: ValBool = this.deleteGameForm.value as ValBool;
+        const formVal = this.deleteGameForm.value as {[key: string]: boolean};
+        const keys: string[]  = Array.from(Object.keys(formVal));
+        console.log('onDeleteGameFormSubmit', keys);
+        keys.forEach( (key) => {
+            if (formVal[key]) {
+               window.localStorage.removeItem(`game-${key}`);
+            }
+        });
+            
+        this.deleteGameDialog.nativeElement.close();
+        this._router.navigate(["/status"]);
+    }
+
     newGameSetup() {
         // seed the filename with today's date, etc.
         const now = new Date();
@@ -112,27 +161,18 @@ export class GameSetupComponent {
     }
 
     loadGameSetup() {
-        // get list of existing games
-        const existingGameList: string[] = [];
-        _.range(window.localStorage.length).forEach( n => {
-            const key: string = window.localStorage.key(n) ?? '';
-            if (key.startsWith('game-')) {
-                const fname = key.slice(5);
-                existingGameList.push(fname);
-            }
-        });
-        this.existingGameList = existingGameList.sort();
+        this.buildExistingGameList();
         this.loadGameForm.get('loadGameName')?.setValue(this.existingGameList[0]);
         this.loadGameDialog.nativeElement.showModal();
     }
 
-    gameTypeButtonClick(event: any) {
-        console.log('click', event.target.id);
-        if (event.target.id === 'gameNew') {
-            this.newGameSetup();
-        }
-        if (event.target.id === 'gameLoad') {
-            this.loadGameSetup();
-        }
+    deleteGameSetup() {
+        this.buildExistingGameList();
+        this.existingGameList.forEach( name => {
+            this.deleteGameForm.addControl(name, new FormControl(false));
+        });
+        console.log('before', this.deleteGameForm);
+        this.deleteGameDialog.nativeElement.showModal();
     }
+    
 }

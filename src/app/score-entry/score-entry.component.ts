@@ -81,12 +81,13 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
     
     updateView() {
+        const p: GameDataService = this.gameDataPtr;
         this.viewLines = [];
         const bdvulStr = this.getVulStr(this.curBoardNum);
         this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${bdvulStr}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
         // default for unused lines
-        [...Array(this.gameDataPtr.numNSPairs).keys()].forEach(pair => {
+        [...Array(p.numNSPairs).keys()].forEach(pair => {
             this.viewLines[pair+2] = `       ${'--'.repeat(5)}  `; 
         });
         let onEW = 0;
@@ -101,7 +102,7 @@ export class ScoreEntryComponent implements AfterViewInit {
                 arrow = `==>`;
                 onEW = ewPair;
             }
-            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${this.scoreStr(boardPlay, true)} ${this.scoreStr(boardPlay, false)}  ${Math.abs(ewPair).toString().padStart(2,' ')}    `;
+            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${p.scoreStr(boardPlay, true)} ${p.scoreStr(boardPlay, false)}  ${Math.abs(ewPair).toString().padStart(2,' ')}    `;
         });
         this.viewLines.push(` `); 
         if (this.onNS !== nsEndBoardMarker) {
@@ -116,14 +117,14 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
         else {
             // at the end of a board, initiate gotoBoard dialog
-            this.gameDataPtr.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
-            const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
-            bdobj.computeMP(this.gameDataPtr.boardTop);
+            p.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
+            const bdobj = p.boardObjs.get(this.curBoardNum) as BoardObj;
+            bdobj.computeMP(p.boardTop);
             // build the modal dialog box info
             let defaultNextBoard: number = 0;
             this.boardsToDoMsg = '';
-            console.log('boardObjs len: ', Array.from(this.gameDataPtr.boardObjs.values()).length);
-            Array.from(this.gameDataPtr.boardObjs.values()).forEach( bdobj => {
+            console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
+            Array.from(p.boardObjs.values()).forEach( bdobj => {
                 if (!bdobj.allPlaysEntered) {
                     this.boardsToDoMsg += ` ${bdobj.bdnum}`;
                     if (defaultNextBoard === 0) defaultNextBoard = bdobj.bdnum;
@@ -135,8 +136,8 @@ export class ScoreEntryComponent implements AfterViewInit {
             this.gotoBoardDialog.nativeElement.onclose = () => {
                 if (!this.dialogClosedByEnter) {
                     // dialog was closed via escape key
-                    // this.gameDataPtr.testSerAndDeser();
-                    this.gameDataPtr.saveToLocalStorage();
+                    // p.testSerAndDeser();
+                    p.saveToLocalStorage();
                     _.range(window.localStorage.length).forEach( n=> console.log(n, window.localStorage.key(n)));
                     this._router.navigate(["/status"]);
                 }
@@ -217,23 +218,6 @@ export class ScoreEntryComponent implements AfterViewInit {
 
     onSpecialEWInputKeyUp(x : any) {
         this.onSpecialInputKeyUpCommon('EW', x);
-    }
-
-    scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
-        let str = ' ';
-        if (boardPlay?.nsScore === -2) str = ' ? ';
-        else if (boardPlay?.nsScore !== -1) {
-            // normal ScoreObj with a score
-            const score = boardPlay.nsScore;
-            if (score === 0 && forNS) str = 'PASS';
-            else if (score > 0 && forNS) str = `${score}`;
-            else if (score < 0 && !forNS) str = `${-1*score}`;
-        }
-        else {
-            // a "special" boardPlays, with strings in the kindNS and kindEW
-            str = (forNS ? boardPlay?.kindNS : boardPlay?.kindEW);
-        }
-        return str.padStart(4, ' ');
     }
 
     checkScoreLegality(newScore:number) {

@@ -7,11 +7,13 @@ import { GameSummaryComponent } from './game-summary/game-summary.component';
 import { GameSetupComponent } from './game-setup/game-setup.component';
 
 const routes: Routes = [
-    { path: 'setup',        component: GameSetupComponent },
+    { path: 'setup',               component: GameSetupComponent },
+    { path: 'setup/:action',       component: GameSetupComponent },
     { path: 'status',       component: GameDataComponent },
     { path: 'names',        component: NamesEntryComponent },
     { path: 'score',        component: ScoreEntryComponent },
-    { path: 'summary',      component: GameSummaryComponent },
+    { path: 'report',      component: GameSummaryComponent },
+    { path: 'report/:size',      component: GameSummaryComponent },
     { path: '',   redirectTo: '/status', pathMatch: 'full' },
 
 ];

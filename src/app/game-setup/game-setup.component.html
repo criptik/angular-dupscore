@@ -1,11 +1,10 @@
-<div>
-    <button id="gameNew" class="gameTypeButton" value="New" name="gameType" (click)="gameTypeButtonClick($event)">
-        Setup New Game
-    </button>
-    <button id="gameLoad" class="gameTypeButton" value="Load" name="gameType"  (click)="gameTypeButtonClick($event)">
-        Load Existing Game
-    </button>
-</div>
+<nav>
+    <a routerLink="/setup/new" routerLinkActive="active" ariaCurrentWhenActive="page">New</a>
+    <a routerLink="/setup/load" routerLinkActive="active" ariaCurrentWhenActive="page">Load</a>
+    <a routerLink="/setup/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
+    <hr/>
+    <router-outlet></router-outlet>
+</nav>
 
 <dialog class="px20" #newGameDialog>
     <form [formGroup]="newGameForm" (ngSubmit)="onNewGameFormSubmit()">
@@ -59,6 +58,19 @@
         </select>
         <div>
             <button style="margin-top:2rem"> Submit </button>
+        </div>
+    </form>
+</dialog>
+
+<dialog class="px20" #deleteGameDialog>
+    <form [formGroup]="deleteGameForm" (ngSubmit)="onDeleteGameFormSubmit()">
+        <section *ngFor="let gameName of existingGameList">
+                 <input type="checkbox" id={{gameName}} name={{gameName}} formControlName={{gameName}} value=1>
+                 <label for={{gameName}}> {{gameName}}</label>
+                 <br/>
+        </section>
+        <div>
+            <button style="margin-top:2rem"> Delete Selected Files </button>
         </div>
     </form>
 </dialog>

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { GameDataService, BoardObj, Pair } from '../game-data/game-data.service';
+import {Router, ActivatedRoute} from "@angular/router";
 import * as _ from 'lodash';
 
 class MpRec {
@@ -21,9 +22,15 @@ const debug: boolean = false;
 })
 export class GameSummaryComponent {
     summaryText: string = '';
-
-    constructor(private gameDataPtr: GameDataService) {
-        // console.log(`Summary Constructor`);
+    size: string = 'short';
+    
+    constructor(private gameDataPtr: GameDataService,
+                private _router: Router,    
+                private route: ActivatedRoute,) {
+            // console.log(`Summary Constructor`);
+        this._router.routeReuseStrategy.shouldReuseRoute = function () {
+            return false;
+        };
     }
 
     outputPairMpRecs(pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
@@ -49,11 +56,40 @@ export class GameSummaryComponent {
         });
     }
     
+    outputPerBoardData() {
+        const p: GameDataService = this.gameDataPtr;
+        const pbt: string[] = [];
+        pbt.push(`  `);
 
+        Array.from(p.boardObjs.values()).forEach( boardObj => {
+            pbt.push(`  `);
+            pbt.push(`   RESULTS FOR BOARD ${boardObj.bdnum}`);
+            pbt.push(`  `);
+            pbt.push(`    SCORES            MATCHPOINTS    NAMES`);
+            pbt.push(`   N-S   E-W          N-S    E-W`);
+            
+            // for each pair, get totals of mps and number of boards
+            Array.from(boardObj.boardPlays.entries()).forEach( ([nsPair, boardPlay]) => {
+                const scoreStr: string = '';
+                pbt.push(`  ${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}             ${nsPair}NS vs. ${boardPlay.ewPair}EW => ${boardPlay.nsScore}, ${boardPlay.kindNS}, ${boardPlay.kindEW}`);
+            });
+        });
+        pbt.forEach( line => {
+            this.summaryText += `${line}
+`;
+        });
+    }
+                
+                
     ngOnInit() {
         // console.log(`Summary ngOnInit`);
         const p: GameDataService = this.gameDataPtr;
         if (!p.gameDataSetup) return;
+
+        this.route.params.subscribe( params => {
+            this.size = params['size'] ?? 'short';
+        });
+        console.log('size', this.size);
 
         // go thru all board objs
         let fullyEnteredBoards = 0;
@@ -97,6 +133,9 @@ export class GameSummaryComponent {
         // testing , show records
         if (fullyEnteredBoards !== 0) {
             this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
+            if (this.size === 'long') {
+                this.outputPerBoardData();
+            }
         }
     }
 }

@@ -404,6 +404,24 @@ export class GameDataService {
         if (pairnum > 0) return `NS ${pairnum}`;
         else return `EW ${-1*pairnum}`;
     }
+
+    scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
+        let str = ' ';
+        if (boardPlay?.nsScore === -2) str = ' ? ';
+        else if (boardPlay?.nsScore !== -1) {
+            // normal ScoreObj with a score
+            const score = boardPlay.nsScore;
+            if (score === 0 && forNS) str = 'PASS';
+            else if (score > 0 && forNS) str = `${score}`;
+            else if (score < 0 && !forNS) str = `${-1*score}`;
+        }
+        else {
+            // a "special" boardPlays, with strings in the kindNS and kindEW
+            str = (forNS ? boardPlay?.kindNS : boardPlay?.kindEW);
+        }
+        return str.padStart(4, ' ');
+    }
+
 }
 
 

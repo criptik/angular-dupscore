@@ -1,11 +1,15 @@
 <nav>
-    <ng-container *ngIf="gameDataPtr.gameDataSetup">
-        <a routerLink="/setup" routerLinkActive="active" ariaCurrentWhenActive="page">Game</a>
+    <ng-container *ngIf="gameDataPtr.gameDataSetup; else NotSetUp">
+        <a routerLink="/setup" routerLinkActive="active" ariaCurrentWhenActive="page">Exit</a>
         <a routerLink="/status" routerLinkActive="active" ariaCurrentWhenActive="page">Status</a>
         <a routerLink="/names" routerLinkActive="active" ariaCurrentWhenActive="page">Names</a>
         <a routerLink="/score" routerLinkActive="active" ariaCurrentWhenActive="page">Scores</a>
-        <a routerLink="/summary" routerLinkActive="active" ariaCurrentWhenActive="page">Summary</a>
+        <a routerLink="/report/short" routerLinkActive="active" ariaCurrentWhenActive="page">Summary</a>
+        <a routerLink="/report/long" routerLinkActive="active" ariaCurrentWhenActive="page">Report</a>
     </ng-container>
+    <ng-template #NotSetUp>
+        <a routerLink="/setup" routerLinkActive="active" ariaCurrentWhenActive="page">Game</a>
+    </ng-template>
     <hr/>
 </nav>
 <router-outlet></router-outlet>

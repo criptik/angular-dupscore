@@ -230,10 +230,10 @@ export class NamesEntryComponent implements AfterViewInit {
     }        
 
     genLastNameCompletionList(curInput: string|null, id: number) {
-        // console.log('genLastNameCompletionList', curInput, id);
+        console.log('genLastNameCompletionList', curInput, id);
         this.nameCompletion = [];
         if (curInput === null) return;
-        if (curInput.length < 3) return;
+        if (curInput.length < 2) return;
 
         const completionList: string[] = this.allLastNames.filter( name =>
             name.toUpperCase().startsWith(curInput.toUpperCase()));
@@ -332,6 +332,7 @@ export class NamesEntryComponent implements AfterViewInit {
         this.updatePairNameStrArray();
         this.cleanupAllNames();
         window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
+        this.gameDataPtr.saveToLocalStorage();
     }
 
     onSwapPairsButtonClick(x: any) {

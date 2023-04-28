@@ -123,7 +123,7 @@ export class ScoreEntryComponent implements AfterViewInit {
             // build the modal dialog box info
             let defaultNextBoard: number = 0;
             this.boardsToDoMsg = '';
-            console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
+            // console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
             Array.from(p.boardObjs.values()).forEach( bdobj => {
                 if (!bdobj.allPlaysEntered) {
                     this.boardsToDoMsg += ` ${bdobj.bdnum}`;
@@ -185,12 +185,12 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
         
         // now know both are legal special inputs
-        const strNS = strMap.get(this.specialNS.nativeElement.value);
-        const strEW = strMap.get(this.specialEW.nativeElement.value);
+        const strNS: string = strMap.get(this.specialNS.nativeElement.value) ?? '';
+        const strEW: string = strMap.get(this.specialEW.nativeElement.value) ?? '';
         this.specialNS.nativeElement.value = '';
         this.specialEW.nativeElement.value = '';
         const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
-        curBoardPlay.addScoreInfo(-1, strNS, strEW);
+        curBoardPlay.addSpecialScoreInfo(strNS, strEW);
         this.onNS = this.getNewNS(1);
         this.updateView();
         return true;
@@ -242,27 +242,27 @@ export class ScoreEntryComponent implements AfterViewInit {
         // get pointer to boardPlays for onNS board
         const boardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         if (curInput === 'X') {
-            boardPlay.addScoreInfo(-2);
+            boardPlay.addEmptyScoreInfo();
             foundSpecial = true;
         }
         if (curInput === 'N') {
-            boardPlay.addScoreInfo(-1, 'NP ');
+            boardPlay.addSpecialScoreInfo('NP ');
             foundSpecial = true;
         }
         if (curInput === 'L') {
-            boardPlay.addScoreInfo(-1, 'LATE');
+            boardPlay.addSpecialScoreInfo( 'LATE');
             foundSpecial = true;
         }
         if (curInput === 'A') {
-            boardPlay.addScoreInfo(-1, 'AVE', 'AVE');
+            boardPlay.addSpecialScoreInfo( 'AVE', 'AVE');
             foundSpecial = true;
         }
         if (curInput === 'A+') {
-            boardPlay.addScoreInfo(-1, 'AVE+', 'AVE-');
+            boardPlay.addSpecialScoreInfo( 'AVE+', 'AVE-');
             foundSpecial = true;
         }
         if (curInput === 'A-') {
-            boardPlay.addScoreInfo(-1, 'AVE-', 'AVE+');
+            boardPlay.addSpecialScoreInfo( 'AVE-', 'AVE+');
             foundSpecial = true;
         }
         if (foundSpecial) {

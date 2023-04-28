@@ -55,6 +55,33 @@ export class GameSummaryComponent {
                 place++;
         });
     }
+
+    outputOneBoardText(pbt: string[], boardObj: BoardObj) {
+        const p: GameDataService = this.gameDataPtr;
+        pbt.push(`  `);
+        pbt.push(`   RESULTS OF BOARD ${boardObj.bdnum}`);
+        pbt.push(`  `);
+        pbt.push(`    SCORES       MATCHPOINTS    NAMES`);
+        pbt.push(`   N-S   E-W     N-S    E-W`);
+        
+        // for each pair, get totals of mps and number of boards
+        Array.from(boardObj.boardPlays.entries()).forEach( ([nsPair, boardPlay]) => {
+            if (!boardPlay.isScoreEmpty()) {
+                const ewPair = boardPlay.ewPair;
+                const scoreText: string = `${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}`;
+                const nsMP = boardObj.pairToMpMap.get(nsPair)!;
+                const ewMP = boardObj.pairToMpMap.get(ewPair)!;
+                // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
+                const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
+                const pairObjNS: Pair | undefined = p.pairNameMap.get(nsPair);  
+                const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);
+                const nameTextNS: string = `${(pairObjNS ? pairObjNS.shortString() : '')}`;
+                const nameTextEW: string = `${(pairObjEW ? pairObjEW.shortString() : '')}`;
+                const nameText: string = `${nsPair}-${nameTextNS} vs. ${ewPair}-${nameTextEW}`;
+                pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
+            }
+        });
+    }
     
     outputPerBoardData() {
         const p: GameDataService = this.gameDataPtr;
@@ -62,22 +89,9 @@ export class GameSummaryComponent {
         pbt.push(`  `);
 
         Array.from(p.boardObjs.values()).forEach( boardObj => {
-            pbt.push(`  `);
-            pbt.push(`   RESULTS FOR BOARD ${boardObj.bdnum}`);
-            pbt.push(`  `);
-            pbt.push(`    SCORES            MATCHPOINTS    NAMES`);
-            pbt.push(`   N-S   E-W          N-S    E-W`);
-            
-            // for each pair, get totals of mps and number of boards
-            Array.from(boardObj.boardPlays.entries()).forEach( ([nsPair, boardPlay]) => {
-                const scoreStr: string = '';
-                pbt.push(`  ${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}             ${nsPair}NS vs. ${boardPlay.ewPair}EW => ${boardPlay.nsScore}, ${boardPlay.kindNS}, ${boardPlay.kindEW}`);
-            });
+            this.outputOneBoardText(pbt, boardObj);
         });
-        pbt.forEach( line => {
-            this.summaryText += `${line}
-`;
-        });
+        this.summaryText = pbt.join('\n');
     }
                 
                 

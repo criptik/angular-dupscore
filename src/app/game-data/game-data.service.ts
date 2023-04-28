@@ -29,6 +29,32 @@ export class BoardPlay {
         this.kindNS = kindNS;
         this.kindEW = kindEW;
     }
+
+    addSpecialScoreInfo(kindNS: string, kindEW: string = kindNS) {
+        this.nsScore = SCORE_SPECIAL;
+        this.kindNS = kindNS;
+        this.kindEW = kindEW;
+    }
+
+    addEmptyScoreInfo() {
+        this.nsScore = SCORE_EMPTY;
+        this.kindNS = '';
+        this.kindEW = '';
+    }
+
+    
+    isScoreEmpty() {
+        return(this.nsScore === SCORE_EMPTY);
+    }
+    
+    isScoreSpecial() {
+        return(this.nsScore === SCORE_SPECIAL);
+    }
+
+    isScoreNormal() {
+        return(!this.isScoreEmpty() && !this.isScoreSpecial());
+    }
+    
 }
 
 type NNMap = Map<number, number>;
@@ -56,7 +82,7 @@ export class BoardObj {
 
     updateAllPlaysEntered() {
         this.allPlaysEntered = Array.from(this.boardPlays.values()).every( (bp: BoardPlay) => {
-            return (bp.nsScore !== SCORE_EMPTY);
+            return (!bp.isScoreEmpty());
         });
     }
     
@@ -94,7 +120,7 @@ export class BoardObj {
             const nsPair = bp.nsPair;
             const ewPair = bp.ewPair;
             const nsScore = bp.nsScore;
-            if (nsScore !== SCORE_EMPTY && bp.kindNS === '') {
+            if (bp.isScoreNormal()) {
                 const nsMps = mpMap.get(nsScore) as number;
                 const ewMps = boardTop - nsMps;
                 this.pairToMpMap.set(nsPair, nsMps);
@@ -118,28 +144,41 @@ export class BoardObj {
         let actualPlays: number = 0;
         let expectedPlays: number = 0;
         let specialMap: NNMap = new Map();
+        // the following two init to dummy but we only look at it if there is one "normal" score
+        let singleBoardNS: number = 0;
+        let singleBoardEW: number = 0;
         
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
             expectedPlays++;
             // normal results to be matchpointed
-            if (bp.nsScore !== SCORE_EMPTY && bp.kindNS === '') {
+            if (bp.isScoreNormal()) {
                 scores.push(bp.nsScore);
                 actualPlays++;
+                singleBoardNS = bp.nsPair;
+                singleBoardEW = bp.ewPair;
             }
             // other kinds of scores like A+, A-, etc. can be computed right now
-            else if (bp.nsScore === SCORE_SPECIAL) {
+            else if (bp.isScoreSpecial()) {
                 const mpNS = this.getSpecialMP(bp.kindNS, boardTop);
                 const mpEW = this.getSpecialMP(bp.kindEW, boardTop);
                 if (mpNS !== -1) specialMap.set(bp.nsPair, mpNS);
                 if (mpEW !== -1) specialMap.set(bp.ewPair, mpEW);
                 // console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
             }
-            
         });
-            // shortcircuit if not enough scores to matter
-        if (actualPlays <= 1) {
-            this.pairToMpMap = new Map();
+        // shortcircuit if not enough scores to matter
+        this.pairToMpMap = new Map();
+        if (actualPlays === 0) {
+            // nothing to do here
         }
+        else if (actualPlays === 1) {
+            // having only 1 non-special score the single score is treated
+            // a bit like a special score with both NS and EW getting 60% of top
+            // note that latestBoardPlay contains the single "actual" play
+            specialMap.set(singleBoardNS, 0.6 * boardTop);
+            specialMap.set(singleBoardEW, 0.6 * boardTop);
+        }
+        
         else {
             const cbmap = this.getCbMap(scores);
             // console.log(`board ${this.bdnum}, cbmap=`, cbmap);
@@ -159,12 +198,11 @@ export class BoardObj {
             });
             // console.log(`factored pairToMpMap ${this.pairToMpMap}`);
         }
-        if (actualPlays > 1) {
-            // merge in special scores (after Neuberg stuff)
-            Array.from(specialMap.entries()).forEach( ([pairId, mps]) => {
-                this.pairToMpMap.set(pairId, mps);
-            });
-        }
+        // merge in special scores if any (after Neuberg stuff)
+        console.log(`specialMap, board ${this.bdnum}`, specialMap);
+        Array.from(specialMap.entries()).forEach( ([pairId, mps]) => {
+            this.pairToMpMap.set(pairId, mps);
+        });
     }
 }
 
@@ -395,6 +433,8 @@ export class GameDataService {
 
     getFromLocalStorage(gameFileName: string) {
         const jsonStr: string = window.localStorage.getItem(`game-${gameFileName}`) ?? '';
+        // console.log(jsonStr);
+        console.log('jsonStr.length=', jsonStr.length);
         this.doDeserialize(jsonStr);
     }
 
@@ -407,8 +447,8 @@ export class GameDataService {
 
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {
         let str = ' ';
-        if (boardPlay?.nsScore === -2) str = ' ? ';
-        else if (boardPlay?.nsScore !== -1) {
+        if (boardPlay.isScoreEmpty()) str = ' ? ';
+        else if (!boardPlay.isScoreSpecial()) {
             // normal ScoreObj with a score
             const score = boardPlay.nsScore;
             if (score === 0 && forNS) str = 'PASS';

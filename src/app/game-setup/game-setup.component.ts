@@ -109,7 +109,7 @@ export class GameSetupComponent  implements AfterViewInit {
     }
 
     onLoadGameFormSubmit() {
-        console.log('onLoadGameFormSubmit');
+        // console.log('onLoadGameFormSubmit');
         this.gameDataPtr.getFromLocalStorage(this.loadGameForm.value.loadGameName);
         this.loadGameDialog.nativeElement.close();
         this._router.navigate(["/status"]);

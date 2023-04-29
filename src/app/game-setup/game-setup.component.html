@@ -1,7 +1,9 @@
 <nav>
     <a routerLink="/setup/new" routerLinkActive="active" ariaCurrentWhenActive="page">New</a>
-    <a routerLink="/setup/load" routerLinkActive="active" ariaCurrentWhenActive="page">Load</a>
-    <a routerLink="/setup/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
+    <ng-container *ngIf="existingGameList.length > 0">
+        <a routerLink="/setup/load" routerLinkActive="active" ariaCurrentWhenActive="page">Load</a>
+        <a routerLink="/setup/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
+    </ng-container>
     <hr/>
     <router-outlet></router-outlet>
 </nav>
@@ -15,9 +17,9 @@
         <div class="dialog-div">
             <label for="movement"> Movement:  </label>
             <select type="text" id="movement" name="movement" formControlName="movement" >
-                <option *ngFor="let mov of movInfoKeys"
+                <option *ngFor="let mov of _movInfo.getMovInfoKeys()"
                         [value]="mov">
-                    {{movMap.get(mov)?.desc ?? ''}}
+                    {{_movInfo.getDesc(mov)}}
                 </option>
             </select>
         </div>

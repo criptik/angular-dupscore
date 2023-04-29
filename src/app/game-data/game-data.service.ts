@@ -367,11 +367,12 @@ export class GameDataService {
     //     });
     // }
 
-    async Initialize(gameName: string, movement: string, totBoards: number, phantomPair: number) {
+    async createGame(gameName: string, movement: string, totBoards: number, phantomPair: number) {
         console.log('in Initialize');
         this.gameFileName = gameName;
         this.movFileName = `${movement}.MOV`;
         this.phantomPair = phantomPair;
+        this.pairNameMap = new Map<number, Pair>();
         
         this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
@@ -438,11 +439,11 @@ export class GameDataService {
         this.doDeserialize(jsonStr);
     }
 
-    pairnumToString(pairnum: number): string {
+    pairnumToString(pairnum: number, showDir: boolean = true): string {
         if (pairnum === 0) return 'None';
-        if (this.isHowell) return `${pairnum}`;
-        if (pairnum > 0) return `NS ${pairnum}`;
-        else return `EW ${-1*pairnum}`;
+        if (this.isHowell || !showDir) return `${Math.abs(pairnum)}`;
+        const dirStr = (pairnum > 0 ? 'NS' : 'EW');
+        return `${dirStr} ${Math.abs(pairnum)}`;
     }
 
     scoreStr(boardPlay: BoardPlay, forNS: boolean): string {

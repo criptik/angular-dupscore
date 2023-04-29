@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { GameDataService, BoardObj } from './game-data.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MovInfoService } from '../game-setup/movinfo.service';
 
 @Component({
     selector: 'app-game-data',
@@ -12,8 +13,9 @@ export class GameDataComponent {
     serializeText: string = '';
     
     constructor(private gameDataPtr: GameDataService,
-                private _router: Router) {
-        // console.log(`in gameDataComponent.constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`);
+                private _router: Router,
+                private _movInfo: MovInfoService) {
+    // console.log(`in gameDataComponent.constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`);
     }
 
     async ngOnInit() {
@@ -25,9 +27,9 @@ export class GameDataComponent {
         const countBoardsScored = Array.from(p.boardObjs.values()).reduce ((tot, boardObj) => {
             return tot + (boardObj.allPlaysEntered ? 1 : 0);
         }, 0);
-        
+        const movName: string = p.movFileName.replace('.MOV', '');
         this.statusText = [
-            `Movement File: ${p.movFileName}`,
+            `Movement: ${this._movInfo.getDesc(movName)}`,
         `${p.numTables} Tables, ${p.numPairs} Pairs, (Top on Board is ${p.boardTop})`,
         ];
         if (p.phantomPair !== 0) this.statusText.push(`Phantom Pair at Pair ${p.pairnumToString(p.phantomPair)}`);

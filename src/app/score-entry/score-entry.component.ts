@@ -24,6 +24,7 @@ export class ScoreEntryComponent implements AfterViewInit {
     inputLine: string = ' ';
     lastInput: string = '';
     errmsg: string = '  ';
+    @ViewChild('scoreInput') scoreInput!: ElementRef<HTMLInputElement>;
     @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLInputElement>;
     @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
@@ -114,12 +115,14 @@ export class ScoreEntryComponent implements AfterViewInit {
             this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  Vul:${bdvulStr}  SCORE:`;
             this.viewLines.push(this.errmsg);
             this.errmsg = '  ';
+            this.scoreInput.nativeElement.focus();
         }
         else {
             // at the end of a board, initiate gotoBoard dialog
             p.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
             const bdobj = p.boardObjs.get(this.curBoardNum) as BoardObj;
             bdobj.computeMP(p.boardTop);
+            p.saveToLocalStorage();
             // build the modal dialog box info
             let defaultNextBoard: number = 0;
             this.boardsToDoMsg = '';
@@ -136,9 +139,6 @@ export class ScoreEntryComponent implements AfterViewInit {
             this.gotoBoardDialog.nativeElement.onclose = () => {
                 if (!this.dialogClosedByEnter) {
                     // dialog was closed via escape key
-                    // p.testSerAndDeser();
-                    p.saveToLocalStorage();
-                    _.range(window.localStorage.length).forEach( n=> console.log(n, window.localStorage.key(n)));
                     this._router.navigate(["/status"]);
                 }
             };

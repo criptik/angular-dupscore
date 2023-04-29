@@ -34,6 +34,7 @@ export class GameSummaryComponent {
     }
 
     outputPairMpRecs(pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
+        const p: GameDataService = this.gameDataPtr;
         const aryMpRecEntries = Array.from(pairMpRecs.entries());
         const sortedEntries  = aryMpRecEntries.sort((a, b) => {
             return (a[1].total < b[1].total ? 1: -1)
@@ -47,10 +48,10 @@ export class GameSummaryComponent {
         sortedEntries.forEach( ([pairId, mpRec]) => {
             const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
             const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(1) + '%').padStart(6, ' ');
-            const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairId);  
+            const pairObj: Pair | undefined = p.pairNameMap.get(pairId);
+            const pairIdStr: string = `${p.pairnumToString(pairId, true).padStart(4,' ')}`;
             const nameStr: string = (pairObj ? pairObj.shortString() : '');
-            this.summaryText += `
-  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}   ${pairId.toString().padStart(4,' ')} ${nameStr}`;
+            this.summaryText += `\n  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}  ${pairIdStr} ${nameStr}`;
             if (debug) this.summaryText += `   boards:${mpRec.boards}`;
                 place++;
         });
@@ -60,7 +61,6 @@ export class GameSummaryComponent {
         const p: GameDataService = this.gameDataPtr;
         pbt.push(`  `);
         pbt.push(`   RESULTS OF BOARD ${boardObj.bdnum}`);
-        pbt.push(`  `);
         pbt.push(`    SCORES       MATCHPOINTS    NAMES`);
         pbt.push(`   N-S   E-W     N-S    E-W`);
         
@@ -77,7 +77,7 @@ export class GameSummaryComponent {
                 const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);
                 const nameTextNS: string = `${(pairObjNS ? pairObjNS.shortString() : '')}`;
                 const nameTextEW: string = `${(pairObjEW ? pairObjEW.shortString() : '')}`;
-                const nameText: string = `${nsPair}-${nameTextNS} vs. ${ewPair}-${nameTextEW}`;
+                const nameText: string = `${p.pairnumToString(nsPair, false)}-${nameTextNS} vs. ${p.pairnumToString(ewPair, false)}-${nameTextEW}`;
                 pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
             }
         });

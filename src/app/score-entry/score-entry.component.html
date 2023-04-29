@@ -15,7 +15,7 @@
             <div>{{viewline}}</div>
         </ng-template>
     </ng-container>
-    <div>{{inputLine}}<input autofocus (keyup)="onScoreEntryInputKeyUp($event)" size="5"></div>
+    <div>{{inputLine}}<input autofocus #scoreInput id="scoreInput" (keyup)="onScoreEntryInputKeyUp($event)" size="5"></div>
 </div>
 
 <dialog class="px20" #gotoBoardDialog>

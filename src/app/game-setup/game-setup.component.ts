@@ -3,14 +3,10 @@ import { Directive, ElementRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { GameDataService } from '../game-data/game-data.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MovInfoService } from './movinfo.service';
 import * as _ from 'lodash';
 
-interface MovInfoObj {
-    desc: string;
-    tot: number[];
-}
-
-@Component({
+    @Component({
     selector: 'app-game-setup',
     templateUrl: './game-setup.component.html',
     styleUrls: ['./game-setup.component.css']
@@ -38,24 +34,18 @@ export class GameSetupComponent  implements AfterViewInit {
     });
 
     
-    movMap: Map<string, MovInfoObj> = new Map();
     movInfoKeys: string[] = [];
     action: string = '';
     
     constructor(
         public gameDataPtr: GameDataService,
         private _router: Router,
-        private _route: ActivatedRoute) {
+        private _route: ActivatedRoute,
+        public _movInfo: MovInfoService) {
         this._router.routeReuseStrategy.shouldReuseRoute = function () {
             return false;
         };
         // construct map of movement info
-        this.addMovInfo('H0203X', '2 Table Howell, 2NS vs. 3EW at T2', [18, 21, 24, 27, 30]);
-        this.addMovInfo('HCOLONEL', '3 Table Howell, no board sharing', [20, 30]);
-        this.addMovInfo('H0407X', '4 Table Howell, 7 rounds',  [21, 28, 14]);
-        this.addMovInfo('M0505X', '5 Table Mitchell, 5 rounds', [20, 25, 30]);
-        this.movInfoKeys = Array.from(this.movMap.keys());
-
         this.buildExistingGameList();
         this.existingGameList.forEach( name => {
             this.deleteGameForm.addControl(name, new FormControl(false));
@@ -65,10 +55,6 @@ export class GameSetupComponent  implements AfterViewInit {
             this.action = params['action'] ?? '';
         });
         console.log('action:', this.action);
-    }
-
-    addMovInfo(mov: string, desc: string, tot: number[]) {
-        this.movMap.set(mov, {desc, tot});
     }
 
     buildExistingGameList() {
@@ -99,7 +85,7 @@ export class GameSetupComponent  implements AfterViewInit {
         );
         this.newGameDialog.nativeElement.close();
         
-        await this.gameDataPtr.Initialize(
+        await this.gameDataPtr.createGame(
             this.newGameForm.value.gameName,
             this.newGameForm.value.movement,
             parseInt(this.newGameForm.value.totBoards),
@@ -148,7 +134,7 @@ export class GameSetupComponent  implements AfterViewInit {
             });
 
             // get total boards choices and set default to first element
-            this.totBoardsArray = this.movMap.get(mov)?.tot ?? [];
+            this.totBoardsArray = this._movInfo.getTot(mov);
             this.newGameForm.get('totBoards')?.setValue(this.totBoardsArray[0].toString());
             // build phantomPair Option List
             // parse enough to get numPairs and isHowell

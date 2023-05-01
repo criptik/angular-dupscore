@@ -33,39 +33,54 @@ export class GameSummaryComponent {
         };
     }
 
-    outputPairMpRecs(pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
+    outputShortSummary(pbt: string[], headerText: string, forPairs: number[], pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
+        if (forPairs.length === 0) return;
         const p: GameDataService = this.gameDataPtr;
         const aryMpRecEntries = Array.from(pairMpRecs.entries());
         const sortedEntries  = aryMpRecEntries.sort((a, b) => {
-            return (a[1].total < b[1].total ? 1: -1)
+            const mpRecA: MpRec = a[1];
+            const mpRecB: MpRec = b[1];
+            return (mpRecA.total < mpRecB.total ? 1: -1)
         });
 
-        this.summaryText += `
-  Place    Pct   Score   Pair`;
+        pbt.push(`Summary for ${headerText}`);
+        pbt.push(`  Place    Pct   Score   Pair`);
         
         // testing , show records
         let place = 1;
         sortedEntries.forEach( ([pairId, mpRec]) => {
-            const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
-            const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(1) + '%').padStart(6, ' ');
-            const pairObj: Pair | undefined = p.pairNameMap.get(pairId);
-            const pairIdStr: string = `${p.pairnumToString(pairId, true).padStart(4,' ')}`;
-            const nameStr: string = (pairObj ? pairObj.shortString() : '');
-            this.summaryText += `\n  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}  ${pairIdStr} ${nameStr}`;
-            if (debug) this.summaryText += `   boards:${mpRec.boards}`;
+            if (forPairs.includes(pairId)) { 
+                const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
+                const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(1) + '%').padStart(6, ' ');
+                const pairObj: Pair | undefined = p.pairNameMap.get(pairId);
+                const pairIdStr: string = `${p.pairnumToString(pairId, true).padStart(4,' ')}`;
+                const nameStr: string = (pairObj ? pairObj.shortString() : '');
+                pbt.push(`  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}  ${pairIdStr} ${nameStr}`);
                 place++;
+            }
         });
+        pbt.push(' ');
     }
 
     outputOneBoardText(pbt: string[], boardObj: BoardObj) {
         const p: GameDataService = this.gameDataPtr;
         pbt.push(`  `);
-        pbt.push(`   RESULTS OF BOARD ${boardObj.bdnum}`);
+        pbt.push(`   RESULTS OF BOARD ${boardObj.bdnum}`); 
+        pbt.push(`  `);
         pbt.push(`    SCORES       MATCHPOINTS    NAMES`);
         pbt.push(`   N-S   E-W     N-S    E-W`);
         
         // for each pair, get totals of mps and number of boards
-        Array.from(boardObj.boardPlays.entries()).forEach( ([nsPair, boardPlay]) => {
+        const boardPlayEntriesAry = Array.from(boardObj.boardPlays.entries());
+        const sortedBoardPlayEntriesAry = boardPlayEntriesAry.sort((a, b) => {
+            const nsPairA: number = a[0];
+            const nsPairB: number = b[0];
+            const mpA: number = boardObj.pairToMpMap.get(nsPairA)!;
+            const mpB: number = boardObj.pairToMpMap.get(nsPairB)!;
+            // each should have an entry in the boardObj.pairToMpMap;
+            return (mpA < mpB ? 1: -1)
+        });
+        sortedBoardPlayEntriesAry.forEach( ([nsPair, boardPlay]) => {
             if (!boardPlay.isScoreEmpty()) {
                 const ewPair = boardPlay.ewPair;
                 const scoreText: string = `${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}`;
@@ -81,17 +96,16 @@ export class GameSummaryComponent {
                 pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
             }
         });
+        pbt.push(`----------------------------------------------------------------------`);
     }
     
-    outputPerBoardData() {
+    outputPerBoardData(pbt: string[]) {
         const p: GameDataService = this.gameDataPtr;
-        const pbt: string[] = [];
         pbt.push(`  `);
 
         Array.from(p.boardObjs.values()).forEach( boardObj => {
             this.outputOneBoardText(pbt, boardObj);
         });
-        this.summaryText = pbt.join('\n');
     }
                 
                 
@@ -127,9 +141,6 @@ export class GameSummaryComponent {
         // compute Top overall score to get percentages
         const boardsScoredTop = boardsScored * p.boardTop;
 
-        this.summaryText = `${fullyEnteredBoards} Boards have been fully scored...`;
-        if (debug) this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
-        
         // find out which pair has played the most boards
         let maxBoards = 0;
         Array.from(pairMpRecs.entries()).forEach( ([pairId, mpRec]) => {
@@ -142,14 +153,23 @@ export class GameSummaryComponent {
                 mpRec.boards = maxBoards;
             }
         });
-
-       
-        // testing , show records
+        
+        // show records
         if (fullyEnteredBoards !== 0) {
-            this.outputPairMpRecs(pairMpRecs, boardsScoredTop);
+            let pbt = [];
+            pbt.push(`${fullyEnteredBoards} Boards have been fully scored...\n`);
+            
+            // always output summary data
+            // NS pairs includes all pairs in howell mode
+            // EW pairs will be empty except in mitchell mode
+            const headerText = (p.isHowell ? 'All Pairs' : 'NS Pairs');
+            this.outputShortSummary(pbt, headerText, p.pairIdsNS, pairMpRecs, boardsScoredTop);
+            this.outputShortSummary(pbt, 'EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
+            // only do per-board data in long mode
             if (this.size === 'long') {
-                this.outputPerBoardData();
+                this.outputPerBoardData(pbt);
             }
+            this.summaryText = pbt.join('\n');
         }
     }
 }

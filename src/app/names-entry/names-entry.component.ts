@@ -16,7 +16,6 @@ import * as _ from 'lodash';
 
 export class NamesEntryComponent implements AfterViewInit {
     @ViewChild('nameEntryDialog') nameEntryDialog!: ElementRef<HTMLDialogElement>;
-    @ViewChild('swapPairsDialog') swapPairsDialog!: ElementRef<HTMLDialogElement>;
     nameEntryDialogHeader: string = '';
     pairNameStrArrayNS: string[] = [];
     pairNameStrArrayEW: string[] = [];
@@ -57,11 +56,6 @@ export class NamesEntryComponent implements AfterViewInit {
     });
     nameEntryFormPairnum: number = 0;
     
-    swapPairsForm = new FormGroup({
-        pair1:  new FormControl(),
-        pair2:  new FormControl(),
-    });
-
     formErrorMsgAry: string[] = [];
     blankPair: Pair = new Pair(new Person('', ''), new Person('', ''));
 
@@ -230,7 +224,7 @@ export class NamesEntryComponent implements AfterViewInit {
     }        
 
     genLastNameCompletionList(curInput: string|null, id: number) {
-        console.log('genLastNameCompletionList', curInput, id);
+        // console.log('genLastNameCompletionList', curInput, id);
         this.nameCompletion = [];
         if (curInput === null) return;
         if (curInput.length < 2) return;
@@ -334,20 +328,6 @@ export class NamesEntryComponent implements AfterViewInit {
         window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
         this.gameDataPtr.saveToLocalStorage();
     }
-
-    onSwapPairsButtonClick(x: any) {
-        this.swapPairsDialog.nativeElement.showModal();
-    }
-    
-    onSwapPairsFormSubmit() {
-        const pair1: number|null|undefined = this.swapPairsForm.get('pair1')?.value;
-        const pair2: number|null|undefined = this.swapPairsForm.get('pair2')?.value;
-        if (!pair1 || !pair2) return;
-        const pairAry: number[] = _.range(1, this.gameDataPtr.numPairs + 1);
-        if (!pairAry.includes(pair1) || !pairAry.includes(pair2)) return;
-    }
-
-    // notInUseValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => { 
 
 }
 

@@ -5,6 +5,7 @@ import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LegalScore } from '../legal-score/legal-score.service';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
+import { FormGroup, FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 
 const nsEndBoardMarker: number = -1;
@@ -26,15 +27,24 @@ export class ScoreEntryComponent implements AfterViewInit {
     errmsg: string = '  ';
     @ViewChild('scoreInput') scoreInput!: ElementRef<HTMLInputElement>;
     @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
-    @ViewChild('boardSelect') boardSelect!: ElementRef<HTMLInputElement>;
     @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
-    @ViewChild('specialNS') specialNS!: ElementRef<HTMLInputElement>;
-    @ViewChild('specialEW') specialEW!: ElementRef<HTMLInputElement>;
     boardsToDoMsg: string = '';
+    boardSelectErrMsg: string = '';
+    unbalancedSpecialErrMsg: string = '';
+    
     unbalancedSpecialNSPrompt: string = '';
     unbalancedSpecialEWPrompt: string = '';
-    dialogClosedByEnter: boolean = false;
+    dialogClosedBySubmit: boolean = false;
     escapedFromUnbalanced: boolean = false;
+
+    gotoBoardForm = new FormGroup({
+        boardSelect:  new FormControl(''),
+    });
+
+    unbalancedSpecialForm = new FormGroup({
+        specialNS:  new FormControl(''),
+        specialEW:  new FormControl(''),
+    });
     
     constructor(private gameDataPtr: GameDataService,
                 private _legalScore: LegalScore,
@@ -115,7 +125,7 @@ export class ScoreEntryComponent implements AfterViewInit {
             this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  Vul:${bdvulStr}  SCORE:`;
             this.viewLines.push(this.errmsg);
             this.errmsg = '  ';
-            this.scoreInput.nativeElement.focus();
+            this.scoreInput?.nativeElement.focus();
         }
         else {
             // at the end of a board, initiate gotoBoard dialog
@@ -134,10 +144,10 @@ export class ScoreEntryComponent implements AfterViewInit {
                 }
             });
             
-            this.boardSelect.nativeElement.value = (defaultNextBoard === 0) ? '1' : defaultNextBoard.toString();            
-            this.dialogClosedByEnter = false;
+            this.gotoBoardForm.get('boardSelect')?.setValue( defaultNextBoard.toString() );            
+            this.dialogClosedBySubmit = false;
             this.gotoBoardDialog.nativeElement.onclose = () => {
-                if (!this.dialogClosedByEnter) {
+                if (!this.dialogClosedBySubmit) {
                     // dialog was closed via escape key
                     this._router.navigate(["/status"]);
                 }
@@ -147,48 +157,52 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
 
 
-    onGoToBoardInputKeyUp(x: any) {   
-        const key: string = x.key;
-        let curInput: string = x.target.value;
-        // console.log(`boardSelect: key=${key}, curinput=${curInput}`);
-        if (key === 'Enter') {
-            const inputNum = parseInt(curInput);
-            x.target.value = '';
-            if (inputNum > 0 && inputNum <= this.gameDataPtr.numBoards) {
-                this.curBoardNum = inputNum;
-                this.buildNSOrder();
-                this.onNS = this.nsOrder[0];
-                this.dialogClosedByEnter = true;
-                this.gotoBoardDialog.nativeElement.close();
-                this.updateView();
-            }
+    onGoToBoardFormSubmit() {   
+        this.boardSelectErrMsg = '';
+        const boardSelectStr: string|null|undefined = this.gotoBoardForm.get(`boardSelect`)?.value;
+        if (!boardSelectStr) {
+            this.boardSelectErrMsg = `Board number must be in range 1 to ${this.gameDataPtr.numBoards}`;
+            return;
+        }
+        
+        const boardSelect = parseInt(boardSelectStr!);
+        if (boardSelect > 0 && boardSelect <= this.gameDataPtr.numBoards) {
+            this.curBoardNum = boardSelect;
+            this.buildNSOrder();
+            this.onNS = this.nsOrder[0];
+            this.lastInput = '';
+            this.dialogClosedBySubmit = true;
+            this.gotoBoardDialog.nativeElement.close();
+            this.updateView();
+        } else if (boardSelect === 0 && this.boardsToDoMsg.length === 0) {
+            this.dialogClosedBySubmit = true;
+            this.gotoBoardDialog.nativeElement.close();
+            this._router.navigate(["/status"]);
+        } else {
+            this.boardSelectErrMsg = `Board number must be in range 1 to ${this.gameDataPtr.numBoards}`;
+            return;
         }
     }
 
     checkUnbalancedSpecialInputs(): boolean {
-        // if we find one that is empty, focus there and return false
-        const inputElems: ElementRef<HTMLInputElement>[] = [this.specialNS, this.specialEW];
+        // check that both are legal combination.
+        this.unbalancedSpecialErrMsg = '';
         const strMap: Map<string, string> = new Map<string, string> (
             [['A', 'AVE'],
              ['A+', 'AVE+'],
              ['A-', 'AVE-']]);
         const legals = Array.from(strMap.keys());
-        let elem: ElementRef<HTMLInputElement>;
-        for (elem of inputElems) {
-            if (!legals.includes(elem.nativeElement.value)) {
-                elem.nativeElement.value = '';
-            }                
-            if (elem.nativeElement.value === '') {
-                elem.nativeElement.focus();
-                return false;
-            }
+        const specialNSStr: string|null|undefined = this.unbalancedSpecialForm.get(`specialNS`)?.value;
+        const specialEWStr: string|null|undefined = this.unbalancedSpecialForm.get(`specialEW`)?.value;
+        if (!specialNSStr || !legals.includes(specialNSStr) ||
+            !specialEWStr || !legals.includes(specialEWStr) ) {
+            this.unbalancedSpecialErrMsg = 'Specify A, A+, A- for each of NS and EW';
+            return false;
         }
-        
+
         // now know both are legal special inputs
-        const strNS: string = strMap.get(this.specialNS.nativeElement.value) ?? '';
-        const strEW: string = strMap.get(this.specialEW.nativeElement.value) ?? '';
-        this.specialNS.nativeElement.value = '';
-        this.specialEW.nativeElement.value = '';
+        const strNS: string = strMap.get(specialNSStr!) ?? '';
+        const strEW: string = strMap.get(specialEWStr!) ?? '';
         const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
         curBoardPlay.addSpecialScoreInfo(strNS, strEW);
         this.onNS = this.getNewNS(1);
@@ -196,28 +210,16 @@ export class ScoreEntryComponent implements AfterViewInit {
         return true;
     }
     
-    onSpecialInputKeyUpCommon(kind: string, x: any) {
-        const key: string = x.key;
-        x.target.value = x.target.value.toUpperCase();
-        if (key === 'Enter') {
-            const ok: boolean = this.checkUnbalancedSpecialInputs();
-            if (ok) {
-                this.dialogClosedByEnter = true;
-                this.unbalancedSpecialDialog.nativeElement.close();
-            }
-        }
-        else if (key === 'Escape') {
-            // dialog was closed via escape key
+    unbalancedSpecialFormSubmit() {
+        const ok: boolean = this.checkUnbalancedSpecialInputs();
+        if (ok) {
+            this.dialogClosedBySubmit = true;
             this.unbalancedSpecialDialog.nativeElement.close();
         }
-    }
-
-    onSpecialNSInputKeyUp(x : any) {
-         this.onSpecialInputKeyUpCommon('NS', x);
-    }
-
-    onSpecialEWInputKeyUp(x : any) {
-        this.onSpecialInputKeyUpCommon('EW', x);
+        else {
+            this.unbalancedSpecialErrMsg = 'Special code needed for NS and EW';
+            return;
+        }
     }
 
     checkScoreLegality(newScore:number) {
@@ -302,11 +304,11 @@ export class ScoreEntryComponent implements AfterViewInit {
                     const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
                     this.unbalancedSpecialNSPrompt = `Board ${this.curBoardNum}, NS Pair ${curBoardPlay.nsPair}:`
                     this.unbalancedSpecialEWPrompt = `Board ${this.curBoardNum}, EW Pair ${curBoardPlay.ewPair}:`
-                    this.specialNS.nativeElement.value = '';
-                    this.specialEW.nativeElement.value = '';
-                    this.dialogClosedByEnter = false;
+                    this.unbalancedSpecialForm.get('specialNS')?.setValue('');
+                    this.unbalancedSpecialForm.get('specialEW')?.setValue('');
+                    this.dialogClosedBySubmit = false;
                     this.unbalancedSpecialDialog.nativeElement.onclose = () => {
-                        if (!this.dialogClosedByEnter) {
+                        if (!this.dialogClosedBySubmit) {
                             // dialog was closed via escape key
                             // stay on this onNS, nothing to do?
                             this.escapedFromUnbalanced = true;

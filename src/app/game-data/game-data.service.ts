@@ -127,7 +127,7 @@ export class BoardObj {
                 this.pairToMpMap.set(ewPair, ewMps);
             }
         });
-        console.log(this.pairToMpMap);
+        // console.log(this.pairToMpMap);
     }
 
     getSpecialMP(kind: string, boardTop: number): number {

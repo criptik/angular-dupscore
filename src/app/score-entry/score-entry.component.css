@@ -28,3 +28,9 @@ input.px20 {
     color:black;
     background:white
 }
+
+.error-msg-alert {
+    font-size:20px;
+    color: red;
+    background:white
+}

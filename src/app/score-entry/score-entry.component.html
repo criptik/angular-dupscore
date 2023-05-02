@@ -15,32 +15,44 @@
             <div>{{viewline}}</div>
         </ng-template>
     </ng-container>
-    <div>{{inputLine}}<input autofocus #scoreInput id="scoreInput" (keyup)="onScoreEntryInputKeyUp($event)" size="5"></div>
+    <div>{{inputLine}}<input autofocus #scoreInput id="scoreInput" (keyup)="onScoreEntryInputKeyUp($event)" size="5" autocomplete="off"></div>
 </div>
 
 <dialog class="px20" #gotoBoardDialog>
-    <section>
+    <form [formGroup]="gotoBoardForm" id="gotoBoardForm" (submit)="onGoToBoardFormSubmit()">
         <p> Boards Remaining </p>
         <p> {{boardsToDoMsg}} </p>
         <p>
             <label for="boardSelect"> GoTo Board: </label>
-            <input class="px20" id="boardSelect" #boardSelect autofocus (keyup)="onGoToBoardInputKeyUp($event)">
+            <input class="px20" type="text" id="boardSelect" name="boardSelect" formControlName="boardSelect" autocomplete="off">
         </p>
-    </section>
+        <ng-container *ngIf="boardSelectErrMsg.length > 0">
+            <div class="error-msg-alert">
+                {{boardSelectErrMsg}}
+            </div>
+        </ng-container>
+        <button type="submit" class="px20"> Submit </button>
+    </form>
 </dialog>
 
 <dialog class="px20" #unbalancedSpecialDialog>
-    <section>
+    <form [formGroup]="unbalancedSpecialForm" id="unbalancedSpecialForm" (submit)="unbalancedSpecialFormSubmit()">
         <p>
             Enter Special Scores:
         </p>
         <p>
             <label for="specialNS"> {{unbalancedSpecialNSPrompt}} </label>
-            <input class="px20" id="specialNS" #specialNS (keyup)="onSpecialNSInputKeyUp($event)">
+            <input class="px20" type="text" id="specialNS" name="specialNS" formControlName="specialNS" autocomplete="off">
         </p>
         <p>
             <label for="specialEW"> {{unbalancedSpecialEWPrompt}} </label>
-            <input class="px20" id="specialEW" #specialEW  (keyup)="onSpecialEWInputKeyUp($event)">
+            <input class="px20" type="text" id="specialEW" name="specialEW" formControlName="specialEW" autocomplete="off">
         </p>
-    </section>
+        <ng-container *ngIf="unbalancedSpecialErrMsg.length > 0">
+            <div class="error-msg-alert">
+                {{unbalancedSpecialErrMsg}}
+            </div>
+        </ng-container>
+        <button type="submit" class="px20"> Submit </button>
+    </form>
 </dialog>

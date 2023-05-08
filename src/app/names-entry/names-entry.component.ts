@@ -1,12 +1,13 @@
-import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, ViewChild, AfterViewInit, OnInit, NgModule } from '@angular/core';
 import { Directive, ElementRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GameDataService, Person, Pair } from '../game-data/game-data.service';
 import { SerializerService } from '../serializer/serializer.service';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule,
-         AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+         AbstractControl, ValidationErrors, ValidatorFn, NgControl } from '@angular/forms';
 import {trigger, state, style, animate, transition} from '@angular/animations';
 import * as _ from 'lodash';
+
 
 @Component({
     selector: 'app-names-entry',
@@ -23,6 +24,7 @@ export class NamesEntryComponent implements AfterViewInit {
     locStorageKey: string = 'dupscore-Names';
     
     allNames :Person[] = [];
+    allUnusedNames: Person[] = [];
     swapPairFirst: number = 0;
 
     allNamesSeed: Person[] = [
@@ -34,19 +36,19 @@ export class NamesEntryComponent implements AfterViewInit {
         new Person('Dan', 'Seitz'),
         new Person('Sandy', 'Worley'),
         new Person('Dennis', 'Worley'),
-        new Person('McMillen', 'Evelyn'),
-        new Person('Roebuck', 'Ernie'),
-        new Person('McColl', 'Kathy'),
-        new Person('McColl', 'Joel'),
-        new Person('Hamman', 'Mary Dee'),
-        new Person('Davis', 'David'),
+        new Person('Evelyn', 'McMillen'),
+        new Person('Ernie', 'Roebuck'),
+        new Person('Kathy', 'McColl', ),
+        new Person('Joel', 'McColl'),
+        new Person('Mary Dee', 'Hamman'),
+        new Person('David', 'Davis'),
     ];
     
-    allLastNames: string[] = [];
+    allUnusedLastNames: string[] = [];
     nameCompletion: string[] = [];
     lastFirstMap: Map<string, string[]> = new Map();
-    exactArraysLastName: Map<number, string[]> = new Map();
-    exactArraysFirstName: Map<number, string[]> = new Map();
+    // exactArraysLastName: Map<number, string[]> = new Map();
+    // exactArraysFirstName: Map<number, string[]> = new Map();
 
     nameEntryForm = new FormGroup({
         lastName1:  new FormControl(''),
@@ -58,7 +60,7 @@ export class NamesEntryComponent implements AfterViewInit {
     
     formErrorMsgAry: string[] = [];
     blankPair: Pair = new Pair(new Person('', ''), new Person('', ''));
-
+    curInputsSeen: string[] = [];
 
     constructor(public   gameDataPtr: GameDataService,
                 private _router: Router,
@@ -77,6 +79,7 @@ export class NamesEntryComponent implements AfterViewInit {
         this.swapPairFirst = 0;
         // console.log('target.id', x.target.id);
         // parse number from id which is nameXX
+        this.formErrorMsgAry = [];
         const pairnum = this.pairnumFromId(x.target.id);
         const pairText:string = this.gameDataPtr.pairnumToString(pairnum);
         this.nameEntryDialogHeader = `Names for Pair ${pairText}`;
@@ -159,6 +162,7 @@ export class NamesEntryComponent implements AfterViewInit {
     }
 
     fillAllNames() {
+        window.localStorage.removeItem(this.locStorageKey);
         const jsonStr: string = window.localStorage.getItem(this.locStorageKey) ?? '';
         if (jsonStr === '') {
             this.allNames = this.allNamesSeed;
@@ -167,6 +171,8 @@ export class NamesEntryComponent implements AfterViewInit {
             this.allNames = this._serializer.deserialize(jsonStr, ['Person']);
         }
         this.cleanupAllNames();
+        // initialize unused names
+        this.allUnusedNames = this.allNames;
     }
     
     ngOnInit() {
@@ -179,63 +185,76 @@ export class NamesEntryComponent implements AfterViewInit {
 
         // read in the Name DataBase, or seed if not there
         this.fillAllNames();
-        
-        // for testing name completion
-        this.allLastNames = _.uniq(this.allNames.map( person => person.last));
-        // console.log('allLast', this.allLastNames);
-        this.lastFirstMap = new Map();
-        this.allNames.forEach( (person) => {
-            const anow = this.lastFirstMap.get(person.last) ?? [];
-            anow.push(person.first);
-            this.lastFirstMap.set(person.last, anow);
-        });
-        // console.log('lastFirstMap', this.lastFirstMap);
-
-        // to speed up testing
-        if (false) {
-            const playerA: Person = new Person('Tom', 'Deneau');
-            const playerB: Person = new Person('Gul', 'Deneau');
-            const newPair = new Pair(playerA, playerB);
-            this.gameDataPtr.pairNameMap.set(1, newPair);
-            const playerA2: Person = new Person('Joe', 'Biden');
-            const playerB2: Person = new Person('Kamala', 'Harris');
-            const newPair2 = new Pair(playerA2, playerB2);
-            this.gameDataPtr.pairNameMap.set(4, newPair2);
-        }
-        this.updatePairNameStrArray();
+        this.updatePairNameStrArray();        
     }
 
     ngAfterViewInit() {
     }
 
-    handleExactCompletionList(id: number, lastFirstStr: string, curInput: string,
-                              completionList: string[], savedExactArrays: Map<number, string[]>) {
+    handleExactCompletionList(id: number, lastFirstStr: string, curInput: string, completionList: string[]) {
         // keep track of the cases where there is only one entry
-        const exactArray: string[] = savedExactArrays.get(id) ?? [];
-        // console.log('exact', exactArray, completionList[0]);
-        if (completionList.length === 1 && !exactArray.includes(completionList[0]) && curInput !== completionList[0]) {
-            // const control = (id === 1 ? this.nameEntryForm.get('lastName1') : this.nameEntryForm.get('lastName2'));
+        const listTop: string = completionList[0];
+        // the curInputsSeen logic is to prevent being unable to erase?
+        if (completionList.length === 1 && curInput !== listTop && !this.curInputsSeen.includes(curInput)) {
             const control = this.nameEntryForm.get(`${lastFirstStr}Name${id}`);
-            control?.setValue(completionList[0] as never);
-            // console.log('set Exact', control, completionList[0]);
-            exactArray.push(completionList[0]);
-            savedExactArrays.set(id, exactArray);
+            control?.setValue(listTop as never);
+            (<any> control).nativeElement.setSelectionRange(curInput.length, listTop.length);
+            (<any> control).nativeElement.focus();
+            // console.log('set Exact', curInput, listTop);
+            this.curInputsSeen.push(curInput);
         }
     }        
 
+    personAlreadyInCurrentForm(checkPerson: Person): boolean {
+        const playerA: Person = new Person(this.nameEntryForm.value.firstName1!, this.nameEntryForm.value.lastName1!);
+        const playerB: Person = new Person(this.nameEntryForm.value.firstName2!, this.nameEntryForm.value.lastName2!);
+        return (checkPerson.matches(playerA) || checkPerson.matches(playerB));
+    }
+    
+    buildUnusedNameLists() {
+        this.curInputsSeen = [];
+        this.allUnusedNames = this.allNames.filter( (checkPerson) => {
+            const pairNameMapNum: number = this.personAlreadyInPairNameMap(checkPerson);
+            const inCurrentForm: boolean = this.personAlreadyInCurrentForm(checkPerson);
+            // console.log(checkPerson, pairNameMapNum, inCurrentForm);
+            return(pairNameMapNum === 0  && !inCurrentForm);
+        });
+        // console.log('allUnusedNames', this.allUnusedNames);
+        this.allUnusedLastNames = _.uniq(this.allUnusedNames.map( person => person.last));
+        // console.log('allUnusedLast', this.allUnusedLastNames);
+        this.lastFirstMap = new Map();
+        this.allUnusedNames.forEach( (person) => {
+            const anow = this.lastFirstMap.get(person.last) ?? [];
+            anow.push(person.first);
+            this.lastFirstMap.set(person.last, anow);
+        });
+        // console.log('lastFirstMap', this.lastFirstMap);
+    }
+    
     genLastNameCompletionList(curInput: string|null, id: number) {
         // console.log('genLastNameCompletionList', curInput, id);
+        // console.log(this.allUnusedLastNames);
+        const curInputStr: string = curInput ?? '';
         this.nameCompletion = [];
-        if (curInput === null) return;
-        if (curInput.length < 2) return;
+        if (curInputStr === '' && id === 2) {
+            // attempt to seed with same last name since couples often play
+            const lastName1 = this.nameEntryForm.value.lastName1;
+            if (lastName1 && this.allUnusedLastNames.includes(lastName1)) {
+                this.handleExactCompletionList(id, 'last', '', [lastName1!]);
+                return;
+            }
+        }
+        if (curInputStr.length < 2) return;
 
-        const completionList: string[] = this.allLastNames.filter( name =>
-            name.toUpperCase().startsWith(curInput.toUpperCase()));
+        const completionList: string[] = this.allUnusedLastNames.filter( name =>
+            name.toUpperCase().startsWith(curInputStr.toUpperCase()));
         this.nameCompletion = completionList;
-        this.handleExactCompletionList(id, 'last', curInput, completionList, this.exactArraysLastName)
+        this.handleExactCompletionList(id, 'last', curInputStr, completionList)
     }
     
     onLastNameFocus(x: any) {
+        this.buildUnusedNameLists();
+        this.formErrorMsgAry = [];
         // console.log('onLastNameFocus', this.nameEntryForm.errors);
         this.genLastNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
     }
@@ -251,19 +270,13 @@ export class NamesEntryComponent implements AfterViewInit {
 
         // console.log('firstNameCompletionList', completionList);
         this.nameCompletion = completionList;
-        this.handleExactCompletionList(id, 'first', curInput, completionList, this.exactArraysFirstName)
+        this.handleExactCompletionList(id, 'first', curInput, completionList)
     }
     
     onFirstNameFocus(x: any) {
+        this.buildUnusedNameLists();
+        this.formErrorMsgAry = [];
         this.genFirstNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
-    }
-
-    addToAllNames(player: Person) {
-        // add it if it is not already there
-        const notIn: boolean = this.allNames.every( (curPerson) => !curPerson.matches(player));
-        if (notIn) {
-            this.allNames.push(player);
-        }
     }
 
     cleanupAllNames() {
@@ -316,8 +329,6 @@ export class NamesEntryComponent implements AfterViewInit {
         const playerA: Person = new Person(this.nameEntryForm.value.firstName1!, this.nameEntryForm.value.lastName1!);
         const playerB: Person = new Person(this.nameEntryForm.value.firstName2!, this.nameEntryForm.value.lastName2!);
         const newPair = new Pair(playerA, playerB);
-        this.addToAllNames(playerA);
-        this.addToAllNames(playerB);
         this.gameDataPtr.pairNameMap.set(pairnum, newPair);
         // console.log(newPair);
         // clear form fields
@@ -329,6 +340,25 @@ export class NamesEntryComponent implements AfterViewInit {
         this.gameDataPtr.saveToLocalStorage();
     }
 
+    onEnterKey(x: any) {
+        // console.log('Enter', x);
+        x.preventDefault();
+    }
+}
+
+
+@Directive({
+    selector: '[formControlName]'
+})
+export class NativeElementInjectorDirective implements OnInit {
+    constructor (private el: ElementRef,
+                 private control : NgControl) {
+    }
+    
+    ngOnInit(){
+        (this.control.control as any).nativeElement = this.el.nativeElement;
+        // console.log(this.control);
+    }
 }
 
 

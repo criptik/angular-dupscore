@@ -42,7 +42,7 @@
      <button class="px20" (click)="onSwapPairsButtonClick($event)"> Swap Pairs </button>
 -->
 <dialog class="px20" #nameEntryDialog>
-    <form [formGroup]="nameEntryForm" id="nameEntryForm" (submit)="onNameEntryFormSubmit()">
+    <form [formGroup]="nameEntryForm" id="nameEntryForm">
         <p>
                 {{ nameEntryDialogHeader }}
             </p>
@@ -51,15 +51,15 @@
             </pre>
             1
             <input class="px20" type="text" id="lastName1" name="lastName1" formControlName="lastName1" list="nameCompleterList"
-                   (focus)="onLastNameFocus($event)" autocomplete="off">
+                   (focus)="onLastNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off">
             <input class="px20" type="text" id="firstName1" name="firstName1" formControlName="firstName1" list="nameCompleterList"
-                   (focus)="onFirstNameFocus($event)"  autocomplete="off">
+                   (focus)="onFirstNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off">
             <br/>
             2
             <input class="px20" type="text" id="lastName2" name="lastName2" formControlName="lastName2" e list="nameCompleterList"
-                   (focus)="onLastNameFocus($event)" autocomplete="off" >
+                   (focus)="onLastNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off" >
             <input class="px20" type="text" id="firstName2" name="firstName2" formControlName="firstName2" list="nameCompleterList"
-                   (focus)="onFirstNameFocus($event)"  autocomplete="off">
+                   (focus)="onFirstNameFocus($event)"  (keyup.enter)="onEnterKey($event)" autocomplete="off">
             
             <datalist id="nameCompleterList">
                 <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
@@ -69,7 +69,7 @@
                 {{msg}}
             </div>
             <p>
-                <button type="submit" form="nameEntryForm" class="px30"> Submit </button>
+                <button type="button" form="nameEntryForm" class="px30"   (click)="onNameEntryFormSubmit()"> Submit </button>
             </p>
         </form>
     </dialog>

@@ -11,7 +11,7 @@ import { GameDataComponent } from './game-data/game-data.component';
 import { GameDataService } from './game-data/game-data.service';
 import { GameSummaryComponent } from './game-summary/game-summary.component';
 import { GameSetupComponent } from './game-setup/game-setup.component';
-import { NamesEntryComponent } from './names-entry/names-entry.component';
+import { NamesEntryComponent, NativeElementInjectorDirective } from './names-entry/names-entry.component';
 
 @NgModule({
     declarations: [
@@ -22,6 +22,7 @@ import { NamesEntryComponent } from './names-entry/names-entry.component';
         GameSummaryComponent,
         GameSetupComponent,
         NamesEntryComponent,
+        NativeElementInjectorDirective,
     ],
     imports: [
         BrowserModule,

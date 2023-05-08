@@ -66,23 +66,20 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
 
         // set boardnum to first incomplete board
-        this.curBoardNum = 1;  // default if nothing found below
+        let startingBoard = 1; // default if nothing found below
         Array.from(this.gameDataPtr.boardObjs.values()).every( bdobj => {
             // console.log(`board ${bdobj.bdnum}, allEntered=${bdobj.allPlaysEntered}`);
             if (!bdobj.allPlaysEntered) {
-                this.curBoardNum = bdobj.bdnum;
+                startingBoard = bdobj.bdnum;
             }
             return bdobj.allPlaysEntered;
         });
-
-        this.buildNSOrder();
-        this.onNS = this.nsOrder[0];
-        // console.log(this.nsOrder);
+        this.startBoard(startingBoard);
         this.updateView();
     }
 
     getVulStr(bdnum: number): string {
-        const bdobj: BoardObj = this.gameDataPtr.boardObjs.get(bdnum) as BoardObj;
+        const bdobj: BoardObj = this.getBoardObj(bdnum);
         const vulNS = bdobj.vulNS;
         const vulEW = bdobj.vulEW;
         if (!vulNS && !vulEW) return 'NONE';
@@ -156,7 +153,13 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
     }
 
-
+    startBoard(startingBoard: number) {
+        this.curBoardNum = startingBoard;
+        this.buildNSOrder();
+        this.onNS = this.nsOrder[0];
+        this.lastInput = '';
+    }
+    
     onGoToBoardFormSubmit() {   
         this.boardSelectErrMsg = '';
         const boardSelectStr: string|null|undefined = this.gotoBoardForm.get(`boardSelect`)?.value;
@@ -166,11 +169,8 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
         
         const boardSelect = parseInt(boardSelectStr!);
+        this.startBoard(boardSelect);
         if (boardSelect > 0 && boardSelect <= this.gameDataPtr.numBoards) {
-            this.curBoardNum = boardSelect;
-            this.buildNSOrder();
-            this.onNS = this.nsOrder[0];
-            this.lastInput = '';
             this.dialogClosedBySubmit = true;
             this.gotoBoardDialog.nativeElement.close();
             this.updateView();
@@ -223,14 +223,14 @@ export class ScoreEntryComponent implements AfterViewInit {
     }
 
     checkScoreLegality(newScore:number) {
-        const bdobj: BoardObj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
+        const bdobj: BoardObj = this.getBoardObj(this.curBoardNum);
         const vulNS = bdobj.vulNS;
         const vulEW = bdobj.vulEW;
         return this._legalScore.checkNSScoreLegal(newScore, vulNS, vulEW);
     }
 
     getBoardPlays(bdnum: number): Map<number, BoardPlay> {
-        const boardPlays = this.gameDataPtr.boardObjs.get(bdnum)?.boardPlays as Map<number, BoardPlay>;
+        const boardPlays = this.getBoardObj(bdnum).boardPlays as Map<number, BoardPlay>;
         return boardPlays;
     }
     
@@ -415,9 +415,14 @@ export class ScoreEntryComponent implements AfterViewInit {
         if (newidx >= this.nsOrder.length) return nsEndBoardMarker;  // special code for end of board scores
         else return this.nsOrder[newidx];
     }
+
+    getBoardObj(forBoardNum: number): BoardObj {
+        const bdobj = this.gameDataPtr.boardObjs.get(forBoardNum) as BoardObj;
+        return bdobj;
+    }
     
     buildNSOrder() {
-        const bdobj = this.gameDataPtr.boardObjs.get(this.curBoardNum) as BoardObj;
+        const bdobj = this.getBoardObj(this.curBoardNum);
         this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort();
     }
 

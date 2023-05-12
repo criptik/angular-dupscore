@@ -5,18 +5,18 @@ import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LegalScore } from '../legal-score/legal-score.service';
 import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 
 const nsEndBoardMarker: number = -1;
 
+
 @Component({
-    selector: 'app-score-entry',
-    templateUrl: './score-entry.component.html',
-    styleUrls: ['./score-entry.component.css']
+    template: '',
+    styleUrls: []
 })
 
-export class ScoreEntryComponent implements AfterViewInit {
+abstract class ScoreBaseComponent implements AfterViewInit {
     curBoardNum: number = 0;
     viewLines: string[] = [];
     nsOrder: number[] = [];
@@ -34,7 +34,6 @@ export class ScoreEntryComponent implements AfterViewInit {
     
     unbalancedSpecialNSPrompt: string = '';
     unbalancedSpecialEWPrompt: string = '';
-    dialogClosedBySubmit: boolean = false;
     escapedFromUnbalanced: boolean = false;
 
     gotoBoardForm = new FormGroup({
@@ -46,18 +45,23 @@ export class ScoreEntryComponent implements AfterViewInit {
         specialEW:  new FormControl(''),
     });
     
-    constructor(private gameDataPtr: GameDataService,
-                private _legalScore: LegalScore,
-                private _router: Router,
-                private _activatedRoute: ActivatedRoute,)  {
+    constructor(public gameDataPtr: GameDataService,
+                public _legalScore: LegalScore,
+                public _router: Router,
+                public _activatedRoute: ActivatedRoute,)  {
         // console.log(`in constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
     }
 
     ngAfterViewInit() {
         // console.log(this.specialNS, this.specialEW);
+        this.initComponent();
     }
     
     ngOnInit() {
+    }
+
+    initComponent() {
+        console.log('ngOnInit in base');
         // when this is called, parent is all setup
         // console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
         if (!this.gameDataPtr.gameDataSetup) {
@@ -66,14 +70,7 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
 
         // set boardnum to first incomplete board
-        let startingBoard = 1; // default if nothing found below
-        Array.from(this.gameDataPtr.boardObjs.values()).every( bdobj => {
-            // console.log(`board ${bdobj.bdnum}, allEntered=${bdobj.allPlaysEntered}`);
-            if (!bdobj.allPlaysEntered) {
-                startingBoard = bdobj.bdnum;
-            }
-            return bdobj.allPlaysEntered;
-        });
+        const startingBoard = this.findStartingBoard();
         this.startBoard(startingBoard);
         this.updateView();
     }
@@ -94,25 +91,25 @@ export class ScoreEntryComponent implements AfterViewInit {
         const bdvulStr = this.getVulStr(this.curBoardNum);
         this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${bdvulStr}`;
         this.viewLines[1] = `   NS    SCORE    EW`;
-        // default for unused lines
-        [...Array(p.numNSPairs).keys()].forEach(pair => {
-            this.viewLines[pair+2] = `       ${'--'.repeat(5)}  `; 
-        });
-        let onEW = 0;
+        if (false) {
+            // default for unused lines
+            this.nsOrder.forEach((pairnum, index) => {
+                this.viewLines[index+2] = `       ${'--'.repeat(5)}  `; 
+            });
+        }
         // handle lines which have real ns&ew pairs (score may still be undefined)
-        const boardPlays = this.getBoardPlays(this.curBoardNum);
-        Array.from(boardPlays.values()).forEach((boardPlay: BoardPlay) => {
+        this.nsOrder.forEach((nsPair, index) => {
+            const boardPlay = this.getBoardPlay(this.curBoardNum, nsPair);
             const ewPair: number = boardPlay.ewPair;
-            const nsPair: number = boardPlay.nsPair;
             // console.log(nsPair, ewPair, nsScore);
-            let arrow: string = `   `;
-            if (nsPair === this.onNS) {
-                arrow = `==>`;
-                onEW = ewPair;
-            }
-            this.viewLines[nsPair+1] = `${arrow}${nsPair.toString().padStart(2,' ')}  ${p.scoreStr(boardPlay, true)} ${p.scoreStr(boardPlay, false)}  ${Math.abs(ewPair).toString().padStart(2,' ')}    `;
+            const arrow: string = (nsPair === this.onNS ? `==>` : `   `);
+            const nsPairStr: string = nsPair.toString().padStart(2,' ');
+            const ewPairStr: string = Math.abs(ewPair).toString().padStart(2,' ');
+            const nsScoreStr: string = p.scoreStr(boardPlay, true);
+            const ewScoreStr: string = p.scoreStr(boardPlay, false);
+            this.viewLines[index+2] = `${arrow}${nsPairStr}  ${nsScoreStr} ${ewScoreStr}  ${ewPairStr}    `;
         });
-        this.viewLines.push(` `); 
+        this.viewLines.push(` `); // separator line
         if (this.onNS !== nsEndBoardMarker) {
             // normal prompt for score for current boardplay
             // get boardplay for onNS
@@ -126,40 +123,25 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
         else {
             // at the end of a board, initiate gotoBoard dialog
-            p.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
-            const bdobj = p.boardObjs.get(this.curBoardNum) as BoardObj;
-            bdobj.computeMP(p.boardTop);
-            p.saveToLocalStorage();
-            // build the modal dialog box info
-            let defaultNextBoard: number = 0;
-            this.boardsToDoMsg = '';
-            // console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
-            Array.from(p.boardObjs.values()).forEach( bdobj => {
-                if (!bdobj.allPlaysEntered) {
-                    this.boardsToDoMsg += ` ${bdobj.bdnum}`;
-                    if (defaultNextBoard === 0) defaultNextBoard = bdobj.bdnum;
-                }
-            });
+            this.endOfBoardHook();
+            const defaultNextBoard = this.getBoardSelectInfo();
             
             this.gotoBoardForm.get('boardSelect')?.setValue( defaultNextBoard.toString() );            
-            this.dialogClosedBySubmit = false;
-            this.gotoBoardDialog.nativeElement.onclose = () => {
-                if (!this.dialogClosedBySubmit) {
-                    // dialog was closed via escape key
-                    this._router.navigate(["/status"]);
-                }
-            };
             this.gotoBoardDialog.nativeElement.showModal();
+            this.gotoBoardDialog.nativeElement.oncancel = () => {
+                // dialog was closed via escape key
+                this._router.navigate(["/status"]);
+            };
         }
     }
 
     startBoard(startingBoard: number) {
         this.curBoardNum = startingBoard;
         this.buildNSOrder();
-        this.onNS = this.nsOrder[0];
         this.lastInput = '';
+        this.initializeOnNS();
     }
-    
+
     onGoToBoardFormSubmit() {   
         this.boardSelectErrMsg = '';
         const boardSelectStr: string|null|undefined = this.gotoBoardForm.get(`boardSelect`)?.value;
@@ -169,13 +151,12 @@ export class ScoreEntryComponent implements AfterViewInit {
         }
         
         const boardSelect = parseInt(boardSelectStr!);
-        this.startBoard(boardSelect);
+        // console.log('boardSelect:', boardSelect, this.boardsToDoMsg);
         if (boardSelect > 0 && boardSelect <= this.gameDataPtr.numBoards) {
-            this.dialogClosedBySubmit = true;
             this.gotoBoardDialog.nativeElement.close();
+            this.startBoard(boardSelect);
             this.updateView();
         } else if (boardSelect === 0 && this.boardsToDoMsg.length === 0) {
-            this.dialogClosedBySubmit = true;
             this.gotoBoardDialog.nativeElement.close();
             this._router.navigate(["/status"]);
         } else {
@@ -213,7 +194,6 @@ export class ScoreEntryComponent implements AfterViewInit {
     unbalancedSpecialFormSubmit() {
         const ok: boolean = this.checkUnbalancedSpecialInputs();
         if (ok) {
-            this.dialogClosedBySubmit = true;
             this.unbalancedSpecialDialog.nativeElement.close();
         }
         else {
@@ -306,14 +286,10 @@ export class ScoreEntryComponent implements AfterViewInit {
                     this.unbalancedSpecialEWPrompt = `Board ${this.curBoardNum}, EW Pair ${curBoardPlay.ewPair}:`
                     this.unbalancedSpecialForm.get('specialNS')?.setValue('');
                     this.unbalancedSpecialForm.get('specialEW')?.setValue('');
-                    this.dialogClosedBySubmit = false;
-                    this.unbalancedSpecialDialog.nativeElement.onclose = () => {
-                        if (!this.dialogClosedBySubmit) {
-                            // dialog was closed via escape key
-                            // stay on this onNS, nothing to do?
-                            this.escapedFromUnbalanced = true;
-                            return;
-                        }
+                    this.unbalancedSpecialDialog.nativeElement.oncancel = () => {
+                        // dialog was closed via escape key
+                        // stay on this onNS, nothing to do?
+                        this.escapedFromUnbalanced = true;
                     };
                     this.unbalancedSpecialDialog.nativeElement.showModal();
                     return;
@@ -426,10 +402,110 @@ export class ScoreEntryComponent implements AfterViewInit {
         this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort();
     }
 
+    abstract endOfBoardHook():void;
+    abstract findStartingBoard(): number;
+    abstract getBoardSelectInfo(): number;
+    abstract isEntryComponent(): boolean;
+    abstract initializeOnNS(): void;
 }
 
+
+@Component({
+    selector: 'app-score-entry',
+    templateUrl: './score-entry.component.html',
+    styleUrls: ['./score-entry.component.css']
+})
+export class ScoreEntryComponent extends ScoreBaseComponent implements AfterViewInit {
+    constructor(public gameDataPtr: GameDataService,
+                public _legalScore: LegalScore,
+                public _router: Router,
+                public _activatedRoute: ActivatedRoute,)  {
+        super(gameDataPtr, _legalScore, _router, _activatedRoute);
+    }
+
+    isEntryComponent() {
+        return true;
+    }
+
+    initializeOnNS() {
+        this.onNS = this.nsOrder[0];
+    }
+
+    endOfBoardHook() {
+            const p: GameDataService = this.gameDataPtr;
+            p.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
+        const bdobj = p.boardObjs.get(this.curBoardNum) as BoardObj;
+        bdobj.computeMP(p.boardTop);
+        p.saveToLocalStorage();
+    }
+
+    findStartingBoard(): number {
+        let startingBoard = 1; // default if nothing found below
+        Array.from(this.gameDataPtr.boardObjs.values()).every( bdobj => {
+            // console.log(`board ${bdobj.bdnum}, allEntered=${bdobj.allPlaysEntered}`);
+            if (!bdobj.allPlaysEntered) {
+                startingBoard = bdobj.bdnum;
+            }
+            return bdobj.allPlaysEntered;
+        });
+        return startingBoard;
+    }
+    
+    getBoardSelectInfo(): number {
+        const p: GameDataService = this.gameDataPtr;
+        // build the modal dialog box info
+        let defaultNextBoard: number = 0;
+        this.boardsToDoMsg = '';
+        // console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
+        Array.from(p.boardObjs.values()).forEach( bdobj => {
+            if (!bdobj.allPlaysEntered) {
+                this.boardsToDoMsg += ` ${bdobj.bdnum}`;
+                if (defaultNextBoard === 0) defaultNextBoard = bdobj.bdnum;
+            }
+        });
+        return defaultNextBoard;
+    }
+}
+
+
+@Component({
+    selector: 'app-review-entry',
+    templateUrl: './score-entry.component.html',
+    styleUrls: ['./score-entry.component.css']
+})
+export class ScoreReviewComponent extends ScoreBaseComponent implements AfterViewInit {
+    constructor(public gameDataPtr: GameDataService,
+                public _legalScore: LegalScore,
+                public _router: Router,
+                public _activatedRoute: ActivatedRoute,)  {
+        super(gameDataPtr, _legalScore, _router, _activatedRoute);
+    }
+
+    isEntryComponent() {
+        return false;
+    }
+
+    initializeOnNS() {
+        this.onNS = nsEndBoardMarker;
+    }
+
+    endOfBoardHook() {
+    }
+
+    findStartingBoard() {
+        // in review mode, always start with board 1
+        return 1;
+    }
+
+    override getBoardSelectInfo(): number {
+        return (this.curBoardNum !== this.gameDataPtr.numBoards ? this.curBoardNum+1 : 0);
+    }
+    
+}
+
+
 @Directive({
-  selector: '[autofocus]'
+    selector: '[autofocus]'
 })
 export class AutofocusDirective {
     constructor(private elem : ElementRef) {

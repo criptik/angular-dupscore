@@ -15,13 +15,19 @@
             <div>{{viewline}}</div>
         </ng-template>
     </ng-container>
-    <div>{{inputLine}}<input autofocus #scoreInput id="scoreInput" (keyup)="onScoreEntryInputKeyUp($event)" size="5" autocomplete="off"></div>
+    <ng-container *ngIf="isEntryComponent()">
+        <div>
+        {{inputLine}}<input autofocus #scoreInput id="scoreInput" (keyup)="onScoreEntryInputKeyUp($event)" size="5" autocomplete="off">
+        </div>
+    </ng-container>
 </div>
 
 <dialog class="px20" #gotoBoardDialog>
     <form [formGroup]="gotoBoardForm" id="gotoBoardForm" (submit)="onGoToBoardFormSubmit()">
-        <p> Boards Remaining </p>
-        <p> {{boardsToDoMsg}} </p>
+        <ng-container *ngIf="isEntryComponent()">
+            <p> Boards Remaining </p>
+            <p> {{boardsToDoMsg}} </p>
+        </ng-container>
         <p>
             <label for="boardSelect"> GoTo Board: </label>
             <input class="px20" type="text" id="boardSelect" name="boardSelect" formControlName="boardSelect" autocomplete="off">

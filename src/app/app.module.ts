@@ -2,11 +2,11 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { Ng2CompleterModule } from 'ng2-completer';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ScoreEntryComponent, AutofocusDirective } from './score-entry/score-entry.component';
+import { ScoreEntryComponent, ScoreReviewComponent, AutofocusDirective } from './score-entry/score-entry.component';
 import { GameDataComponent } from './game-data/game-data.component';
 import { GameDataService } from './game-data/game-data.service';
 import { GameSummaryComponent } from './game-summary/game-summary.component';
@@ -17,6 +17,7 @@ import { NamesEntryComponent, NativeElementInjectorDirective } from './names-ent
     declarations: [
         AppComponent,
         ScoreEntryComponent,
+        ScoreReviewComponent,
         GameDataComponent,
         AutofocusDirective,
         GameSummaryComponent,
@@ -29,6 +30,7 @@ import { NamesEntryComponent, NativeElementInjectorDirective } from './names-ent
         HttpClientModule,
         AppRoutingModule,
         Ng2CompleterModule,
+        FormsModule,
         ReactiveFormsModule,
     ],
     providers: [],

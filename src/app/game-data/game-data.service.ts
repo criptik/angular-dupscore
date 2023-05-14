@@ -273,7 +273,7 @@ export class GameDataService {
     phantomPair: number = 0;
     
     constructor(
-        private http: HttpClient,
+        private _http: HttpClient,
         private _serializer: SerializerService,
     ) {
         // console.log('in game-data.service constructor');
@@ -355,7 +355,7 @@ export class GameDataService {
 
     // not used but kept here for reference
     // Initialize2() {
-    //     this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+    //     this._http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
     //         // console.log('in subscribe, res=', res, typeof res);
     //         const reader = new FileReader();
     //         reader.onloadend = (x) => {
@@ -374,7 +374,7 @@ export class GameDataService {
         this.phantomPair = phantomPair;
         this.pairNameMap = new Map<number, Pair>();
         
-        this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+        this._http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
             this.parseAbuf(abuf, totBoards);
             
@@ -392,7 +392,7 @@ export class GameDataService {
     async parseEarly(movement: string) {
         this.movFileName = `${movement}.MOV`;
         this.earlyGameDataSetup = false;
-        this.http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
+        this._http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
                 const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;
             this.parseAbufEarly(abuf);
         });
@@ -412,7 +412,9 @@ export class GameDataService {
     }
     
     doSerialize(): string {
-        return this._serializer.serialize(this, ['SerializerService', 'InjectionToken', 'R3Injector']);
+        return this._serializer.serialize(this, [this._serializer.constructor.name,
+                                                 this._http.constructor.name,
+                                                 'InjectionToken', 'R3Injector']);
     }
     doDeserialize(JSONStr: string) {
         const newobj: Object = this._serializer.deserialize(JSONStr, [

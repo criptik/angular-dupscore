@@ -17,6 +17,7 @@ export class SerializerService {
     }
 
     serialize(classInstance: any, excludedClasses:string[] = []): string {
+        // console.log('in serialize', classInstance, excludedClasses);
         return JSON.stringify(classInstance, (key, value) => {
             if (key === 'http') return undefined;
             if (value && typeof(value) === "object") {

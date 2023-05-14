@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, ViewChild, AfterViewInit, AfterContentInit } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
@@ -16,7 +16,7 @@ const nsEndBoardMarker: number = -1;
     styleUrls: []
 })
 
-abstract class ScoreBaseComponent implements AfterViewInit {
+abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     curBoardNum: number = 0;
     viewLines: string[] = [];
     nsOrder: number[] = [];
@@ -26,7 +26,7 @@ abstract class ScoreBaseComponent implements AfterViewInit {
     lastInput: string = '';
     errmsg: string = '  ';
     @ViewChild('scoreInput') scoreInput!: ElementRef<HTMLInputElement>;
-    @ViewChild('gotoBoardDialog') gotoBoardDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('gotoBoardDialog', {static: true}) gotoBoardDialog!: ElementRef<HTMLDialogElement>;
     @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
     boardsToDoMsg: string = '';
     boardSelectErrMsg: string = '';
@@ -53,13 +53,15 @@ abstract class ScoreBaseComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        // console.log(this.specialNS, this.specialEW);
-        this.initComponent();
     }
     
     ngOnInit() {
+        this.initComponent();
     }
 
+    ngAfterContentInit() {
+    }
+    
     initComponent() {
         console.log('ngOnInit in base');
         // when this is called, parent is all setup

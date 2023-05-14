@@ -199,7 +199,7 @@ export class BoardObj {
             // console.log(`factored pairToMpMap ${this.pairToMpMap}`);
         }
         // merge in special scores if any (after Neuberg stuff)
-        console.log(`specialMap, board ${this.bdnum}`, specialMap);
+        // console.log(`specialMap, board ${this.bdnum}`, specialMap);
         Array.from(specialMap.entries()).forEach( ([pairId, mps]) => {
             this.pairToMpMap.set(pairId, mps);
         });

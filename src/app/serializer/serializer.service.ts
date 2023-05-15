@@ -32,8 +32,7 @@ export class SerializerService {
                     return undefined;
                 }
 
-                this.dbglog(`serialize: key=${key}, value=${value}, type=${typeof(value)}`);
-                this.dbglog(`consname=${value.constructor.name}`);
+                this.dbglog(`serialize: key=${key}, value=${value}, __type=${value.constructor.name}`);
             }
             return value;
         }, ' ');
@@ -49,19 +48,19 @@ export class SerializerService {
                 } else if (includedClasses.includes(vtype)) {
                     let newobj: Object;
                     switch (vtype) {
-                        case 'Person':
+                        case Person.name:
                             newobj = new Person('x','y');
                             break;
-                        case 'Pair':
+                        case Pair.name:
                             newobj = new Pair(new Person('x','y'), new Person('x','y'));
                             break;
-                        case 'BoardObj':
+                        case BoardObj.name:
                             newobj = new BoardObj(1);
                             break;
-                        case 'BoardPlay':
+                        case BoardPlay.name:
                             newobj = new BoardPlay(1,2,3);
                             break;
-                        case 'GameDataService':
+                        case GameDataService.name:
                             newobj = {};
                             break;
                         default:

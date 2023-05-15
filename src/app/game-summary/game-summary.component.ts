@@ -104,7 +104,9 @@ export class GameSummaryComponent {
         pbt.push(`  `);
 
         Array.from(p.boardObjs.values()).forEach( boardObj => {
-            this.outputOneBoardText(pbt, boardObj);
+            if (boardObj.areAnyPlaysEntered()) {
+                this.outputOneBoardText(pbt, boardObj);
+            }
         });
     }
                 

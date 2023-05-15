@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, InjectionToken } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { SerializerService } from '../serializer/serializer.service';
 import * as _ from 'lodash';
@@ -47,12 +47,16 @@ export class BoardPlay {
         return(this.nsScore === SCORE_EMPTY);
     }
     
+    isScoreNonEmpty() {
+        return(this.nsScore !== SCORE_EMPTY);
+    }
+    
     isScoreSpecial() {
         return(this.nsScore === SCORE_SPECIAL);
     }
 
     isScoreNormal() {
-        return(!this.isScoreEmpty() && !this.isScoreSpecial());
+        return(this.isScoreNonEmpty() && !this.isScoreSpecial());
     }
     
 }
@@ -81,10 +85,17 @@ export class BoardObj {
     }
 
     updateAllPlaysEntered() {
-        this.allPlaysEntered = Array.from(this.boardPlays.values()).every( (bp: BoardPlay) => {
-            return (!bp.isScoreEmpty());
-        });
+        this.allPlaysEntered = this.areAllPlaysEntered();
     }
+
+    areAllPlaysEntered(): boolean {
+        return Array.from(this.boardPlays.values()).every( (bp: BoardPlay) => bp.isScoreNonEmpty() );
+    }
+
+    areAnyPlaysEntered(): boolean {
+        return Array.from(this.boardPlays.values()).some( (bp: BoardPlay) => bp.isScoreNonEmpty() );
+    }
+    
     
     getCbMap(ary: number[]) {
         const cbmap: NNMap = new Map();
@@ -408,21 +419,19 @@ export class GameDataService {
         const jsonStr = this.doSerialize();
         // console.log('jsonStr', jsonStr);
         this.doDeserialize(jsonStr);
-        console.log('deserialized', this);
+        // console.log('deserialized', this);
     }
     
     doSerialize(): string {
-        return this._serializer.serialize(this, [this._serializer.constructor.name,
-                                                 this._http.constructor.name,
-                                                 'InjectionToken', 'R3Injector']);
+        return this._serializer.serialize(this, [SerializerService.name, HttpClient.name, InjectionToken.name]); //, R3Injector.name
     }
     doDeserialize(JSONStr: string) {
         const newobj: Object = this._serializer.deserialize(JSONStr, [
-            'Pair',
-            'Person',
-            'BoardObj',
-            'BoardPlay',
-            'GameDataService',
+            Pair.name,
+            Person.name,
+            BoardObj.name,
+            BoardPlay.name,
+            GameDataService.name,
         ]);
         // console.log('new deserialized:', newobj);
         // newobj.http = this.http;

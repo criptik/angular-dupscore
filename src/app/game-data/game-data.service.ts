@@ -1,6 +1,6 @@
 import { Injectable, InjectionToken } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { SerializerService } from '../serializer/serializer.service';
+import { SerializerClass, StringStringTuple } from '../serializer/serializer';
 import * as _ from 'lodash';
 
 
@@ -282,22 +282,19 @@ export class GameDataService {
     pairNameMap: Map<number, Pair> = new Map();
     isHowell: boolean = true;
     phantomPair: number = 0;
+    _serializer: SerializerClass;
     
-    constructor(
-        private _http: HttpClient,
-        private _serializer: SerializerService,
-    ) {
-        // console.log('in game-data.service constructor');
-        // const str: string = this.doSerialize();
-        // console.log('serialized:', str);
-        // const newobj: GameDataService = this._serializer.deserialize(str, [
-        //     'Pair',
-        //     'Person',
-        //     'BoardObj',
-        //     'BoardPlay',
-        //     'GameDataService',
-        // ]);
-        // console.log('new deserialized:', newobj);
+    constructor( private _http: HttpClient,) {
+        const realToMiniTupleArray: StringStringTuple[] = [
+            ['BoardObj', BoardObj.name],
+            ['BoardPlay', BoardPlay.name],
+            ['Pair', Pair.name],
+            ['Person', Person.name],
+            ['GameDataService', GameDataService.name],
+            ['Map', Map.name],
+        ];
+        const excludedClasses = [SerializerClass.name, HttpClient.name, InjectionToken.name];  // may not need InjectionToken
+        this._serializer = new SerializerClass(realToMiniTupleArray, excludedClasses);
     }
 
     parseAbufEarly(abuf: ArrayBuffer) {
@@ -423,19 +420,11 @@ export class GameDataService {
     }
     
     doSerialize(): string {
-        return this._serializer.serialize(this, [SerializerService.name, HttpClient.name, InjectionToken.name]); //, R3Injector.name
+        return this._serializer.serialize(this);
     }
+
     doDeserialize(JSONStr: string) {
-        const newobj: Object = this._serializer.deserialize(JSONStr, [
-            Pair.name,
-            Person.name,
-            BoardObj.name,
-            BoardPlay.name,
-            GameDataService.name,
-        ]);
-        // console.log('new deserialized:', newobj);
-        // newobj.http = this.http;
-        // newobj._serializer = this._serializer;
+        const newobj: Object = this._serializer.deserialize(JSONStr);
         Object.assign(this, newobj);
     }
 

@@ -2,7 +2,7 @@ import { Component, Input, ViewChild, AfterViewInit, OnInit, NgModule } from '@a
 import { Directive, ElementRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GameDataService, Person, Pair } from '../game-data/game-data.service';
-import { SerializerService } from '../serializer/serializer.service';
+import { SerializerClass, StringStringTuple } from '../serializer/serializer';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule,
          AbstractControl, ValidationErrors, ValidatorFn, NgControl } from '@angular/forms';
 import {trigger, state, style, animate, transition} from '@angular/animations';
@@ -61,13 +61,13 @@ export class NamesEntryComponent implements AfterViewInit {
     formErrorMsgAry: string[] = [];
     blankPair: Pair = new Pair(new Person('', ''), new Person('', ''));
     curInputsSeen: string[] = [];
-
+    _serializer: SerializerClass;
+    
     constructor(public   gameDataPtr: GameDataService,
                 private _router: Router,
-                private _activatedRoute: ActivatedRoute,
-                private _serializer: SerializerService, )  {
+                private _activatedRoute: ActivatedRoute,)  {
 
-        // this.nameEntryForm.setValidators(this.notInUseValidator);
+        this._serializer = new SerializerClass([['Person', Person.name]], );
     }
 
     pairnumFromId(str: string): number {
@@ -168,7 +168,7 @@ export class NamesEntryComponent implements AfterViewInit {
             this.allNames = this.allNamesSeed;
         }
         else {
-            this.allNames = this._serializer.deserialize(jsonStr, ['Person']);
+            this.allNames = this._serializer.deserialize(jsonStr);
         }
         this.cleanupAllNames();
         // initialize unused names

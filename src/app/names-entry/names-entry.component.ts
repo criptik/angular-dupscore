@@ -137,7 +137,7 @@ export class NamesEntryComponent implements AfterViewInit {
     personAlreadyInPairNameMap(checkPerson: Person): number {
         let result = 0;
         const notIn: boolean = Array.from(this.gameDataPtr.pairNameMap.entries()).every( ([pairnum, pair]) => {
-            if (pair.A.matches(checkPerson) || pair.B.matches(checkPerson)) {
+            if ((pair.A.matches(checkPerson) || pair.B.matches(checkPerson)) && (pairnum != this.nameEntryFormPairnum)) {
                 result = pairnum;
                 return false;
             }
@@ -307,7 +307,7 @@ export class NamesEntryComponent implements AfterViewInit {
                     formErrorMessages.add('Each name in pair must be unique');
                 }
             }
-            // check against other pair names already entered
+            // check against other pair names already entered but don't check against this pair
             const matchPairNum: number = this.personAlreadyInPairNameMap(checkPerson);
             if (matchPairNum !== 0) {
                 const errorstr: string = `${checkPerson.toString()} already in use in pair ${matchPairNum}`;

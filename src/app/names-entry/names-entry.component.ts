@@ -68,7 +68,7 @@ export class NamesEntryComponent implements AfterViewInit {
                 private _activatedRoute: ActivatedRoute,)  {
 
         this._serializer = new SerializerClass({Person}, );
-        this._serializer.setDebug(true);
+        // this._serializer.setDebug(true);
     }
 
     pairnumFromId(str: string): number {

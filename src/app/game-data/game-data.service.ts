@@ -1,14 +1,13 @@
 import { Injectable, InjectionToken } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { SerializerClass, StringStringTuple } from '../serializer/serializer';
+import { SerializerClass, SeriClassLiteral } from '../serializer/serializer';
 import * as _ from 'lodash';
-
 
 const SCORE_EMPTY: number = -2;
 const SCORE_SPECIAL: number = -1;
 
 export class BoardPlay {
-    // static info
+    // fixed info
     nsPair: number;
     ewPair: number;
     round: number;
@@ -22,6 +21,10 @@ export class BoardPlay {
         this.ewPair = ewPair;
         this.round = round;
         this.nsScore = SCORE_EMPTY;  // symbol for empty
+    }
+
+    static emptyInstance() {
+        return new BoardPlay(0, 0, 0);
     }
 
     addScoreInfo(nsScore: number, kindNS: string = '', kindEW: string = kindNS) {
@@ -58,7 +61,7 @@ export class BoardPlay {
     isScoreNormal() {
         return(this.isScoreNonEmpty() && !this.isScoreSpecial());
     }
-    
+
 }
 
 type NNMap = Map<number, number>;
@@ -82,6 +85,10 @@ export class BoardObj {
         // for now, we don't really need to show the dealer
         // but we'll compute it anyway
         this.dealer = 'NESW'.charAt((this.bdnum) % 4);
+    }
+
+    static emptyInstance() {
+        return new BoardObj(0);
     }
 
     updateAllPlaysEntered() {
@@ -225,6 +232,10 @@ export class Person {
         this.last = last;
     }
 
+    static emptyInstance() {
+        return new Person('', '');
+    }
+    
     matches(otherPerson: Person) {
         // console.log(`matching ${this.toString()} vs. ${otherPerson.toString()}`);
         return (this.first === otherPerson.first && this.last === otherPerson.last);
@@ -239,9 +250,15 @@ export class Person {
 export class Pair {
     A: Person;
     B: Person;
+
     constructor (A: Person, B: Person) {
         this.A = A;
         this.B = B;
+    }
+
+    static emptyInstance() {
+        const emptyPerson = Person.emptyInstance();
+        return new Pair(emptyPerson, emptyPerson);
     }
 
     fullString(): string {
@@ -285,18 +302,15 @@ export class GameDataService {
     _serializer: SerializerClass;
     
     constructor( private _http: HttpClient,) {
-        const realToMiniTupleArray: StringStringTuple[] = [
-            ['BoardObj', BoardObj.name],
-            ['BoardPlay', BoardPlay.name],
-            ['Pair', Pair.name],
-            ['Person', Person.name],
-            ['GameDataService', GameDataService.name],
-            ['Map', Map.name],
-        ];
+        const serializableClassesLiteral: SeriClassLiteral = {BoardObj, BoardPlay, Pair, Person, GameDataService};
         const excludedClasses = [SerializerClass.name, HttpClient.name, InjectionToken.name];  // may not need InjectionToken
-        this._serializer = new SerializerClass(realToMiniTupleArray, excludedClasses);
+        this._serializer = new SerializerClass(serializableClassesLiteral, excludedClasses);
     }
 
+    static emptyInstance() {
+        return {};
+    }
+    
     parseAbufEarly(abuf: ArrayBuffer) {
         // stuff from the beginning of the .mov file
         const ui8ary : Uint8Array = new Uint8Array(abuf);

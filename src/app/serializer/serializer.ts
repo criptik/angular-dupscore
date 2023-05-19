@@ -1,38 +1,59 @@
 import {Pair, Person, BoardObj, BoardPlay, GameDataService} from '../game-data/game-data.service';
 // import * as _ from 'lodash';
 
-export type StringStringTuple = [string, string];
+interface SeriClass {
+    emptyInstance(): any;
+    name?: string;
+}
+
+export type SeriClassLiteral = {[index: string]: SeriClass};
 
 export class SerializerClass {
     debug: boolean = false;
 
-    realToMiniMap: Map<string, string>;
-    miniToRealMap: Map<string, string>;
+    sourceToRuntimeMap: Map<string, string>;
+    runtimeToSourceMap: Map<string, string>;
+    sourceToClassMap: Map<string, SeriClass>;
     excludedClasses: string[];
-    serializedClassNames: string[];
+    serializedSourceClassNames: string[];
+    serializedRuntimeClassNames: string[];
     
-    constructor(realToMiniTupleAry: StringStringTuple[], excludedClasses:string[] = []) {
-        this.realToMiniMap = new Map<string, string>(realToMiniTupleAry);
-        this.miniToRealMap = new Map<string, string>();
-        Array.from(this.realToMiniMap.entries()).forEach( ([key, valstr]) => {
-            this.miniToRealMap.set(valstr, key);
+    constructor(seriClassLiteral: SeriClassLiteral, excludedClasses:string[] = []) {
+        this.sourceToRuntimeMap = new Map<string, string>();
+        this.runtimeToSourceMap = new Map<string, string>();
+        this.sourceToClassMap = new Map<string, SeriClass>();
+        Array.from(Object.entries(seriClassLiteral)).forEach( ([sourceName, clz]) => {
+            const runtimeName: string = clz['name']!;
+            this.sourceToRuntimeMap.set(sourceName, runtimeName);
+            this.sourceToClassMap.set(sourceName, clz);
+            this.runtimeToSourceMap.set(runtimeName, sourceName);
         });
-        this.serializedClassNames = Array.from(this.realToMiniMap.keys());
+        this.serializedSourceClassNames = Array.from(this.sourceToRuntimeMap.keys());
+        this.serializedRuntimeClassNames = Array.from(this.runtimeToSourceMap.keys());
         this.excludedClasses = excludedClasses;
-        this.dbglog(this.realToMiniMap.toString());
-        this.dbglog(this.miniToRealMap.toString());
+        if (this.debug) {
+            console.log(this.sourceToRuntimeMap);
+            console.log(this.runtimeToSourceMap);
+            console.log(this.sourceToClassMap);
+            console.log(excludedClasses);
+        }
+        
     }
 
+    setDebug(bval: boolean) {
+        this.debug = bval;
+    }
+    
     dbglog(str: string) {
         if (this.debug) console.log(str);
     }
     
-    realToMini(real: string): string {
-        return this.realToMiniMap.get(real)!;
+    sourceToRuntime(source: string): string {
+        return this.sourceToRuntimeMap.get(source)!;
     }
 
-    miniToReal(mini: string): string {
-        return this.miniToRealMap.get(mini)!;
+    runtimeToSource(runtime: string): string {
+        return this.runtimeToSourceMap.get(runtime)!;
     }
     
     serialize(classInstance: any): string {
@@ -40,25 +61,38 @@ export class SerializerClass {
             if (key === 'http') return undefined;
             if (value && typeof(value) === "object") {
                 const valConsName = value.constructor.name;
+                this.dbglog(`handling ${valConsName}`);
+                if (this.excludedClasses.includes(valConsName)) {
+                    this.dbglog(`excluding ${valConsName}`);
+                    return undefined;
+                }
                 if (valConsName === 'Map') {
                     value.__type = 'Map';
                     const valarray = Array.from(value.entries());
                     value.__entries = valarray;
                     this.dbglog(`__entries: ${valarray}`);
                 }
-                else if (this.excludedClasses.includes(valConsName)) {
-                    this.dbglog(`excluding ${valConsName}`);
-                    return undefined;
+                else if (valConsName === 'Array') {
+                    value.__type = 'Array';
+                }
+                else if (this.serializedRuntimeClassNames.includes(valConsName)) {
+                    value.__type = this.runtimeToSource(valConsName);
                 }
                 else {
-                    value.__type = this.miniToReal(value.constructor.name);
+                    // a class that is not excluded and is not Array or Map
+                    // and is not in our included list?
+                    // this should probably be a serious error
+                    value.__type = valConsName;
+                    if (this.debug) {
+                        console.log(`class ${valConsName} seen but not excluded?`);
+                        console.log(value);
+                    }
                 }
-                
                 this.dbglog(`serialize: key=${key}, value=${value}, __type=${value.__type}`);
             }
             return value;
         }, );
-        // console.log(jsonStr);
+        if (this.debug) console.log('jsonStr = ', jsonStr);
         return jsonStr;
     }
 
@@ -69,27 +103,9 @@ export class SerializerClass {
                 if (vtype === 'Map') {
                     value = new Map(value.__entries);
                     delete value.__entries;
-                } else if (this.serializedClassNames.includes(vtype)) {
-                    let newobj: Object;
-                    switch (vtype) {
-                        case 'Person':
-                            newobj = new Person('x','y');
-                            break;
-                        case 'Pair':
-                            newobj = new Pair(new Person('x','y'), new Person('x','y'));
-                            break;
-                        case 'BoardObj':
-                            newobj = new BoardObj(1);
-                            break;
-                        case 'BoardPlay':
-                            newobj = new BoardPlay(1,2,3);
-                            break;
-                        case 'GameDataService':
-                            newobj = {};
-                            break;
-                        default:
-                            newobj = {};
-                    }
+                } else if (this.serializedSourceClassNames.includes(vtype)) {
+                    const clz: SeriClass = this.sourceToClassMap.get(vtype)!;
+                    const newobj: Object = clz.emptyInstance();
                     // console.log('includedClass', value.__type, newobj);
                     delete value.__type;
                     value = Object.assign(newobj, value);

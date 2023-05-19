@@ -2,7 +2,7 @@ import { Component, Input, ViewChild, AfterViewInit, OnInit, NgModule } from '@a
 import { Directive, ElementRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GameDataService, Person, Pair } from '../game-data/game-data.service';
-import { SerializerClass, StringStringTuple } from '../serializer/serializer';
+import { SerializerClass, SeriClassLiteral } from '../serializer/serializer';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule,
          AbstractControl, ValidationErrors, ValidatorFn, NgControl } from '@angular/forms';
 import {trigger, state, style, animate, transition} from '@angular/animations';
@@ -67,7 +67,8 @@ export class NamesEntryComponent implements AfterViewInit {
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,)  {
 
-        this._serializer = new SerializerClass([['Person', Person.name]], );
+        this._serializer = new SerializerClass({Person}, );
+        this._serializer.setDebug(true);
     }
 
     pairnumFromId(str: string): number {
@@ -162,7 +163,7 @@ export class NamesEntryComponent implements AfterViewInit {
     }
 
     fillAllNames() {
-        window.localStorage.removeItem(this.locStorageKey);
+        // window.localStorage.removeItem(this.locStorageKey);
         const jsonStr: string = window.localStorage.getItem(this.locStorageKey) ?? '';
         if (jsonStr === '') {
             this.allNames = this.allNamesSeed;
@@ -195,14 +196,14 @@ export class NamesEntryComponent implements AfterViewInit {
         // keep track of the cases where there is only one entry
         const listTop: string = completionList[0];
         // the curInputsSeen logic is to prevent being unable to erase?
-        if (completionList.length === 1 && curInput !== listTop && !this.curInputsSeen.includes(curInput)) {
-            const control = this.nameEntryForm.get(`${lastFirstStr}Name${id}`);
-            control?.setValue(listTop as never);
-            (<any> control).nativeElement.setSelectionRange(curInput.length, listTop.length);
-            (<any> control).nativeElement.focus();
-            // console.log('set Exact', curInput, listTop);
-            this.curInputsSeen.push(curInput);
-        }
+                                if (completionList.length === 1 && curInput !== listTop && !this.curInputsSeen.includes(curInput)) {
+                                    const control = this.nameEntryForm.get(`${lastFirstStr}Name${id}`);
+                                    control?.setValue(listTop as never);
+                                    (<any> control).nativeElement.setSelectionRange(curInput.length, listTop.length);
+                                    (<any> control).nativeElement.focus();
+                                    // console.log('set Exact', curInput, listTop);
+                                    this.curInputsSeen.push(curInput);
+                                }
     }        
 
     personAlreadyInCurrentForm(checkPerson: Person): boolean {
@@ -306,7 +307,7 @@ export class NamesEntryComponent implements AfterViewInit {
                     formErrorMessages.add('Each name in pair must be unique');
                 }
             }
-                // check against other pair names already entered
+            // check against other pair names already entered
             const matchPairNum: number = this.personAlreadyInPairNameMap(checkPerson);
             if (matchPairNum !== 0) {
                 const errorstr: string = `${checkPerson.toString()} already in use in pair ${matchPairNum}`;
@@ -315,6 +316,10 @@ export class NamesEntryComponent implements AfterViewInit {
             }
         } // for n
         return (Array.from(formErrorMessages.keys()));
+    }
+
+    alreadyInAllNames(newPerson: Person): boolean {
+        return this.allNames.some(person => person.matches(newPerson));
     }
     
     onNameEntryFormSubmit() {
@@ -330,13 +335,20 @@ export class NamesEntryComponent implements AfterViewInit {
         const playerB: Person = new Person(this.nameEntryForm.value.firstName2!, this.nameEntryForm.value.lastName2!);
         const newPair = new Pair(playerA, playerB);
         this.gameDataPtr.pairNameMap.set(pairnum, newPair);
+        const origAllNamesLength = this.allNames.length;
+        [playerA, playerB].forEach( player => {
+            if (!this.alreadyInAllNames(player)) this.allNames.push(player);
+        });
+        if (this.allNames.length !== origAllNamesLength) {
+            window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
+        }
+        
         // console.log(newPair);
         // clear form fields
         this.nameEntryForm.reset();
         this.nameEntryDialog.nativeElement.close();
         this.updatePairNameStrArray();
         this.cleanupAllNames();
-        window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
         this.gameDataPtr.saveToLocalStorage();
     }
 

@@ -152,6 +152,7 @@ export class BoardObj {
         if (kind === 'AVE') return boardTop * 0.5;
         if (kind === 'AVE+') return boardTop * 0.6;
         if (kind === 'AVE-') return boardTop * 0.4;
+        if (!isNaN(+kind)) return +kind;
         // unknown, return -1;
         return -1;
     }
@@ -472,7 +473,9 @@ export class GameDataService {
         }
         else {
             // a "special" boardPlays, with strings in the kindNS and kindEW
-            str = (forNS ? boardPlay?.kindNS : boardPlay?.kindEW);
+            // if the string is a number, display it in a special way
+            const kindStr: string = (forNS ?  boardPlay?.kindNS : boardPlay?.kindEW);
+            str = (!isNaN(+kindStr) ? `${+kindStr}*` : kindStr);
         }
         return str.padStart(4, ' ');
     }

@@ -175,19 +175,24 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
              ['A+', 'AVE+'],
              ['A-', 'AVE-']]);
         const legals = Array.from(strMap.keys());
-        const specialNSStr: string|null|undefined = this.unbalancedSpecialForm.get(`specialNS`)?.value;
-        const specialEWStr: string|null|undefined = this.unbalancedSpecialForm.get(`specialEW`)?.value;
-        if (!specialNSStr || !legals.includes(specialNSStr) ||
-            !specialEWStr || !legals.includes(specialEWStr) ) {
-            this.unbalancedSpecialErrMsg = 'Specify A, A+, A- for each of NS and EW';
-            return false;
-        }
-
+        let specialNSStr: string|null|undefined = this.unbalancedSpecialForm.get(`specialNS`)?.value;
+        let specialEWStr: string|null|undefined = this.unbalancedSpecialForm.get(`specialEW`)?.value;
+        [specialNSStr, specialEWStr].forEach( specialStr => {
+            let ok;
+            if (!specialStr) ok = false;             // cannot be empty
+            else if (!isNaN(+specialStr)) ok = true;  // numbers are allowed
+            else if (legals.includes(specialStr)) ok = true;  // special strings are allowed
+            else ok = false;
+            if (!ok) this.unbalancedSpecialErrMsg = 'Specify A, A+, A- or a number of MP for each of NS and EW';
+        });
+        if (this.unbalancedSpecialErrMsg !== '') return false;
+        
         // now know both are legal special inputs
-        const strNS: string = strMap.get(specialNSStr!) ?? '';
-        const strEW: string = strMap.get(specialEWStr!) ?? '';
+        // if it is a shorthand for AVE, etc. convert it now
+        if (legals.includes(specialNSStr!)) specialNSStr = strMap.get(specialNSStr!) ?? '';
+        if (legals.includes(specialEWStr!)) specialEWStr = strMap.get(specialEWStr!) ?? '';
         const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
-        curBoardPlay.addSpecialScoreInfo(strNS, strEW);
+        curBoardPlay.addSpecialScoreInfo(specialNSStr!, specialEWStr!);
         this.onNS = this.getNewNS(1);
         this.updateView();
         return true;

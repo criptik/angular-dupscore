@@ -26,7 +26,8 @@ export class NamesEntryComponent implements AfterViewInit {
     allNames :Person[] = [];
     allUnusedNames: Person[] = [];
     swapPairFirst: number = 0;
-
+    swapPairStartMsg: string = 'Use Right-click to swap Pairs...';
+    swapPairMsg: string = this.swapPairStartMsg;
     allNamesSeed: Person[] = [
         new Person('Tom', 'Deneau'),
         new Person('Gul', 'Deneau'),
@@ -124,11 +125,13 @@ export class NamesEntryComponent implements AfterViewInit {
         const pairnum = this.pairnumFromId(x.target.id);
         if (this.swapPairFirst === 0) {
             this.swapPairFirst = pairnum;
+            this.swapPairMsg = `Right-click on pair to swap with pair ${this.gameDataPtr.pairnumToString(pairnum)}`;
             // console.log(`setting swapPairFirst to ${this.swapPairFirst}`);
         }
         else {
             this.swapPairs(this.swapPairFirst, pairnum);
             this.swapPairFirst = 0;
+            this.swapPairMsg = this.swapPairStartMsg;
         }
         return false;
     }

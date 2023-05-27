@@ -2,7 +2,7 @@
     <br/>
     <br/>
     <div class="px20">
-        Use right-click to swap pairs...
+        {{swapPairMsg}}
     </div>
     <br/>
     <br/>
@@ -11,7 +11,7 @@
              NS                              EW
         </pre>
     </ng-container>            
-    <ng-container  *ngFor="let pairnum of gameDataPtr.pairIdsNS">
+    <ng-container  *ngFor="let pairnum of gameDataPtr.pairIdsNS; let idx=index">
         <div>
             <ng-container *ngIf="swapPairFirst===pairnum"> --> </ng-container>            
             <button id="{{'pair' + pairnum}}"
@@ -19,17 +19,17 @@
                     (contextmenu)="onNameButtonRightClick($event)"
                     [attr.class]="swapPairFirst===pairnum ? 'px30 highlighted' : 'px30'"
             >
-                {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayNS[pairnum-1]}}
+                {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayNS[idx]}}
             </button>
             <!-- second button if in Mitchell Mode -->
             <ng-container *ngIf="!gameDataPtr.isHowell">
-                <ng-container *ngIf="swapPairFirst===-1*pairnum"> --> </ng-container>            
-                <button id="{{'pair' + (-1*pairnum)}}"
+                <ng-container *ngIf="swapPairFirst===gameDataPtr.pairIdsEW[idx]"> --> </ng-container>            
+                <button id="{{'pair' + (gameDataPtr.pairIdsEW[idx])}}"
                         (click)="onNameButtonClick($event)"
                         (contextmenu)="onNameButtonRightClick($event)"
-                        [attr.class]="swapPairFirst===(-1*pairnum) ? 'px30 highlighted' : 'px30'"
+                        [attr.class]="swapPairFirst===(gameDataPtr.pairIdsEW[idx]) ? 'px30 highlighted' : 'px30'"
                 >
-                    {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayEW[pairnum-1]}}
+                    {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayEW[idx]}}
                 </button>
                 
             </ng-container>            

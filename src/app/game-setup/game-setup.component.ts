@@ -36,6 +36,8 @@ export class GameSetupComponent  implements AfterViewInit {
     
     movInfoKeys: string[] = [];
     action: string = '';
+
+    deleteButtonMsg: string = '';
     
     constructor(
         public gameDataPtr: GameDataService,
@@ -45,11 +47,7 @@ export class GameSetupComponent  implements AfterViewInit {
         this._router.routeReuseStrategy.shouldReuseRoute = function () {
             return false;
         };
-        // construct map of movement info
-        this.buildExistingGameList();
-        this.existingGameList.forEach( name => {
-            this.deleteGameForm.addControl(name, new FormControl(false));
-        });
+        this.fillDeleteGameForm();
         this.gameDataPtr.gameDataSetup = false;
         this._route.params.subscribe( params => {
             this.action = params['action'] ?? '';
@@ -67,7 +65,7 @@ export class GameSetupComponent  implements AfterViewInit {
                 existingGameList.push(fname);
             }
         });
-        this.existingGameList = existingGameList.sort();
+        this.existingGameList = existingGameList.sort().reverse();
     }
     
     ngAfterViewInit() {
@@ -102,19 +100,25 @@ export class GameSetupComponent  implements AfterViewInit {
     }
     
     onDeleteGameFormSubmit() {
-        // type ValBool = {[key: string]: boolean};
-        // const formVal: ValBool = this.deleteGameForm.value as ValBool;
         const formVal = this.deleteGameForm.value as {[key: string]: boolean};
         const keys: string[]  = Array.from(Object.keys(formVal));
-        console.log('onDeleteGameFormSubmit', keys);
+        // console.log('onDeleteGameFormSubmit', keys);
+        let numDeleted = 0;
         keys.forEach( (key) => {
             if (formVal[key]) {
-               window.localStorage.removeItem(`game-${key}`);
+                window.localStorage.removeItem(`game-${key}`);
+                numDeleted++;
             }
         });
             
         this.deleteGameDialog.nativeElement.close();
-        this._router.navigate(["/status"]);
+        if (numDeleted === 0) {
+            this._router.navigate(["/status"]);
+        }
+        else {
+            this.deleteGameSetup();
+        }
+        
     }
 
     newGameSetup() {
@@ -128,7 +132,7 @@ export class GameSetupComponent  implements AfterViewInit {
             `${year}${mon.toString().padStart(2,'0')}${day.toString().padStart(2,'0')}${hourCode}`);
         this.newGameDialog.nativeElement.showModal();
         this.newGameForm.get('movement')?.valueChanges.subscribe( async mov => {
-            console.log('valueChanges', mov, this.newGameForm.value);
+            // console.log('valueChanges', mov, this.newGameForm.value);
             setTimeout(() => {
                 console.log('after tick', this.newGameForm.value)   //shows the latest 
             });
@@ -153,12 +157,30 @@ export class GameSetupComponent  implements AfterViewInit {
     }
 
     deleteGameSetup() {
+        this.fillDeleteGameForm();
+        // console.log('before', this.deleteGameForm);
+        this.deleteGameDialog.nativeElement.showModal();
+    }
+
+    fillDeleteGameForm() {
         this.buildExistingGameList();
         this.existingGameList.forEach( name => {
             this.deleteGameForm.addControl(name, new FormControl(false));
         });
-        console.log('before', this.deleteGameForm);
-        this.deleteGameDialog.nativeElement.showModal();
+        this.deleteButtonMsg = 'Back';
+    }
+
+    onCheckChanged(e: any) {
+        // console.log('onCheckChanged');
+        const formVal = this.deleteGameForm.value as {[key: string]: boolean};
+        const keys: string[]  = Array.from(Object.keys(formVal));
+        let numChecked = 0;
+        keys.forEach( (key) => {
+            if (formVal[key]) {
+                numChecked++;
+            }
+        });
+        this.deleteButtonMsg = (numChecked === 0 ? 'Back' : 'Delete Checked Games');
     }
     
 }

@@ -67,12 +67,12 @@
 <dialog class="px20" #deleteGameDialog>
     <form [formGroup]="deleteGameForm" (ngSubmit)="onDeleteGameFormSubmit()">
         <section *ngFor="let gameName of existingGameList">
-                 <input type="checkbox" id={{gameName}} name={{gameName}} formControlName={{gameName}} value=1>
+                 <input type="checkbox" id={{gameName}} name={{gameName}} formControlName={{gameName}} value=1 (change)="onCheckChanged($event)">
                  <label for={{gameName}}> {{gameName}}</label>
                  <br/>
         </section>
         <div>
-            <button type="submit" style="margin-top:2rem"> Delete Selected Files </button>
+            <button type="submit" style="margin-top:2rem"> {{deleteButtonMsg}} </button>
         </div>
     </form>
 </dialog>

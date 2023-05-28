@@ -1,0 +1,12 @@
+.px30 {
+    font-size:20px;
+}
+
+.highlighted {
+    background-color: yellow;
+}
+
+button.px30, button.p30-blinky {
+    width: 30rem;
+    text-align: left;
+}

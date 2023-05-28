@@ -13,64 +13,43 @@
     </ng-container>            
     <ng-container  *ngFor="let pairnum of gameDataPtr.pairIdsNS; let idx=index">
         <div>
-            <ng-container *ngIf="swapPairFirst===pairnum"> --> </ng-container>            
-            <button id="{{'pair' + pairnum}}"
-                    (click)="onNameButtonClick($event)"
-                    (contextmenu)="onNameButtonRightClick($event)"
-                    [attr.class]="swapPairFirst===pairnum ? 'px30 highlighted' : 'px30'"
-            >
-                {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayNS[idx]}}
-            </button>
+            <app-pairname-button [pairnum]="+pairnum" [nameStr]="pairNameStrArrayNS[idx]" />
             <!-- second button if in Mitchell Mode -->
-            <ng-container *ngIf="!gameDataPtr.isHowell">
-                <ng-container *ngIf="swapPairFirst===gameDataPtr.pairIdsEW[idx]"> --> </ng-container>            
-                <button id="{{'pair' + (gameDataPtr.pairIdsEW[idx])}}"
-                        (click)="onNameButtonClick($event)"
-                        (contextmenu)="onNameButtonRightClick($event)"
-                        [attr.class]="swapPairFirst===(gameDataPtr.pairIdsEW[idx]) ? 'px30 highlighted' : 'px30'"
-                >
-                    {{pairnum}}&nbsp;&nbsp;{{pairNameStrArrayEW[idx]}}
-                </button>
-                
-            </ng-container>            
-            
+            <app-pairname-button *ngIf="!gameDataPtr.isHowell" [pairnum]="gameDataPtr.pairIdsEW[idx]"  [nameStr]="pairNameStrArrayEW[idx]" />
         </div>
     </ng-container>
 </div>
 
-<!--
-     <button class="px20" (click)="onSwapPairsButtonClick($event)"> Swap Pairs </button>
--->
 <dialog class="px20" #nameEntryDialog>
     <form [formGroup]="nameEntryForm" id="nameEntryForm">
         <p>
-                {{ nameEntryDialogHeader }}
-            </p>
-            <pre>
+            {{ nameEntryDialogHeader }}
+        </p>
+        <pre>
       LAST                       FIRST
-            </pre>
-            1
-            <input class="px20" type="text" id="lastName1" name="lastName1" formControlName="lastName1" list="nameCompleterList"
-                   (focus)="onLastNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off">
-            <input class="px20" type="text" id="firstName1" name="firstName1" formControlName="firstName1" list="nameCompleterList"
-                   (focus)="onFirstNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off">
-            <br/>
-            2
-            <input class="px20" type="text" id="lastName2" name="lastName2" formControlName="lastName2" e list="nameCompleterList"
-                   (focus)="onLastNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off" >
-            <input class="px20" type="text" id="firstName2" name="firstName2" formControlName="firstName2" list="nameCompleterList"
-                   (focus)="onFirstNameFocus($event)"  (keyup.enter)="onEnterKey($event)" autocomplete="off">
-            
-            <datalist id="nameCompleterList">
-                <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
-            </datalist>
-
-            <div *ngFor="let msg of formErrorMsgAry" class="error-msg-alert">
-                {{msg}}
-            </div>
-            <p>
-                <button type="button" form="nameEntryForm" class="px30"   (click)="onNameEntryFormSubmit()"> Submit </button>
-            </p>
-        </form>
-    </dialog>
+        </pre>
+        1
+        <input class="px20" type="text" id="lastName1" name="lastName1" formControlName="lastName1" list="nameCompleterList"
+               (focus)="onLastNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off">
+        <input class="px20" type="text" id="firstName1" name="firstName1" formControlName="firstName1" list="nameCompleterList"
+               (focus)="onFirstNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off">
+        <br/>
+        2
+        <input class="px20" type="text" id="lastName2" name="lastName2" formControlName="lastName2" e list="nameCompleterList"
+               (focus)="onLastNameFocus($event)" (keyup.enter)="onEnterKey($event)" autocomplete="off" >
+        <input class="px20" type="text" id="firstName2" name="firstName2" formControlName="firstName2" list="nameCompleterList"
+               (focus)="onFirstNameFocus($event)"  (keyup.enter)="onEnterKey($event)" autocomplete="off">
+        
+        <datalist id="nameCompleterList">
+            <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
+        </datalist>
+        
+        <div *ngFor="let msg of formErrorMsgAry" class="error-msg-alert">
+            {{msg}}
+        </div>
+        <p>
+            <button type="button" form="nameEntryForm" class="px30"   (click)="onNameEntryFormSubmit()"> Submit </button>
+        </p>
+    </form>
+</dialog>
 

@@ -1,0 +1,8 @@
+<ng-container *ngIf="parent.swapPairFirst===pairnum"> --> </ng-container>            
+<button id="{{'pair' + pairnum}}"
+        (click)="parent.onNameButtonClick($event)"
+        (contextmenu)="parent.onNameButtonRightClick($event)"
+        [attr.class]="parent.swapPairFirst===pairnum ? 'px30 highlighted' : 'px30'"
+>
+    {{absPairnum(pairnum)}}&nbsp;&nbsp;{{nameStr}}
+</button>

@@ -162,6 +162,7 @@ export class NamesEntryComponent implements AfterViewInit {
             const nameStr: string = (pairObj ? pairObj.fullString() : '');
             return nameStr;
         });
+        this.gameDataPtr.saveToLocalStorage();
         // console.log(this.pairNameStrArray);
     }
 
@@ -351,8 +352,6 @@ export class NamesEntryComponent implements AfterViewInit {
         this.nameEntryForm.reset();
         this.nameEntryDialog.nativeElement.close();
         this.updatePairNameStrArray();
-        this.cleanupAllNames();
-        this.gameDataPtr.saveToLocalStorage();
     }
 
     onEnterKey(x: any) {

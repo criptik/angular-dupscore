@@ -8,6 +8,10 @@ import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule,
 import {trigger, state, style, animate, transition} from '@angular/animations';
 import * as _ from 'lodash';
 
+interface PairNameObj {
+    pairnum: number;
+    nameStr: string;
+};
 
 @Component({
     selector: 'app-names-entry',
@@ -18,8 +22,7 @@ import * as _ from 'lodash';
 export class NamesEntryComponent implements AfterViewInit {
     @ViewChild('nameEntryDialog') nameEntryDialog!: ElementRef<HTMLDialogElement>;
     nameEntryDialogHeader: string = '';
-    pairNameStrArrayNS: string[] = [];
-    pairNameStrArrayEW: string[] = [];
+    pairNameStrArray: PairNameObj[][] = [];
 
     locStorageKey: string = 'dupscore-Names';
     
@@ -152,15 +155,21 @@ export class NamesEntryComponent implements AfterViewInit {
     }
     
     updatePairNameStrArray() {
-        this.pairNameStrArrayNS = this.gameDataPtr.pairIdsNS.map( pairnum => {
+        this.pairNameStrArray = [];
+        this.gameDataPtr.pairIdsNS.forEach( (pairnum, idx) => {
+            const rowArray: PairNameObj[] = [];
+            // always at least one button in each row
             const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairnum);
             const nameStr: string = (pairObj ? pairObj.fullString() : '');
-            return nameStr;
-        });
-        this.pairNameStrArrayEW = this.gameDataPtr.pairIdsEW.map( pairnum => {
-            const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairnum);
-            const nameStr: string = (pairObj ? pairObj.fullString() : '');
-            return nameStr;
+            rowArray.push({pairnum, nameStr});
+            // for Mitchell games, put two pair buttons in each row
+            if (!this.gameDataPtr.isHowell) {
+                const pairnumEW = this.gameDataPtr.pairIdsEW[idx];
+                const pairObj: Pair | undefined = this.gameDataPtr.pairNameMap.get(pairnumEW);
+                const nameStr: string = (pairObj ? pairObj.fullString() : '');
+                rowArray.push({pairnum: pairnumEW, nameStr:nameStr});
+            }
+            this.pairNameStrArray.push(rowArray);
         });
         this.gameDataPtr.saveToLocalStorage();
         // console.log(this.pairNameStrArray);
@@ -358,6 +367,11 @@ export class NamesEntryComponent implements AfterViewInit {
         // console.log('Enter', x);
         x.preventDefault();
     }
+
+    absPairnum(pairnum: number): number {
+        return Math.abs(pairnum);
+    }
+
 }
 
 

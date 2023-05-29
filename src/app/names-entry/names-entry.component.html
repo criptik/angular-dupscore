@@ -11,13 +11,19 @@
              NS                              EW
         </pre>
     </ng-container>            
-    <ng-container  *ngFor="let pairnum of gameDataPtr.pairIdsNS; let idx=index">
-        <div>
-            <app-pairname-button [pairnum]="+pairnum" [nameStr]="pairNameStrArrayNS[idx]" />
-            <!-- second button if in Mitchell Mode -->
-            <app-pairname-button *ngIf="!gameDataPtr.isHowell" [pairnum]="gameDataPtr.pairIdsEW[idx]"  [nameStr]="pairNameStrArrayEW[idx]" />
-        </div>
-    </ng-container>
+    <!-- a row has one button in Howell mode, 2 in Mitchell lmode -->
+    <div  *ngFor="let rowArray of pairNameStrArray;">
+        <ng-container *ngFor="let obj of rowArray;">
+            <ng-container *ngIf="swapPairFirst===obj.pairnum"> --> </ng-container>            
+            <button id="{{'pair' + obj.pairnum}}"
+                    (click)="onNameButtonClick($event)"
+                    (contextmenu)="onNameButtonRightClick($event)"
+                    [attr.class]="swapPairFirst===obj.pairnum ? 'px30 highlighted' : 'px30'"
+            >
+                {{absPairnum(obj.pairnum)}}&nbsp;&nbsp;{{obj.nameStr}}
+            </button>
+        </ng-container>
+    </div>
 </div>
 
 <dialog class="px20" #nameEntryDialog>

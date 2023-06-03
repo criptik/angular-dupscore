@@ -1,0 +1,14 @@
+.gameTypeButton {
+    font-size: 18px;
+    padding: 1rem;
+    margin: 0.5rem;
+    min-width: 12rem; 
+}
+
+.px20, .px20 input, .px20 select, .px20 button{
+    font-size: 25px;
+}
+
+.dialog-div {
+    margin: 1rem;
+}

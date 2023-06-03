@@ -14,7 +14,6 @@
     <!-- a row has one button in Howell mode, 2 in Mitchell lmode -->
     <div  *ngFor="let rowArray of pairNameStrArray;">
         <ng-container *ngFor="let obj of rowArray;">
-            <ng-container *ngIf="swapPairFirst===obj.pairnum"> --> </ng-container>            
             <button id="{{'pair' + obj.pairnum}}"
                     (click)="onNameButtonClick($event)"
                     (contextmenu)="onNameButtonRightClick($event)"

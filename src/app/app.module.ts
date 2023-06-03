@@ -12,7 +12,7 @@ import { GameDataService } from './game-data/game-data.service';
 import { GameSummaryComponent } from './game-summary/game-summary.component';
 import { GameSetupComponent } from './game-setup/game-setup.component';
 import { NamesEntryComponent, NativeElementInjectorDirective } from './names-entry/names-entry.component';
-import { PairnameButtonComponent } from './names-entry/pairname-button/pairname-button.component';
+import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.component';
 
 @NgModule({
     declarations: [
@@ -25,7 +25,7 @@ import { PairnameButtonComponent } from './names-entry/pairname-button/pairname-
         GameSetupComponent,
         NamesEntryComponent,
         NativeElementInjectorDirective,
-        PairnameButtonComponent,
+        DeleterDialogComponent,
     ],
     imports: [
         BrowserModule,

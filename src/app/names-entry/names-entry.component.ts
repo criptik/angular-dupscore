@@ -2,7 +2,7 @@ import { Component, Input, ViewChild, AfterViewInit, OnInit, NgModule } from '@a
 import { Directive, ElementRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GameDataService, Person, Pair } from '../game-data/game-data.service';
-import { SerializerClass, SeriClassLiteral } from '../serializer/serializer';
+import { NameDataService } from '../name-data/name-data.service';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule,
          AbstractControl, ValidationErrors, ValidatorFn, NgControl } from '@angular/forms';
 import {trigger, state, style, animate, transition} from '@angular/animations';
@@ -24,29 +24,11 @@ export class NamesEntryComponent implements AfterViewInit {
     nameEntryDialogHeader: string = '';
     pairNameStrArray: PairNameObj[][] = [];
 
-    locStorageKey: string = 'dupscore-Names';
-    
-    allNames :Person[] = [];
+    allNames: Person[] = [];
     allUnusedNames: Person[] = [];
     swapPairFirst: number = 0;
     swapPairStartMsg: string = 'Use Right-click to swap Pairs...';
     swapPairMsg: string = this.swapPairStartMsg;
-    allNamesSeed: Person[] = [
-        new Person('Tom', 'Deneau'),
-        new Person('Gul', 'Deneau'),
-        new Person('Kamala', 'Harris'),
-        new Person('Joe', 'Biden'),
-        new Person('Amy', 'Seitz'),
-        new Person('Dan', 'Seitz'),
-        new Person('Sandy', 'Worley'),
-        new Person('Dennis', 'Worley'),
-        new Person('Evelyn', 'McMillen'),
-        new Person('Ernie', 'Roebuck'),
-        new Person('Kathy', 'McColl', ),
-        new Person('Joel', 'McColl'),
-        new Person('Mary Dee', 'Hamman'),
-        new Person('David', 'Davis'),
-    ];
     
     allUnusedLastNames: string[] = [];
     nameCompletion: string[] = [];
@@ -65,14 +47,12 @@ export class NamesEntryComponent implements AfterViewInit {
     formErrorMsgAry: string[] = [];
     blankPair: Pair = new Pair(new Person('', ''), new Person('', ''));
     curInputsSeen: string[] = [];
-    _serializer: SerializerClass;
     
     constructor(public   gameDataPtr: GameDataService,
+                private  nameDataPtr: NameDataService,
                 private _router: Router,
                 private _activatedRoute: ActivatedRoute,)  {
 
-        this._serializer = new SerializerClass({Person}, );
-        // this._serializer.setDebug(true);
     }
 
     pairnumFromId(str: string): number {
@@ -176,15 +156,7 @@ export class NamesEntryComponent implements AfterViewInit {
     }
 
     fillAllNames() {
-        // window.localStorage.removeItem(this.locStorageKey);
-        const jsonStr: string = window.localStorage.getItem(this.locStorageKey) ?? '';
-        if (jsonStr === '') {
-            this.allNames = this.allNamesSeed;
-        }
-        else {
-            this.allNames = this._serializer.deserialize(jsonStr);
-        }
-        this.cleanupAllNames();
+        this.allNames = this.nameDataPtr.getAllNamesList();
         // initialize unused names
         this.allUnusedNames = this.allNames;
     }
@@ -293,11 +265,6 @@ export class NamesEntryComponent implements AfterViewInit {
         this.genFirstNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
     }
 
-    cleanupAllNames() {
-        this.allNames = this.allNames.filter( person => person.last !== null && person.first !== null);
-        // console.log(this.allNames);
-    }
-
     // called on submit
     validateForm (): string[] {
         const formErrorMessages = new Set<string>();
@@ -353,7 +320,7 @@ export class NamesEntryComponent implements AfterViewInit {
             if (!this.alreadyInAllNames(player)) this.allNames.push(player);
         });
         if (this.allNames.length !== origAllNamesLength) {
-            window.localStorage.setItem(this.locStorageKey, this._serializer.serialize(this.allNames));
+            this.nameDataPtr.setAllNamesList(this.allNames);
         }
         
         // console.log(newPair);

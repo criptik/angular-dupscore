@@ -36,7 +36,6 @@ export class GameSetupComponent  implements AfterViewInit {
    
     movInfoKeys: string[] = [];
     action: string = '';
-    deleteDialogVisible: boolean = false;
     constructor(
         public gameDataPtr: GameDataService,
         private _router: Router,
@@ -49,7 +48,7 @@ export class GameSetupComponent  implements AfterViewInit {
         this._route.params.subscribe( params => {
             this.action = params['action'] ?? '';
         });
-        console.log('action:', this.action);
+        // console.log('action:', this.action);
     }
 
     ngOnInit() {
@@ -75,7 +74,6 @@ export class GameSetupComponent  implements AfterViewInit {
         else if (this.action === 'load') this.loadGameSetup();
         else if (this.action === 'delete') {
             setTimeout(() => {
-                this.deleteDialogVisible = true;
                 this.deleteGameSetup();
             }, 0);
         }

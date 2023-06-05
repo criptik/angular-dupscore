@@ -13,6 +13,7 @@ import { GameSummaryComponent } from './game-summary/game-summary.component';
 import { GameSetupComponent } from './game-setup/game-setup.component';
 import { NamesEntryComponent, NativeElementInjectorDirective } from './names-entry/names-entry.component';
 import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.component';
+import { NameDataComponent } from './name-data/name-data.component';
 
 @NgModule({
     declarations: [
@@ -26,6 +27,7 @@ import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.componen
         NamesEntryComponent,
         NativeElementInjectorDirective,
         DeleterDialogComponent,
+        NameDataComponent,
     ],
     imports: [
         BrowserModule,

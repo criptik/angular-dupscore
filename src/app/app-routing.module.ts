@@ -5,6 +5,7 @@ import { ScoreEntryComponent, ScoreReviewComponent } from './score-entry/score-e
 import { GameDataComponent } from './game-data/game-data.component';
 import { GameSummaryComponent } from './game-summary/game-summary.component';
 import { GameSetupComponent } from './game-setup/game-setup.component';
+import { NameDataComponent } from './name-data/name-data.component';
 
 const routes: Routes = [
     { path: 'setup',               component: GameSetupComponent },
@@ -15,6 +16,8 @@ const routes: Routes = [
     { path: 'score-review', component: ScoreReviewComponent },
     { path: 'report',      component: GameSummaryComponent },
     { path: 'report/:size',      component: GameSummaryComponent },
+    { path: 'namedata',               component: NameDataComponent },
+    { path: 'namedata/:action',       component: NameDataComponent },
     { path: '',   redirectTo: '/status', pathMatch: 'full' },
 
 ];

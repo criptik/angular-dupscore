@@ -242,8 +242,12 @@ export class Person {
         return (this.first === otherPerson.first && this.last === otherPerson.last);
     }
 
-    toString() {
+    toString(): string {
         return `${this.first} ${this.last}`;
+    }
+    
+    toStringLastFirst(): string {
+        return `${this.last}, ${this.first}`;
     }
     
 }

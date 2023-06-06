@@ -1,6 +1,7 @@
 
 <dialog class="px20" #deleteDialog >
     <form [formGroup]="deleteForm" (ngSubmit)="onDeleteFormSubmit()" >
+        <p> Select {{nameKind}}s to be Deleted... </p>
         <section *ngFor="let name of nameList">
             <input type="checkbox" id={{name}} name={{name}} formControlName={{name}} value=1 (change)="onCheckChanged($event)">
             <label for={{name}}> {{name}}</label>

@@ -1,29 +1,22 @@
 <div class="navbar">
-    <div class="subnav">
-        <button class="subnavbtn">Game&#9660;</button>
-        <div class="subnav-content">
-            <a routerLink="/setup/new" routerLinkActive="active" ariaCurrentWhenActive="page">New</a>
-            <a routerLink="/setup/load" routerLinkActive="active" ariaCurrentWhenActive="page">Load</a>
-            <a (click)="onAClick($event)" routerLink="/setup/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
-        </div>
-    </div>    
-    <div class="subnav">
-        <button class="subnavbtn">NameData&#9660;</button>
-        <div class="subnav-content">
-            <a routerLink="/namedata/import" routerLinkActive="active" ariaCurrentWhenActive="page">Import</a>
-            <a routerLink="/namedata/edit" routerLinkActive="active" ariaCurrentWhenActive="page">Edit</a>
-            <a routerLink="/namedata/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
-        </div>
-    </div>    
-    <ng-container *ngIf="gameDataPtr.gameDataSetup">
-        <a routerLink="/status" routerLinkActive="active" ariaCurrentWhenActive="page">Status</a>
-        <a routerLink="/names" routerLinkActive="active" ariaCurrentWhenActive="page">Players</a>
-        <a routerLink="/score" routerLinkActive="active" ariaCurrentWhenActive="page">Score Entry</a>
-        <a routerLink="/score-review" routerLinkActive="active" ariaCurrentWhenActive="page">Score Review</a>
-        <a routerLink="/report/short" routerLinkActive="active" ariaCurrentWhenActive="page">Summary</a>
-        <a routerLink="/report/long" routerLinkActive="active" ariaCurrentWhenActive="page">Report</a>
+    <ng-container *ngFor="let menuobj of menuLayout" >
+        <ng-container *ngIf="!menuobj.needsGame || gameDataPtr.gameDataSetup">
+            <ng-container *ngIf="menuobj.sub === undefined; then isSimple; else isMulti;">
+            </ng-container>
+            <ng-template #isSimple>
+                <a routerLink="{{menuobj.path}}" routerLinkActive="active" ariaCurrentWhenActive="page">{{menuobj.text}}</a>
+            </ng-template>
+            <ng-template #isMulti>
+                <div class="subnav">
+                    <button class="subnavbtn">{{menuobj.text}}&#9660;</button>
+                    <div class="subnav-content">
+                        <a *ngFor="let submenuobj of menuobj.sub" routerLink="{{submenuobj.path}}" routerLinkActive="active" ariaCurrentWhenActive="page">{{submenuobj.text}}</a>
+                    </div>
+                </div>    
+            </ng-template>
+        </ng-container>
     </ng-container>
-    <span style="float:right">Version 1.015</span>
+    <span style="float:right">Version 1.02</span>
     <!-- <hr/> -->
 </div>
 <router-outlet></router-outlet>

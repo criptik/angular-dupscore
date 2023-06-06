@@ -46,7 +46,7 @@
 /* Style the subnav content - positioned absolute */
 .subnav-content {
   display: none;
-  position: absolute;
+  position: relative;
   left: 0;
   background-color: purple;
   width: 100%;

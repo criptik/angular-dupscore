@@ -1,13 +1,3 @@
-<nav>
-    <a routerLink="/setup/new" routerLinkActive="active" ariaCurrentWhenActive="page">New</a>
-    <ng-container *ngIf="existingGameList.length > 0">
-        <a routerLink="/setup/load" routerLinkActive="active" ariaCurrentWhenActive="page">Load</a>
-        <a routerLink="/setup/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
-    </ng-container>
-    <hr/>
-    <router-outlet></router-outlet>
-</nav>
-
 <dialog class="px20" #newGameDialog>
     <form [formGroup]="newGameForm" (ngSubmit)="onNewGameFormSubmit()">
         <div class="dialog-div">

@@ -1,15 +1,29 @@
-<nav>
-    <a routerLink="/setup" routerLinkActive="active" ariaCurrentWhenActive="page">Game</a>
+<div class="navbar">
+    <div class="subnav">
+        <button class="subnavbtn">Game&#9660;</button>
+        <div class="subnav-content">
+            <a routerLink="/setup/new" routerLinkActive="active" ariaCurrentWhenActive="page">New</a>
+            <a routerLink="/setup/load" routerLinkActive="active" ariaCurrentWhenActive="page">Load</a>
+            <a (click)="onAClick($event)" routerLink="/setup/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
+        </div>
+    </div>    
+    <div class="subnav">
+        <button class="subnavbtn">NameData&#9660;</button>
+        <div class="subnav-content">
+            <a routerLink="/namedata/import" routerLinkActive="active" ariaCurrentWhenActive="page">Import</a>
+            <a routerLink="/namedata/edit" routerLinkActive="active" ariaCurrentWhenActive="page">Edit</a>
+            <a routerLink="/namedata/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
+        </div>
+    </div>    
     <ng-container *ngIf="gameDataPtr.gameDataSetup">
         <a routerLink="/status" routerLinkActive="active" ariaCurrentWhenActive="page">Status</a>
-        <a routerLink="/names" routerLinkActive="active" ariaCurrentWhenActive="page">Names</a>
+        <a routerLink="/names" routerLinkActive="active" ariaCurrentWhenActive="page">Players</a>
         <a routerLink="/score" routerLinkActive="active" ariaCurrentWhenActive="page">Score Entry</a>
         <a routerLink="/score-review" routerLinkActive="active" ariaCurrentWhenActive="page">Score Review</a>
         <a routerLink="/report/short" routerLinkActive="active" ariaCurrentWhenActive="page">Summary</a>
         <a routerLink="/report/long" routerLinkActive="active" ariaCurrentWhenActive="page">Report</a>
     </ng-container>
-    <a routerLink="/namedata" routerLinkActive="active" ariaCurrentWhenActive="page">NameData</a>
     <span style="float:right">Version 1.015</span>
-    <hr/>
-</nav>
+    <!-- <hr/> -->
+</div>
 <router-outlet></router-outlet>

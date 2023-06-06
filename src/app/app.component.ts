@@ -18,5 +18,9 @@ export class AppComponent {
         }
         
     }
+
+    onAClick(event: any) {
+        console.log('onAClick', event);
+    }
     
 }

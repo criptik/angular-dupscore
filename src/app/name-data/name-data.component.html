@@ -1,12 +1,3 @@
-<nav>
-    <a routerLink="/namedata/import" routerLinkActive="active" ariaCurrentWhenActive="page">Import</a>
-    <a routerLink="/namedata/edit" routerLinkActive="active" ariaCurrentWhenActive="page">Edit</a>
-    <a routerLink="/namedata/delete" routerLinkActive="active" ariaCurrentWhenActive="page">Delete</a>
-    <hr/>
-    <router-outlet></router-outlet>
-</nav>
-<p>name-data works!</p>
-
 <app-deleter-dialog #deleterDialogComponent
                     (formCompleteEvent)="onDeleteGameFormCompleted($event)"
 >

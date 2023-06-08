@@ -1,16 +1,33 @@
 <div class="navbar">
-    <ng-container *ngFor="let menuobj of menuLayout" >
+    <ng-container *ngFor="let menuobj of menuLayout; index as mainidx;" >
         <ng-container *ngIf="!menuobj.needsGame || gameDataPtr.gameDataSetup">
             <ng-container *ngIf="menuobj.sub === undefined; then isSimple; else isMulti;">
             </ng-container>
             <ng-template #isSimple>
-                <a routerLink="{{menuobj.path}}" routerLinkActive="active" ariaCurrentWhenActive="page">{{menuobj.text}}</a>
+                <a  routerLink="{{menuobj.path}}"
+                    routerLinkActive="active" ariaCurrentWhenActive="page"
+                    id="{{mainidx}}"
+                    (click)="onLinkClick($event)"
+                >
+                    {{menuobj.text}}
+                </a>
             </ng-template>
             <ng-template #isMulti>
                 <div class="subnav">
-                    <button class="subnavbtn">{{menuobj.text}}&#9660;</button>
+                    <button class="subnavbtn"
+                            (mouseover)="onButtonMouseOver($event)"
+                    >
+                        {{menuobj.text}}&#9660;
+                    </button>
                     <div class="subnav-content">
-                        <a *ngFor="let submenuobj of menuobj.sub" routerLink="{{submenuobj.path}}" routerLinkActive="active" ariaCurrentWhenActive="page">{{submenuobj.text}}</a>
+                        <a *ngFor="let submenuobj of menuobj.sub; index as subidx;"
+                           routerLink="{{submenuobj.path}}"
+                           routerLinkActive="active" ariaCurrentWhenActive="page"
+                           (click)="onSubLinkClick($event)"
+                           id="{{mainidx}}-{{subidx}}"
+                        >
+                            {{submenuobj.text}}
+                        </a>
                     </div>
                 </div>    
             </ng-template>

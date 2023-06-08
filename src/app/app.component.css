@@ -8,7 +8,7 @@
 .navbar a, .navbar span {
   float: left;
   font-size: 20px;
-  color: white;
+  color: yellow;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -33,7 +33,11 @@
 }
 
 /* Add a grey background color to navigation links on hover */
-.navbar a:hover, .navbar a:active {
+.navbar a:hover {
+  background-color: #eee;
+  color: black;
+}
+.navbar .highlight {
   background-color: #eee;
   color: black;
 }
@@ -68,5 +72,9 @@
 
 /* When you move the mouse over the subnav container, open the subnav content */
 .subnav:hover .subnav-content {
-  display: block;
+    display: block;
+}
+
+.subnavbtn.highlight + .subnav-content {
+    display: block;
 }

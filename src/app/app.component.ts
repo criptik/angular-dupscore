@@ -10,6 +10,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 export class AppComponent {
 
+    highlightClass: string = 'highlight';
+    
     menuLayout: any[]  = [
         {text: 'Game',  path: '',  needsGame: false, sub: [
             {text: 'New',  path: '/setup/new'},
@@ -26,18 +28,45 @@ export class AppComponent {
             {text: 'Edit',    path: '/namedata/edit'},
             {text: 'Delete',  path: '/namedata/delete'}, ]}, 
     ];
+
+    latestButtonMouseOver: HTMLElement|null = null;
     
     constructor(
         public gameDataPtr: GameDataService,
         private _router: Router) {    
-            if (!this.gameDataPtr.gameDataSetup) {
+        if (!this.gameDataPtr.gameDataSetup) {
             this._router.navigate(["/setup"]);
         }
-        
     }
 
-    onAClick(event: any) {
-        console.log('onAClick', event);
+    clearHighlights() {
+        const elems = document.querySelectorAll('.navbar a, .navbar button');
+        elems.forEach( elem => {
+            elem.classList.remove(this.highlightClass);
+        });
     }
     
+    onLinkClick(event: any) {
+        const elem = event.srcElement;
+        // console.log('onLinkClick', elem.id, event);
+        this.clearHighlights();
+        elem.classList.add(this.highlightClass);
+        console.log('after add', elem.id, elem.classList);
+    }
+
+    onSubLinkClick(event: any) {
+        const elem = event.srcElement;
+        // console.log('onSubLinkClick', event);
+        this.clearHighlights();
+        elem.classList.add(this.highlightClass);
+        // also add to the most recent button mouse over seen (which opened our subnav)
+        this.latestButtonMouseOver!.classList.add(this.highlightClass);
+    }
+
+    onButtonMouseOver(event: any) {
+        const elem = event.srcElement;
+        this.latestButtonMouseOver = elem;
+        this.clearHighlights();
+        // console.log('onButtonMouseOver', event);
+    }
 }

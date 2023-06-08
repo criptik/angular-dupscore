@@ -44,7 +44,6 @@ export class DeleterDialogComponent implements AfterViewChecked {
     }
 
     startDialog(nameList: string[], nameKind: string) {
-    // startDialog() {
         this.nameList = [...nameList];
         this.nameKind = nameKind;
         // console.log('entering startDialog', this.nameList);

@@ -21,11 +21,10 @@ export class AppComponent {
         {text: 'Players',  path: '/names',  needsGame: true},
         {text: 'Score Entry',  path: '/score',  needsGame: true},
         {text: 'Score Review',  path: '/score-review',  needsGame: true},
-        {text: 'Summary',       path: '/report/short',  needsGame: true},
+        {text: 'Leaders',       path: '/report/short',  needsGame: true},
         {text: 'Report',        path: '/report/long',  needsGame: true},
         {text: 'NameData',  path: '',  needsGame: false, sub: [
             {text: 'Import',  path: '/namedata/import'},
-            {text: 'Edit',    path: '/namedata/edit'},
             {text: 'Delete',  path: '/namedata/delete'}, ]}, 
     ];
 

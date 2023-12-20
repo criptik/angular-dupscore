@@ -33,8 +33,9 @@ export class GameSummaryComponent {
         };
     }
 
-    outputShortSummary(pbt: string[], headerText: string, forPairs: number[], pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
+    outputShortSummary(pbt: string[], groupName: string, gameDate: Date, headerText: string, forPairs: number[], pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
         if (forPairs.length === 0) return;
+        console.log('gameDate=', gameDate);
         const p: GameDataService = this.gameDataPtr;
         const aryMpRecEntries = Array.from(pairMpRecs.entries());
         const sortedEntries  = aryMpRecEntries.sort((a, b) => {
@@ -43,6 +44,7 @@ export class GameSummaryComponent {
             return (mpRecA.total < mpRecB.total ? 1: -1)
         });
 
+        pbt.push(`${groupName} for ${gameDate}`);
         pbt.push(`Summary for ${headerText}`);
         pbt.push(`  Place    Pct   Score   Pair`);
         
@@ -165,8 +167,8 @@ export class GameSummaryComponent {
             // NS pairs includes all pairs in howell mode
             // EW pairs will be empty except in mitchell mode
             const headerText = (p.isHowell ? 'All Pairs' : 'NS Pairs');
-            this.outputShortSummary(pbt, headerText, p.pairIdsNS, pairMpRecs, boardsScoredTop);
-            this.outputShortSummary(pbt, 'EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
+            this.outputShortSummary(pbt, p.groupName, p.gameDate, headerText, p.pairIdsNS, pairMpRecs, boardsScoredTop);
+            this.outputShortSummary(pbt, p.groupName, p.gameDate, 'EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
             // only do per-board data in long mode
             if (this.size === 'long') {
                 this.outputPerBoardData(pbt);

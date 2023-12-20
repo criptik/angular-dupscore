@@ -34,8 +34,8 @@
 
 /* Add a grey background color to navigation links on hover */
 .navbar a:hover {
-  background-color: #eee;
-  color: black;
+  background-color: purple;
+  color: white;
 }
 .navbar .highlight {
   background-color: #eee;
@@ -45,6 +45,7 @@
 /* purple for subnav hover */
 .subnav:hover .subnavbtn {
   background-color: purple;
+  color: white;
 }
 
 /* Style the subnav content - positioned absolute */
@@ -64,10 +65,10 @@
   text-decoration: none;
 }
 
-/* Add a grey background color on hover */
+/* Add a purple background color on hover */
 .subnav-content a:hover {
-  background-color: #eee;
-  color: black;
+  background-color: purple;
+  color: white;
 }
 
 /* When you move the mouse over the subnav container, open the subnav content */

@@ -1,6 +1,14 @@
 <dialog class="px20" #newGameDialog>
     <form [formGroup]="newGameForm" (ngSubmit)="onNewGameFormSubmit()">
         <div class="dialog-div">
+            <label for="gameDate"> Game Date </label>
+            <input type="date" id="gameDate" name="gameDate" formControlName="gameDate" >
+        </div>
+        <div class="dialog-div">
+            <label for="groupName"> Group Name </label>
+            <input type="text" id="groupName" name="groupName" formControlName="groupName" >
+        </div>
+        <div class="dialog-div">
             <label for="gameName"> Game FileName </label>
             <input type="text" id="gameName" name="gameName" formControlName="gameName" >
         </div>

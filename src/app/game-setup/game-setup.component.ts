@@ -23,6 +23,8 @@ export class GameSetupComponent  implements AfterViewInit {
     @ViewChild('deleterDialogComponent') deleterDialogComponent!: DeleterDialogComponent;
     
     newGameForm = new FormGroup({
+        gameDate:  new FormControl(),
+        groupName:  new FormControl(),
         gameName:  new FormControl(),
         movement:  new FormControl(),
         totBoards: new FormControl(),
@@ -86,6 +88,8 @@ export class GameSetupComponent  implements AfterViewInit {
                     this.newGameForm.value.movement,
                     this.newGameForm.value.totBoards,
                     this.newGameForm.value.phantomPair,
+                    this.newGameForm.value.gameDate,
+                    this.newGameForm.value.groupName,
         );
         this.newGameDialog.nativeElement.close();
         
@@ -94,6 +98,8 @@ export class GameSetupComponent  implements AfterViewInit {
             this.newGameForm.value.movement,
             parseInt(this.newGameForm.value.totBoards),
             parseInt(this.newGameForm.value.phantomPair),
+            this.newGameForm.value.gameDate,
+            this.newGameForm.value.groupName,
         );
         this._router.navigate(["/status"]);
     }
@@ -106,16 +112,45 @@ export class GameSetupComponent  implements AfterViewInit {
     }
     
 
+    // utility for deriving groupName from gameDate
+    genGroupName(dateUTC: Date): string {
+        console.log('genGroupName: mydate= ', dateUTC);
+        const my_date = dateUTC.getUTCDate();
+        const my_wkday = dateUTC.getUTCDay();
+        const wkday_str: string = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][my_wkday];
+        const wknum: number = Math.floor((my_date-1) / 7);
+        const wknum_str: string = ['First', 'Second', 'Third', 'Fourth', 'Fifth'][wknum];
+        return `${wknum_str} ${wkday_str} Pairs`;
+    }
+
+    genGameName(dateUTC: Date, hourCode: string): string {
+        const year = dateUTC.getUTCFullYear() % 100;
+        const mon = dateUTC.getUTCMonth() + 1;
+        const date = dateUTC.getUTCDate();
+        return `${year}${mon.toString().padStart(2,'0')}${date.toString().padStart(2,'0')}${hourCode}`;
+    }
+    
     newGameSetup() {
-        // seed the filename with today's date, etc.
-        const now = new Date();
-        const year: number = now.getFullYear() % 100;
-        const mon: number = now.getMonth() + 1;
-        const day: number = now.getDate();
+        // get current date, etc in UTC format
+        var now = new Date();
         const hourCode = 'NMAE'[Math.floor(now.getHours() / 6)]
-        this.newGameForm.get('gameName')?.setValue(
-            `${year}${mon.toString().padStart(2,'0')}${day.toString().padStart(2,'0')}${hourCode}`);
+        var nowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(),
+                                       now.getUTCDate(), now.getUTCHours(),
+                                       now.getUTCMinutes(), now.getUTCSeconds()));
+
+        console.log('nowUTC=', nowUTC);    
+        
+        this.newGameForm.get('gameDate')?.setValue( nowUTC as never);
+        
+        // seed the initial groupname from the date
+        
+        this.newGameForm.get('groupName')?.setValue( this.genGroupName(nowUTC) as never);
+
+        // seed the filename with today's date, etc.
+        this.newGameForm.get('gameName')?.setValue(this.genGameName(nowUTC, hourCode));
         this.newGameDialog.nativeElement.showModal();
+
+        // if movement changes, it affects totalboard choices
         this.newGameForm.get('movement')?.valueChanges.subscribe( async mov => {
             // console.log('valueChanges', mov, this.newGameForm.value);
             setTimeout(() => {
@@ -133,6 +168,16 @@ export class GameSetupComponent  implements AfterViewInit {
             // console.log('phantomPairArray', this.phantomPairArray);
             this.newGameForm.get('phantomPair')?.setValue(0);
         });
+
+        // seed new groupName and fileName if the gameDate changes
+        this.newGameForm.get('gameDate')?.valueChanges.subscribe( gameDateStr => {
+            console.log('gameDate changed: ', gameDateStr);
+            const gameDate = new Date(gameDateStr);
+            // seed the groupname from the date
+            this.newGameForm.get('groupName')?.setValue( this.genGroupName(gameDate) as never);
+            // seed the new filename
+            this.newGameForm.get('gameName')?.setValue( this.genGameName(gameDate, hourCode));
+        });        
     }
 
     loadGameSetup() {

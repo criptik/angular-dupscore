@@ -285,6 +285,9 @@ export class GameDataService {
 
     gameFileName: string = '';
     movFileName: string = '';
+    gameDate: Date = new Date();
+    groupName: string='';
+    
     // user will eventually specify the boards per round
     boardsPerRound: number = 0;
     // other stuff is derived from the .MOV file
@@ -394,12 +397,14 @@ export class GameDataService {
     //     });
     // }
 
-    async createGame(gameName: string, movement: string, totBoards: number, phantomPair: number) {
+    async createGame(gameName: string, movement: string, totBoards: number, phantomPair: number, gameDate: Date, groupName: string) {
         console.log('in Initialize');
         this.gameFileName = gameName;
         this.movFileName = `${movement}.MOV`;
         this.phantomPair = phantomPair;
         this.pairNameMap = new Map<number, Pair>();
+        this.gameDate = gameDate;
+        this.groupName = groupName;
         
         this._http.get(`assets/${this.movFileName}`, { responseType: 'blob', observe: 'response' }).subscribe(async res => {
             const abuf: ArrayBuffer = await res.body?.arrayBuffer() as ArrayBuffer;

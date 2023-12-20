@@ -28,9 +28,9 @@ export class NameDataComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        if (this.action === 'import') {}
-        else if (this.action === 'edit') {}
-        else if (this.action === 'delete') {
+        if (this.action === 'import') {
+           alert("Not Implemented Yet");
+        } else if (this.action === 'delete') {
             setTimeout(() => {
                 this.deleteNamesSetup();
             }, 0);

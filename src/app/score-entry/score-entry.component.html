@@ -22,15 +22,15 @@
     </ng-container>
 </div>
 
-<dialog class="px20" #gotoBoardDialog>
-    <form [formGroup]="gotoBoardForm" id="gotoBoardForm" (submit)="onGoToBoardFormSubmit()">
+<dialog class="px20" #gotoBoardDialog tabindex="-1x">
+    <form [formGroup]="gotoBoardForm" id="gotoBoardForm" (submit)="onGoToBoardFormSubmit()" (cancel)="onGoToBoardFormCancel()" (keydown.escape)="onGoToBoardFormCancel()">
         <ng-container *ngIf="isEntryComponent()">
             <p> Boards Remaining </p>
             <p> {{boardsToDoMsg}} </p>
         </ng-container>
         <p>
             <label for="boardSelect"> GoTo Board: </label>
-            <input class="px20" type="text" id="boardSelect" name="boardSelect" formControlName="boardSelect" autocomplete="off">
+            <input class="px20" type="text" autofocus id="boardSelect" name="boardSelect" formControlName="boardSelect" #boardSelect autocomplete="off">
         </p>
         <ng-container *ngIf="boardSelectErrMsg.length > 0">
             <div class="error-msg-alert">

@@ -27,6 +27,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     errmsg: string = '  ';
     @ViewChild('scoreInput') scoreInput!: ElementRef<HTMLInputElement>;
     @ViewChild('gotoBoardDialog', {static: true}) gotoBoardDialog!: ElementRef<HTMLDialogElement>;
+    @ViewChild('boardSelect', {static: true}) boardSelect!: ElementRef<HTMLInputElement>;
     @ViewChild('unbalancedSpecialDialog') unbalancedSpecialDialog!: ElementRef<HTMLDialogElement>;
     boardsToDoMsg: string = '';
     boardSelectErrMsg: string = '';
@@ -129,11 +130,13 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             const defaultNextBoard = this.getBoardSelectInfo();
             
             this.gotoBoardForm.get('boardSelect')?.setValue( defaultNextBoard.toString() );            
-            this.gotoBoardDialog.nativeElement.showModal();
             this.gotoBoardDialog.nativeElement.oncancel = () => {
+                console.log('oncancel detected');
                 // dialog was closed via escape key
                 this._router.navigate(["/status"]);
             };
+            this.gotoBoardDialog.nativeElement.showModal();
+            this.boardSelect.nativeElement.focus();
         }
     }
 
@@ -153,7 +156,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         }
         
         const boardSelect = parseInt(boardSelectStr!);
-        // console.log('boardSelect:', boardSelect, this.boardsToDoMsg);
+        console.log('boardSelect:', boardSelect, this.boardsToDoMsg);
         if (boardSelect > 0 && boardSelect <= this.gameDataPtr.numBoards) {
             this.gotoBoardDialog.nativeElement.close();
             this.startBoard(boardSelect);
@@ -167,6 +170,12 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         }
     }
 
+    onGoToBoardFormCancel() {
+        console.log('onGoToBoardFormCancel');
+        this.gotoBoardDialog.nativeElement.close();
+        this._router.navigate(["/status"]);
+    }
+    
     checkUnbalancedSpecialInputs(): boolean {
         // check that both are legal combination.
         this.unbalancedSpecialErrMsg = '';
@@ -516,7 +525,7 @@ export class ScoreReviewComponent extends ScoreBaseComponent implements AfterVie
 })
 export class AutofocusDirective {
     constructor(private elem : ElementRef) {
-        // console.log('autofocus diretive constructor');
+        // console.log('autofocus directive constructor');
     }
     
     ngAfterContentInit() {

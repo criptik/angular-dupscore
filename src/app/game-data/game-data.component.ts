@@ -29,8 +29,9 @@ export class GameDataComponent {
         }, 0);
         const movName: string = p.movFileName.replace('.MOV', '');
         this.statusText = [
+            `${p.groupName} for ${p.gameDate}`,
             `Movement: ${this._movInfo.getDesc(movName)}`,
-        `${p.numTables} Tables, ${p.numPairs} Pairs, (Top on Board is ${p.boardTop})`,
+            `${p.numTables} Tables, ${p.numPairs} Pairs, (Top on Board is ${p.boardTop})`,
         ];
         if (p.phantomPair !== 0) this.statusText.push(`Phantom Pair at Pair ${p.pairnumToString(p.phantomPair)}`);
         this.statusText = this.statusText.concat([`${p.numBoards} Boards, (${p.numRounds} Rounds, ${p.boardsPerRound} Boards Per Round)`,

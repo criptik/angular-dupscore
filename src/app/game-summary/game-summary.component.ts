@@ -46,14 +46,14 @@ export class GameSummaryComponent {
 
         pbt.push(`${groupName} for ${gameDate}`);
         pbt.push(`Summary for ${headerText}`);
-        pbt.push(`  Place    Pct   Score   Pair`);
+        pbt.push(`  Place    Pct    Score   Pair`);
         
         // testing , show records
         let place = 1;
         sortedEntries.forEach( ([pairId, mpRec]) => {
             if (forPairs.includes(pairId)) { 
                 const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
-                const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(1) + '%').padStart(6, ' ');
+                const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(2) + '%').padStart(7, ' ');
                 const pairObj: Pair | undefined = p.pairNameMap.get(pairId);
                 const pairIdStr: string = `${p.pairnumToString(pairId, true).padStart(4,' ')}`;
                 const nameStr: string = (pairObj ? pairObj.shortString() : '');

@@ -32,6 +32,8 @@ export class LegalScore {
             this.checkResult( 420,  true,  true,     false);
             this.checkResult( 350,  true,  true,     false);
             this.checkResult( 650,  true,  true,     true);
+            this.checkResult(   0,  true,  true,     true);
+            this.checkResult(   0,  false, false,    true);
         }
     }
 
@@ -85,6 +87,9 @@ export class LegalScore {
 
     buildScoreSet(scoreSet:Set<any>, forVul : boolean) {
         const scoreMap : Map<number, any> = (forVul ? this.scoreMapVul : this.scoreMapNotVul);
+
+        // 0 (Pass-out) is always possible
+        scoreSet.add(0);
         
         // do all the positives (made contracts)
         [Suit.CD, Suit.HS, Suit.NT].forEach (suit => {
@@ -115,7 +120,7 @@ export class LegalScore {
         const nsMap = (!nsvul ? this.scoreMapNotVul : this.scoreMapVul);
         const ewMap = (!ewvul ? this.scoreMapNotVul : this.scoreMapVul);
         const retval: boolean = (nsSet.has(score) || ewSet.has(-1*score));
-        // if (this.debug) console.log(score, nsvul, ewvul, retval, nsMap.get(score), ewMap.get(-1*score));
+        if (this.debug) console.log(score, nsvul, ewvul, retval, nsMap.get(score), ewMap.get(-1*score));
         // console.log(score, nsvul, ewvul, retval);
         return retval;
     }

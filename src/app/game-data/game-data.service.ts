@@ -45,7 +45,6 @@ export class BoardPlay {
         this.kindEW = '';
     }
 
-    
     isScoreEmpty() {
         return(this.nsScore === SCORE_EMPTY);
     }
@@ -62,6 +61,10 @@ export class BoardPlay {
         return(this.isScoreNonEmpty() && !this.isScoreSpecial());
     }
 
+    hasScore() {
+        return(this.isScoreNonEmpty() && !(this.kindNS === 'NP ' || this.kindNS === 'LATE')) 
+    }
+    
 }
 
 type NNMap = Map<number, number>;

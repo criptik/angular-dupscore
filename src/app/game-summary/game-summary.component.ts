@@ -83,12 +83,12 @@ export class GameSummaryComponent {
             return (mpA < mpB ? 1: -1)
         });
         sortedBoardPlayEntriesAry.forEach( ([nsPair, boardPlay]) => {
-            if (!boardPlay.isScoreEmpty()) {
+            if (boardPlay.hasScore()) {
                 const ewPair = boardPlay.ewPair;
                 const scoreText: string = `${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}`;
                 const nsMP = boardObj.pairToMpMap.get(nsPair)!;
                 const ewMP = boardObj.pairToMpMap.get(ewPair)!;
-                // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
+                console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
                 const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
                 const pairObjNS: Pair | undefined = p.pairNameMap.get(nsPair);  
                 const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);

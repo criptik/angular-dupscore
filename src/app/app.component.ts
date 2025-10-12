@@ -10,6 +10,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 export class AppComponent {
 
+    title: string = "dupscore";
+    
     highlightClass: string = 'highlight';
     
     menuLayout: any[]  = [

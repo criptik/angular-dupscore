@@ -1,4 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { NamesEntryComponent } from './names-entry.component';
 
@@ -8,7 +12,17 @@ describe('NamesEntryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NamesEntryComponent ]
+        declarations: [
+            NamesEntryComponent
+        ],
+        providers: [
+          provideRouter([]),
+          provideHttpClient(),
+        ],
+        imports: [
+            RouterTestingModule,
+            ReactiveFormsModule,
+        ],
     })
     .compileComponents();
 

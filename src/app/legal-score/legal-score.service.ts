@@ -17,24 +17,7 @@ export class LegalScore {
     constructor() {
         this.buildScoreSet(this.legalScoresNotVul, false);
         this.buildScoreSet(this.legalScoresVul, true);
-        if (this.debug) {
-            //console.log(this.legalScoresNotVul.size);
-            //console.log(this.legalScoresVul.size);
-            //console.table(Array.from(this.legalScoresNotVul.values()).sort((a:number, b:number) => a-b));
-            //console.table(Array.from(this.legalScoresVul.values()).sort((a:number, b:number) => a-b));
-            // tests
-            this.checkResult( 110,  false, false,    true);
-            this.checkResult(1200,  false, false,    true);
-            this.checkResult(1300,  false, false,    false);
-            this.checkResult(1300,  false, true,     true);  // ew could get -13 vulnerable
-            this.checkResult(-1300, false, true,     false);
-            this.checkResult(-1300, true,  true,     false);
-            this.checkResult( 420,  true,  true,     false);
-            this.checkResult( 350,  true,  true,     false);
-            this.checkResult( 650,  true,  true,     true);
-            this.checkResult(   0,  true,  true,     true);
-            this.checkResult(   0,  false, false,    true);
-        }
+        // console.log('this.legalScoresNotVul', Array.from(this.legalScoresNotVul));
     }
 
 
@@ -124,22 +107,25 @@ export class LegalScore {
         // console.log(score, nsvul, ewvul, retval);
         return retval;
     }
-
-    checkResult(nsScore:number, nsvul:boolean, ewvul:boolean, expected:boolean) {
-        const result: boolean = this.checkNSScoreLegal(nsScore, nsvul, ewvul);
-        console.assert(result === expected,
-                       `checkNSScoreLegal Assertion Error for (${nsScore},${nsvul},${ewvul}), expected ${expected}`);
-        if (result && !expected) {
-            const nsMap = (!nsvul ? this.scoreMapNotVul : this.scoreMapVul);
-            const ewMap = (!ewvul ? this.scoreMapNotVul : this.scoreMapVul);
-            const nsMapFound = nsMap.get(nsScore);
-            const ewMapFound = ewMap.get(-1*nsScore);
-            if (nsMapFound) console.log('nsMapFound: ', nsMapFound);
-            if (ewMapFound) console.log('ewMapFound: ', ewMapFound);
-        }
-        
-    }
     
+    checkResult(nsScore:number, nsvul:boolean, ewvul:boolean, expected:boolean) : boolean {
+        const result: boolean = this.checkNSScoreLegal(nsScore, nsvul, ewvul);
+        if (result !== expected) {
+            console.log(`checkNSScoreLegal Assertion Error for (${nsScore},${nsvul},${ewvul}) = ${result}, expected ${expected}`);
+            if (this.debug) {
+                const nsMap = (!nsvul ? this.scoreMapNotVul : this.scoreMapVul);
+                const ewMap = (!ewvul ? this.scoreMapNotVul : this.scoreMapVul);
+                // console.log('nsMap', this.scoreMapNotVul);
+                // console.log('nsMap.get(nsScore)', nsMap.get(nsScore));
+                const nsMapFound = nsMap.get(nsScore);
+                const ewMapFound = ewMap.get(-1*nsScore);
+                if (nsMapFound) console.log('nsMapFound: ', nsMapFound);
+                if (ewMapFound) console.log('ewMapFound: ', ewMapFound);
+            }
+        }
+        return (result);
+    }
+
 } // end of class
 
 

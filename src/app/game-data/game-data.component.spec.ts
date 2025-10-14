@@ -1,4 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
 
 import { GameDataComponent } from './game-data.component';
 
@@ -7,6 +12,20 @@ describe('GameDataComponent', () => {
   let fixture: ComponentFixture<GameDataComponent>;
 
   beforeEach(async () => {
+    await TestBed.configureTestingModule({
+        declarations: [
+            GameDataComponent,
+            DeleterDialogComponent,
+        ],
+        providers: [
+            provideRouter([]),
+            provideHttpClient(),
+        ],
+        imports: [
+            RouterTestingModule,
+            ReactiveFormsModule,
+        ],
+    })
     await TestBed.configureTestingModule({
       declarations: [ GameDataComponent ]
     })

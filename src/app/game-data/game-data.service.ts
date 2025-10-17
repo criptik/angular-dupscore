@@ -65,6 +65,10 @@ export class BoardPlay {
         return(this.isScoreNonEmpty() && !(this.kindNS === 'NP ' || this.kindNS === 'LATE')) 
     }
     
+    toString(): string {
+        return `ns: ${this.nsPair}, ew: ${this.ewPair}, round: ${this.round}, score: ${this.nsScore}`;
+    }
+    
 }
 
 type NNMap = Map<number, number>;

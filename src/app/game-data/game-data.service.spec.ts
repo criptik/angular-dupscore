@@ -22,11 +22,15 @@ describe('GameDataService', () => {
     });
 
     const testAry:Array< { scores: Array<any>; mps: Array<any> } > = [
-        {scores: [100, 110, 120],  mps: [0, 1, 2], },
-        {scores: [100, 120, 110],  mps: [0, 2, 1], },
-        {scores: [100, 100, 110],  mps: [0.5, 0.5, 2], },
-        {scores: [100, 110, 110],  mps: [0, 1.5, 1.5], },
-        {scores: [110, 110, 110],  mps: [1.0, 1.0, 1.0], },
+        {scores: [100, 110, 120],   mps: [0, 1, 2], },
+        {scores: [100, 120, 110],   mps: [0, 2, 1], },
+        {scores: [-500, 120, 110],  mps: [0, 2, 1], },
+        {scores: [-500, 120, 0],    mps: [0, 2, 1], },
+        {scores: [100, 100, 110],   mps: [0.5, 0.5, 2], },
+        {scores: [100, 110, 110],   mps: [0, 1.5, 1.5], },
+        {scores: [110, 110, 110],   mps: [1.0, 1.0, 1.0], },
+        {scores: [100, 110, 'NP'],   mps: [0.25, 1.75, undefined], },
+        {scores: [100, 110, 'AVE'],  mps: [0.25, 1.75, 1.0], },
         {scores: [110, 110, 110, 110],  mps: [1.5, 1.5, 1.5, 1.5], },
         {scores: [110, 120, 130, 140],  mps: [0, 1, 2, 3], },
         {scores: [140, 130, 120, 110],  mps: [3, 2, 1, 0], },
@@ -39,14 +43,16 @@ describe('GameDataService', () => {
         {scores: [140, 130, 130, [1.1, 1.9] ],  mps: [2.83, 0.83, 0.83, 1.1], },
         {scores: [100, 110, 'NP'],  mps: [0.25, 1.75, undefined], },
         {scores: [100, 110, 'AVE'],  mps: [0.25, 1.75, 1.0], },
+        {scores: [-100, -110, -120, -130, -140],  mps: [4, 3, 2, 1, 0], },
+        {scores: [-100, -110, -120, -120, -120],  mps: [4, 3, 1, 1, 1], },
+        {scores: [-100, -110, -120, -120, 'NP'],  mps: [3.88, 2.63, 0.75, 0.75, undefined], },
+        {scores: [-100, -110, -120, -120, -130, -140],  mps: [5, 4, 2.5, 2.5, 1, 0], },
+        {scores: [100, 110],         mps: [0, 1], },
+        {scores: [100, 100],         mps: [0.5, 0.5], },
+        {scores: [100, 'NP'],        mps: [0.6, undefined], },
+        {scores: [100, 'AVE-'],      mps: [0.6, 0.4], },
     ];
 
-    // const mappy: Map<number, string> = new Map();
-    // mappy.set(1, 'a');
-    // mappy.set(2, 'b');
-    // console.log('mappy stringify', JSON.stringify(mappy));
-    // console.log('mappy entries ', [...mappy.entries()]);
-    // console.log('mappy entries stringify ', mappy.entries());
     testAry.forEach ( (obj) => {
         const bdObj: BoardObj = new BoardObj(1);
         const siz: number = obj.scores.length;
@@ -74,7 +80,7 @@ describe('GameDataService', () => {
         // compute MPs
         bdObj.computeMP(siz - 1);
         
-        it(`for ${obj.scores} checking ${obj.mps}:`, () => {
+        it(`MPs for ${obj.scores} expected ${obj.mps}:`, () => {
             let ok = true;
             
             _.range(siz).forEach( (n) => {

@@ -84,7 +84,12 @@
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+                "src/assets",
+                {
+                    "glob": "**/*",
+                    "input": "src/testAssets", // Path to test-specific assets
+                    "output": "/testAssets/"   // Output path in the test environment
+                }
             ],
             "styles": [
               "src/styles.css"

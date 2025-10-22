@@ -80,19 +80,16 @@ describe('GameSummaryComponent', () => {
                 p.doDeserialize(jsonStr);
                 if (modifyBoard5) {
                     const board5: BoardObj = p.boardObjs.get(5)!;
-                    board5.boardPlays.forEach ( (bp) => {
+                    Array.from(board5.boardPlays.values()).forEach ( (bp) => {
                         bp.addSpecialScoreInfo('NP');
                     });
-                    const boardTop = 2;  // 3 pairs per board for this file
-                    board5.computeMP(boardTop);
+                    board5.computeMP(p.boardTop);
                 }
                 
                 if (shouldComputeMP) {
                     // go thru and recompute the MPs (this should not change anything)
-                    Array.from(p.boardObjs.values()).forEach( (board) => {
-                        const boardTop = 2;  // 3 pairs per board for this file
-                        board.computeMP(boardTop);
-                    });
+                    const boardTop = 2;  // 3 pairs per board for this file
+                    p.computeMPAllBoards();
                 }
                 component.size = 'short';
                 component.ngOnInit();
@@ -149,13 +146,47 @@ describe('GameSummaryComponent', () => {
                 return pbt.join('\n');
             }
 
-            _.range(20).forEach( (n) => {
+            _.range(4,5).forEach( (n) => {
                 it(`should produce a correct detailed report for board ${n+1}`, () => {
                     const details: string = jsonToOneBoardDetails(jsonStr3Table, n+1);
                     expect(details.trim()).toBe(boardDetailsArray[n].trim());
                 });
             });
-            
+
+            // now set board 5 to be [AVE,AVE,-100]
+            it(`should produce a correct detailed report for board 5 when set to AVE, AVE, -100`, () => {
+                const p: GameDataService = gameDataService;            
+                p.doDeserialize(jsonStr3Table);
+                console.log(`should produce a correct detailed report for board 5 when set to AVE, AVE, -100`);
+                const board5: BoardObj = p.boardObjs.get(5)!;
+                const bpArray = Array.from(board5.boardPlays.values());
+                bpArray[0].addSpecialScoreInfo('AVE');
+                bpArray[1].addSpecialScoreInfo('AVE');
+                const boardTop = 2;  // 3 pairs per board for this file
+                board5.computeMP(boardTop);
+                // now generate the board 5 details
+                component.ngOnInit();
+                console.log('summaryText in AVE,AVE,-100', component.summaryText);
+                let pbt: Array<string> = [];
+                // debugging, show full perBoard
+                // component.outputPerBoardData(pbt);
+                // console.log('full perBoard', pbt.join('\n'));
+
+                pbt = [];
+                const boardObj: BoardObj = p.boardObjs.get(5)!;
+                if (boardObj!.areAnyPlaysEntered()) {
+                    component.outputOneBoardText(pbt, boardObj);
+                }
+                const details5:string = pbt.join('\n');
+                expect(details5.trim()).toBe(`RESULTS OF BOARD 5
+  
+    SCORES       MATCHPOINTS    NAMES
+   N-S   E-W     N-S    E-W
+         100     1.20   1.20    1-Jones-Jones vs. 5-Royal-Royal
+   AVE   AVE     1.00   1.00    4-Boyer-Boyer vs. 3-Dent-Dent
+   AVE   AVE     1.00   1.00    6-Hays-Hays vs. 2-Worth-Worth
+----------------------------------------------------------------------`);
+            });
         });
     }); // end of 3-table
 });

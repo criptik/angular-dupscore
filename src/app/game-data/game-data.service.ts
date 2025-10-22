@@ -91,7 +91,7 @@ export class BoardObj {
         this.vulEW = vulEWVals[(bdnum-1) % 16] === 1;
         // for now, we don't really need to show the dealer
         // but we'll compute it anyway
-        this.dealer = 'NESW'.charAt((this.bdnum) % 4);
+        this.dealer = 'NESW'.charAt((this.bdnum-1) % 4);
     }
 
     static emptyInstance() {
@@ -163,7 +163,7 @@ export class BoardObj {
         // unknown, return -1;
         return -1;
     }
-    
+
     computeMP(boardTop: number) {
         // gather the nsScores from the BoardPlays that have numeric results
         const scores: number[] = [];
@@ -173,7 +173,7 @@ export class BoardObj {
         // the following two init to dummy but we only look at it if there is one "normal" score
         let singleBoardNS: number = 0;
         let singleBoardEW: number = 0;
-        
+
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
             expectedPlays++;
             // normal results to be matchpointed
@@ -189,7 +189,7 @@ export class BoardObj {
                 const mpEW = this.getSpecialMP(bp.kindEW, boardTop);
                 if (mpNS !== -1) specialMap.set(bp.nsPair, mpNS);
                 if (mpEW !== -1) specialMap.set(bp.ewPair, mpEW);
-                // console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
+                console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
             }
         });
         // shortcircuit if not enough scores to matter
@@ -495,6 +495,13 @@ export class GameDataService {
         }
         return str.padStart(4, ' ');
     }
+
+    computeMPAllBoards() {
+        Array.from(this.boardObjs.values()).forEach( (board) => {
+            board.computeMP(this.boardTop);
+        });
+    }
+    
 
 }
 

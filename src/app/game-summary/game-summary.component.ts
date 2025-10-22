@@ -88,7 +88,7 @@ export class GameSummaryComponent {
                 const scoreText: string = `${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}`;
                 const nsMP = boardObj.pairToMpMap.get(nsPair)!;
                 const ewMP = boardObj.pairToMpMap.get(ewPair)!;
-                console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
+                // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
                 const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
                 const pairObjNS: Pair | undefined = p.pairNameMap.get(nsPair);  
                 const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);
@@ -131,6 +131,7 @@ export class GameSummaryComponent {
 
         let boardsScored = 0;
         Array.from(p.boardObjs.values()).forEach( boardObj => {
+            boardObj.computeMP(p.boardTop);
             if (boardObj.allPlaysEntered) fullyEnteredBoards++;
             if (Array.from(boardObj.pairToMpMap.keys()).length > 0) boardsScored ++;
             

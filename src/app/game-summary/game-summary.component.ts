@@ -174,7 +174,12 @@ export class GameSummaryComponent {
             if (this.size === 'long') {
                 this.outputPerBoardData(pbt);
             }
+            pbt.push('\n');
             this.summaryText = pbt.join('\n');
         }
+    }
+
+    onClipButtonClick(x:any) {
+        navigator.clipboard.writeText(this.summaryText);
     }
 }

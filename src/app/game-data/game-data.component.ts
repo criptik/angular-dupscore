@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { GameDataService, BoardObj } from './game-data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MovInfoService } from '../game-setup/movinfo.service';
+import { AppComponent } from '../app.component';
 
 @Component({
     selector: 'app-game-data',
@@ -14,6 +15,7 @@ export class GameDataComponent {
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,
+                private _app: AppComponent,
                 private _movInfo: MovInfoService) {
     // console.log(`in gameDataComponent.constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`);
     }
@@ -38,7 +40,7 @@ export class GameDataComponent {
                                                  `${p.pairNameMap.size} Pair Names Entered out of ${p.numPairs}`,
                                                  `${countBoardsScored === 0 ? 'No' : countBoardsScored} Board${countBoardsScored === 1 ? '' : 's'} Scored so far`,
         ]);
-        
+        this._app.clearHighlights();
 
         // this.serializeText = this.gameDataPtr?.doSerialize();
         // console.log(this.serializeText);

@@ -1,0 +1,8 @@
+RESULTS OF BOARD 5
+  
+    SCORES       MATCHPOINTS    NAMES
+   N-S   E-W     N-S    E-W
+         100     1.20   1.20    1-Jones-Jones vs. 5-Royal-Royal
+   AVE   AVE     1.00   1.00    4-Boyer-Boyer vs. 3-Dent-Dent
+   AVE   AVE     1.00   1.00    6-Hays-Hays vs. 2-Worth-Worth
+----------------------------------------------------------------------

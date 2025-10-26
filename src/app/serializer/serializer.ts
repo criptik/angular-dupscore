@@ -35,7 +35,7 @@ export class SerializerClass {
             console.log(this.sourceToRuntimeMap);
             console.log(this.runtimeToSourceMap);
             console.log(this.sourceToClassMap);
-            console.log(excludedClasses);
+            console.log('excludedClasses:', excludedClasses);
         }
         
     }

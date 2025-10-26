@@ -73,6 +73,11 @@ export class BoardPlay {
 
 type NNMap = Map<number, number>;
 
+class ExcludedMap extends Map {
+};
+
+
+
 export class BoardObj {
     bdnum: number;
     vulNS: boolean;
@@ -80,7 +85,7 @@ export class BoardObj {
     dealer: string; 
     boardPlays: Map<number, BoardPlay>  = new Map();
     allPlaysEntered: boolean = false;
-    pairToMpMap: NNMap = new Map();  // maps a pair to a mp amt
+    pairToMpMap: ExcludedMap = new ExcludedMap();  // maps a pair to a mp amt
 
     
     constructor(bdnum: number) {
@@ -318,7 +323,7 @@ export class GameDataService {
     
     constructor( private _http: HttpClient,) {
         const serializableClassesLiteral: SeriClassLiteral = {BoardObj, BoardPlay, Pair, Person, GameDataService};
-        const excludedClasses = [SerializerClass.name, HttpClient.name, InjectionToken.name];  // may not need InjectionToken
+        const excludedClasses = [SerializerClass.name, HttpClient.name, InjectionToken.name, ExcludedMap.name];  // may not need InjectionToken
         this._serializer = new SerializerClass(serializableClassesLiteral, excludedClasses);
     }
 
@@ -457,6 +462,7 @@ export class GameDataService {
     doDeserialize(JSONStr: string) {
         const newobj: Object = this._serializer.deserialize(JSONStr);
         Object.assign(this, newobj);
+        this.computeMPAllBoards();
     }
 
     saveToLocalStorage() {

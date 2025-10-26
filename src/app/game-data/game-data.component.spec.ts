@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
+import { AppComponent } from '../app.component';
 
 import { GameDataComponent } from './game-data.component';
 
@@ -20,6 +21,7 @@ describe('GameDataComponent', () => {
         providers: [
             provideRouter([]),
             provideHttpClient(),
+            { provide: AppComponent, useValue: {} }
         ],
         imports: [
             RouterTestingModule,

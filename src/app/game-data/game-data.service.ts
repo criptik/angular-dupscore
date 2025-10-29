@@ -194,7 +194,7 @@ export class BoardObj {
                 const mpEW = this.getSpecialMP(bp.kindEW, boardTop);
                 if (mpNS !== -1) specialMap.set(bp.nsPair, mpNS);
                 if (mpEW !== -1) specialMap.set(bp.ewPair, mpEW);
-                console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
+                // console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
             }
         });
         // shortcircuit if not enough scores to matter

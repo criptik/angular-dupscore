@@ -64,7 +64,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     }
     
     initComponent() {
-        console.log('ngOnInit in base');
+        // console.log('ngOnInit in base');
         // when this is called, parent is all setup
         // console.log(`in score-entry.ngOnInit, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
         if (!this.gameDataPtr.gameDataSetup) {
@@ -375,10 +375,13 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         else if (isFinite(parseInt(key))) {
             // numeric keys always ok
             // console.log(`key ${key} is a number!`);
+            if (x.target.value === '') x.target.value = key;
             // console.log(`input is now ${x.target.value}`);
         }
-        else if ('XLNAS'.includes(key.toUpperCase()) && x.target.value.toUpperCase() === key.toUpperCase()) {
-            x.target.value = key.toUpperCase()
+        else if ('XLNAS'.includes(key.toUpperCase())) {
+            if (x.target.value === '' || x.target.value.toUpperCase() === key.toUpperCase()) {
+                x.target.value = key.toUpperCase();
+            }
         }
         
         else {
@@ -391,6 +394,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     
     onScoreEntryInputKeyUp(x : any) {
         this.inputElement = x;  // save this
+        // console.log('input', x);
         // ignore if gameData not set up yet
         if (!this.gameDataPtr.gameDataSetup) return;
 

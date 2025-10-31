@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GameDataService, BoardObj } from './game-data.service';
+import { GameDataService, BoardObj, TravOrder } from './game-data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MovInfoService } from '../game-setup/movinfo.service';
 import { AppComponent } from '../app.component';
@@ -37,6 +37,7 @@ export class GameDataComponent {
         ];
         if (p.phantomPair !== 0) this.statusText.push(`Phantom Pair at Pair ${p.pairnumToString(p.phantomPair)}`);
         this.statusText = this.statusText.concat([`${p.numBoards} Boards, (${p.numRounds} Rounds, ${p.boardsPerRound} Boards Per Round)`,
+                                                  `Travellers Ordered by ${p.travOrder === TravOrder.PAIR ? 'Pair' : 'Round'}`,
                                                  `${p.pairNameMap.size} Pair Names Entered out of ${p.numPairs}`,
                                                  `${countBoardsScored === 0 ? 'No' : countBoardsScored} Board${countBoardsScored === 1 ? '' : 's'} Scored so far`,
         ]);

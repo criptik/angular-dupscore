@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild, AfterViewInit, AfterContentInit, AfterContentChecked } from '@angular/core';
 import { Directive, ElementRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { GameDataService } from '../game-data/game-data.service';
+import { GameDataService, TravOrder } from '../game-data/game-data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MovInfoService } from './movinfo.service';
 import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
@@ -29,6 +29,7 @@ export class GameSetupComponent  implements AfterViewInit {
         movement:  new FormControl(),
         totBoards: new FormControl(),
         phantomPair: new FormControl(),
+        travOrder: new FormControl(),
     });
 
     loadGameForm = new FormGroup({
@@ -90,6 +91,7 @@ export class GameSetupComponent  implements AfterViewInit {
                     this.newGameForm.value.phantomPair,
                     this.newGameForm.value.gameDate,
                     this.newGameForm.value.groupName,
+                    this.newGameForm.value.travOrder,
         );
         this.newGameDialog.nativeElement.close();
         
@@ -98,6 +100,7 @@ export class GameSetupComponent  implements AfterViewInit {
             this.newGameForm.value.movement,
             parseInt(this.newGameForm.value.totBoards),
             parseInt(this.newGameForm.value.phantomPair),
+            parseInt(this.newGameForm.value.travOrder),
             this.newGameForm.value.gameDate,
             this.newGameForm.value.groupName,
         );
@@ -167,6 +170,9 @@ export class GameSetupComponent  implements AfterViewInit {
             this.phantomPairArray = [0].concat(this.gameDataPtr.pairIds);
             // console.log('phantomPairArray', this.phantomPairArray);
             this.newGameForm.get('phantomPair')?.setValue(0);
+
+            this.newGameForm.get('travOrder')?.setValue(TravOrder.PAIR);
+            console.log('travOrder:', this.newGameForm.value.travOrder);
         });
 
         // seed new groupName and fileName if the gameDate changes
@@ -203,4 +209,7 @@ export class GameSetupComponent  implements AfterViewInit {
             this._router.navigate(["/status"]);
         });
     }    
+
+    public TravOrderEnum = TravOrder;
+    
 }

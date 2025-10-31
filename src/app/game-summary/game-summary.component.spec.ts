@@ -56,8 +56,9 @@ describe('GameSummaryComponent', () => {
         }
         
         async get() {
-            this.str = await lastValueFrom(httpClient.get(this.path, { responseType: 'text' }));
-            return this.str;
+            if (this.str.length === 0) {
+                this.str = await lastValueFrom(httpClient.get(this.path, { responseType: 'text' }));
+            }
         }
     }
     

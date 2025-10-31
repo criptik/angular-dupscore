@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FocusTrapFactory} from '@angular/cdk/a11y';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LegalScore } from '../legal-score/legal-score.service';
-import { GameDataService, BoardObj, BoardPlay } from '../game-data/game-data.service';
+import { GameDataService, BoardObj, BoardPlay, NNMap, TravOrder } from '../game-data/game-data.service';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 
@@ -418,10 +418,36 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     }
     
     buildNSOrder() {
+        const p: GameDataService = this.gameDataPtr;
+        if (p.travOrder === TravOrder.PAIR) {
+            this.buildNSOrderPair();
+        } else if (p.travOrder === TravOrder.ROUND) {
+            this.buildNSOrderRound();
+        }
+        console.log('nsOrder:', p.travOrder, this.nsOrder);
+    }
+    
+    buildNSOrderPair() {    
         const bdobj = this.getBoardObj(this.curBoardNum);
-        this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort();
+        this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort((a, b)=>{return a - b});
     }
 
+    buildNSOrderRound() {
+        const bdobj = this.getBoardObj(this.curBoardNum);
+        // build map of round to ns pair
+        const roundToNSPair : NNMap  = new Map();
+        Array.from(bdobj.boardPlays.values()).forEach( (bp) => {
+            roundToNSPair.set(bp.round, bp.nsPair);
+        });
+        console.log('roundToNSPair', roundToNSPair);
+        const sortedRounds: number[] = Array.from(roundToNSPair.keys()).sort((a, b)=>{return a - b});
+        console.log('sortedRounds', sortedRounds);
+        this.nsOrder = [];
+        sortedRounds.forEach( (round) => {
+            this.nsOrder.push(roundToNSPair.get(round)!);
+        });
+    }
+    
     abstract endOfBoardHook():void;
     abstract findStartingBoard(): number;
     abstract getBoardSelectInfo(): number;
@@ -452,8 +478,8 @@ export class ScoreEntryComponent extends ScoreBaseComponent implements AfterView
     }
 
     endOfBoardHook() {
-            const p: GameDataService = this.gameDataPtr;
-            p.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
+        const p: GameDataService = this.gameDataPtr;
+        p.boardObjs.get(this.curBoardNum)?.updateAllPlaysEntered();
         const bdobj = p.boardObjs.get(this.curBoardNum) as BoardObj;
         bdobj.computeMP(p.boardTop);
         p.saveToLocalStorage();

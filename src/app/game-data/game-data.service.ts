@@ -6,6 +6,13 @@ import * as _ from 'lodash';
 const SCORE_EMPTY: number = -2;
 const SCORE_SPECIAL: number = -1;
 
+export type NNMap = Map<number, number>;
+export const TravOrder =  {
+    PAIR:1,
+    ROUND:2
+} as const;
+
+
 export class BoardPlay {
     // fixed info
     nsPair: number;
@@ -70,8 +77,6 @@ export class BoardPlay {
     }
     
 }
-
-type NNMap = Map<number, number>;
 
 class ExcludedMap extends Map {
 };
@@ -308,6 +313,7 @@ export class GameDataService {
     numTables: number = 0;
     numRounds: number = 0;
     numBoards: number = 0;
+    travOrder: number = TravOrder.PAIR;
     
     boardTop: number = 0; 
     boardObjs: Map<number, BoardObj> = new Map();
@@ -409,11 +415,13 @@ export class GameDataService {
     //     });
     // }
 
-    async createGame(gameName: string, movement: string, totBoards: number, phantomPair: number, gameDate: Date, groupName: string) {
+    async createGame(gameName: string, movement: string, totBoards: number, phantomPair: number,
+                     travOrder: number, gameDate: Date, groupName: string) {
         console.log('in Initialize');
         this.gameFileName = gameName;
         this.movFileName = `${movement}.MOV`;
         this.phantomPair = phantomPair;
+        this.travOrder = travOrder;
         this.pairNameMap = new Map<number, Pair>();
         this.gameDate = gameDate;
         this.groupName = groupName;
@@ -462,6 +470,10 @@ export class GameDataService {
     doDeserialize(JSONStr: string) {
         const newobj: Object = this._serializer.deserialize(JSONStr);
         Object.assign(this, newobj);
+        // handle the fact that old json formats didn't know about travOrder
+        if (this.travOrder === undefined) this.travOrder = TravOrder.PAIR;
+
+        // handle the fact that new json formats don't save the MP calcs
         this.computeMPAllBoards();
     }
 
@@ -510,5 +522,4 @@ export class GameDataService {
     
 
 }
-
 

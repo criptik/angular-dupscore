@@ -7,7 +7,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
 import { GameDataService, BoardObj } from '../game-data/game-data.service';
-import { lastValueFrom } from 'rxjs';
+import { AssetFileReader } from '../testutils/testutils';
 import * as _ from 'lodash';
 
 import { GameSummaryComponent } from './game-summary.component';
@@ -39,29 +39,12 @@ describe('GameSummaryComponent', () => {
         fixture = TestBed.createComponent(GameSummaryComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
-
     });
 
     
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-
-
-    class AssetFileReader {
-        path: string;
-        str: string = '';
-        constructor(path: string) {
-            this.path = path;
-        }
-        
-        async get() {
-            if (this.str.length === 0) {
-                this.str = await lastValueFrom(httpClient.get(this.path, { responseType: 'text' }));
-            }
-        }
-    }
-    
     
     describe('3 Table Reports', () => {
 
@@ -70,14 +53,14 @@ describe('GameSummaryComponent', () => {
         jsonInputTypes.forEach( (jsonInputType) => {
             describe(`3 Table Reports ${jsonInputType}`, () => {
                 const jsonStr3Table: AssetFileReader = new AssetFileReader(`testAssets/3table/sample${jsonInputType}.json`);
-                beforeEach(  async () => {await jsonStr3Table.get();});
+                beforeEach(  async () => {await jsonStr3Table.get(httpClient);});
 
                 describe('3 Table Short Reports', () => {
                     const expectedShort3Table: AssetFileReader = new AssetFileReader('testAssets/3table/expectedShortSummary.txt');
                     const expectedShort3Table3NP: AssetFileReader = new AssetFileReader('testAssets/3table/expectedShortSummary2.txt');
 
-                    beforeEach(  async () => {await expectedShort3Table.get();});
-                    beforeEach(  async () => {await expectedShort3Table3NP.get();});
+                    beforeEach(  async () => {await expectedShort3Table.get(httpClient);});
+                    beforeEach(  async () => {await expectedShort3Table3NP.get(httpClient);});
                     function jsonToShortReport(jsonStr: string, modifyBoard5:boolean = false) {
                         const p: GameDataService = gameDataService;
                         p.doDeserialize(jsonStr);
@@ -117,7 +100,7 @@ describe('GameSummaryComponent', () => {
                     let boardDetailsArray: RegExpMatchArray;
             
                     beforeEach(  async () => {
-                        await expectedDetails3Table.get();
+                        await expectedDetails3Table.get(httpClient);
                         boardDetailsArray =  expectedDetails3Table.str.match(/   RESULTS OF BOARD.+?-{2,}/sg)!;
                     });
 
@@ -149,7 +132,7 @@ describe('GameSummaryComponent', () => {
 
                     // now set board 5 to be [AVE,AVE,-100]
                     const expectedDetails3TableBd5AveAve: AssetFileReader = new AssetFileReader('testAssets/3table/detailsBd5AveAve.txt');
-                    beforeEach(  async () => {await expectedDetails3TableBd5AveAve.get();});
+                    beforeEach(  async () => {await expectedDetails3TableBd5AveAve.get(httpClient);});
                     it('should produce a correct detailed report for board 5 when set to AVE, AVE, -100', () => {
                         const p: GameDataService = gameDataService;            
                         p.doDeserialize(jsonStr3Table.str);

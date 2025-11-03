@@ -419,29 +419,28 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     
     buildNSOrder() {
         const p: GameDataService = this.gameDataPtr;
+        const bdobj = this.getBoardObj(this.curBoardNum);
         if (p.travOrder === TravOrder.PAIR) {
-            this.buildNSOrderPair();
+            this.buildNSOrderPair(bdobj);
         } else if (p.travOrder === TravOrder.ROUND) {
-            this.buildNSOrderRound();
+            this.buildNSOrderRound(bdobj);
         }
-        console.log('nsOrder:', p.travOrder, this.nsOrder);
+        // console.log('nsOrder in component:', p.travOrder, this.nsOrder);
     }
     
-    buildNSOrderPair() {    
-        const bdobj = this.getBoardObj(this.curBoardNum);
+    buildNSOrderPair(bdobj: BoardObj) {    
         this.nsOrder = Array.from(bdobj.boardPlays.keys()).sort((a, b)=>{return a - b});
     }
 
-    buildNSOrderRound() {
-        const bdobj = this.getBoardObj(this.curBoardNum);
+    buildNSOrderRound(bdobj: BoardObj) {
         // build map of round to ns pair
         const roundToNSPair : NNMap  = new Map();
         Array.from(bdobj.boardPlays.values()).forEach( (bp) => {
             roundToNSPair.set(bp.round, bp.nsPair);
         });
-        console.log('roundToNSPair', roundToNSPair);
+        // console.log('roundToNSPair', roundToNSPair);
         const sortedRounds: number[] = Array.from(roundToNSPair.keys()).sort((a, b)=>{return a - b});
-        console.log('sortedRounds', sortedRounds);
+        // console.log('sortedRounds', sortedRounds);
         this.nsOrder = [];
         sortedRounds.forEach( (round) => {
             this.nsOrder.push(roundToNSPair.get(round)!);

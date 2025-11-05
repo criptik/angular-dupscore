@@ -7,29 +7,11 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
 import { ScoreEntryComponent } from './score-entry.component';
-import { AssetFileReader } from '../testutils/testutils';
+import { readAssetText } from '../testutils/testutils';
 import { GameDataService, BoardObj } from '../game-data/game-data.service';
 import { lastValueFrom } from 'rxjs';
 import { GameDataComponent } from '../game-data/game-data.component';
 
-
-// class AssetFileReader {
-//     path: string;
-//     str: string = '';
-//     constructor(str: string, path: string) {
-//         this.str = str;
-//         this.path = path;
-//         console.log('in constructor', path);
-//     }
-//     
-//     static async create(path: string, httpClient: HttpClient) {
-//         // Perform asynchronous operations here, e.g., fetching data
-//         console.log('in Create');
-//         const str = await lastValueFrom(httpClient.get(path, { responseType: 'text' }));
-//         return new AssetFileReader(str, path);
-//     }
-// }
-// 
 describe('ScoreEntryComponent', () => {
     let component: ScoreEntryComponent;
     let fixture: ComponentFixture<ScoreEntryComponent>;
@@ -70,11 +52,9 @@ describe('ScoreEntryComponent', () => {
     
     
     describe('3 Table TravOrder by Round Entries', () => {
-        const jsonStr3Table: AssetFileReader = new AssetFileReader(`testAssets/3table/sampleNoMpMap.json`);
-        beforeEach(  async () => {
-            await jsonStr3Table.get(httpClient);
-            // AssetFileReader.create(`testAssets/3table/sampleNoMpMap.json`, httpClient);
-            // console.log('jsonStr3Table', jsonStr3Table);
+        let jsonStr3Table: string;
+        beforeEach(  async () =>  {
+            jsonStr3Table = await readAssetText('testAssets/3table/sampleNoMpMap.json', httpClient);
         });
         
         const expectedNSOrderArray = [
@@ -91,20 +71,18 @@ describe('ScoreEntryComponent', () => {
         ];
         
         it('json str should be set up', () => {
-            expect(jsonStr3Table.str.length).not.toBe(0);
+            expect(jsonStr3Table.length).not.toBe(0);
         });
-        let p: GameDataService;
         beforeEach( () => {
-            p = gameDataService;
-            p.doDeserialize(jsonStr3Table.str);
+            gameDataService.doDeserialize(jsonStr3Table);
         });
-        [1, 2].forEach( (travOrder) => {
-            [1,3,5,7,9,11,13,15,17,19].forEach( (bdnum) => {
+        [1, 2].forEach( function (travOrder) {
+            [1,3,5,7,9,11,13,15,17,19].forEach( function (bdnum) {
                 it(`should have expected NSOrder for travOrder=${travOrder}, bdnum ${bdnum}`, () => {
-                    p.travOrder = travOrder;
+                    gameDataService.travOrder = travOrder;
                     component.curBoardNum = bdnum;
                     component.buildNSOrder();
-                    // console.log(`in test, nsOrder for travOrder=${p.travOrder}, bdnum=${bdnum}`, component.nsOrder);
+                    // console.log(`in test, nsOrder for travOrder=${travOrder}, bdnum=${bdnum}`, component.nsOrder);
                     let expectedNSOrder;
                     if (travOrder === 2) {
                         expectedNSOrder = expectedNSOrderArray[(bdnum-1)/2];

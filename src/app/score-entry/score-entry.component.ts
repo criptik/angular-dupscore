@@ -425,7 +425,6 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         } else if (p.travOrder === TravOrder.ROUND) {
             this.buildNSOrderRound(bdobj);
         }
-        // console.log('nsOrder in component:', p.travOrder, this.nsOrder);
     }
     
     buildNSOrderPair(bdobj: BoardObj) {    

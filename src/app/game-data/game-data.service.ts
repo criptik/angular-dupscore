@@ -380,7 +380,7 @@ export class GameDataService {
         });
         
         // inspect the triplets to get the boardPlays for each boardObj
-        console.log(`tables = ${this.numTables}, rounds=${this.numRounds}, numBoards=${this.numBoards}, datsiz=${datsiz}`);
+        // console.log(`tables = ${this.numTables}, rounds=${this.numRounds}, numBoards=${this.numBoards}, datsiz=${datsiz}`);
         _.range(1,this.numTables+1).forEach(itable => {
             _.range(1,this.numRounds+1).forEach(iround => {
                 // console.log(`T${itable}, R${iround}`, ui8ary[idx], ui8ary[idx+1], ui8ary[idx+2]);
@@ -418,6 +418,7 @@ export class GameDataService {
     async createGame(gameName: string, movement: string, totBoards: number, phantomPair: number,
                      travOrder: number, gameDate: Date, groupName: string) {
         console.log('in Initialize');
+        this.gameDataSetup = false;
         this.gameFileName = gameName;
         this.movFileName = `${movement}.MOV`;
         this.phantomPair = phantomPair;
@@ -450,7 +451,7 @@ export class GameDataService {
         });
         // wait for gameDataSetup
         while (!this.earlyGameDataSetup) {
-            console.log(`wait a bit`);
+            // console.log(`wait a bit`);
             await new Promise(resolve => setTimeout(resolve, 300));
         };
     }

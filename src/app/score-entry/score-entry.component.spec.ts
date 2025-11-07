@@ -57,42 +57,44 @@ describe('ScoreEntryComponent', () => {
             movName: string;
             numBoards: number;
             numRounds: number;
-            roundNSOrderArray: Array<Array<number>>;
+            numTables: number;
+            roundOrderPairings: number[][][];
         }
+
         
         let tableTests: Array<ExpObj> = [
-            {movName: 'HCOLONEL', numBoards: 20, numRounds:10, roundNSOrderArray : [
-                [6,5,3],
-                [6,4,5],
-                [4,6,1],
-                [6,5,1],
-                [5,6,2],
-                [2,6,1],
-                [1,6,3],
-                [2,3,6],
-                [4,2,6],
-                [3,4,6],
+            {movName: 'HCOLONEL', numBoards: 20, numRounds:10, numTables:3, roundOrderPairings : [
+                [[6,1], [5,4], [3,2]],
+                [[6,1], [4,2], [5,3]],
+                [[4,3], [6,2], [1,5]],
+                [[6,2], [5,3], [1,4]],
+                [[5,4], [6,3], [2,1]],
+                [[2,5], [6,3], [1,4]],
+                [[1,5], [6,4], [3,2]],
+                [[2,5], [3,1], [6,4]],
+                [[4,3], [2,1], [6,5]],
+                [[3,1], [4,2], [6,5]],
             ]},
-            {movName: 'H0407X', numBoards: 21, numRounds:7, roundNSOrderArray : [
-                [8,5,2,3],
-                [8,6,3,4],
-                [8,7,4,5],
-                [6,8,1,5],
-                [7,8,2,6],
-                [7,1,8,3],
-                [4,1,2,8],
+            {movName: 'H0407X', numBoards: 21, numRounds:7, numTables:4, roundOrderPairings : [
+                [[8,1], [5,6], [2,4], [3,7]],
+                [[8,2], [6,7], [3,5], [4,1]],
+                [[8,3], [7,1], [4,6], [5,2]],
+                [[6,3], [8,4], [1,2], [5,7]],
+                [[7,4], [8,5], [2,3], [6,1]],
+                [[7,2], [1,5], [8,6], [3,4]],
+                [[4,5], [1,3], [2,6], [8,7]],
             ]},
-            {movName: 'M0505X', numBoards: 20, numRounds:5, roundNSOrderArray : [
-                [1,5,4,3,2],
-                [2,1,5,4,3],
-                [3,2,1,5,4],
-                [4,3,2,1,5],
-                [5,4,3,2,1],
+            {movName: 'M0505X', numBoards: 20, numRounds:5, numTables:5, roundOrderPairings : [
+                [[1,1], [5,4], [4,2], [3,5], [2,3]],
+                [[2,2], [1,5], [5,3], [4,1], [3,4]],
+                [[3,3], [2,1], [1,4], [5,2], [4,5]],
+                [[4,4], [3,2], [2,5], [1,3], [5,1]],
+                [[5,5], [4,3], [3,1], [2,4], [1,2]],
             ]},
         ];
 
         tableTests.forEach( (obj:ExpObj) => {
-            describe(`testing for ${obj.movName}`, () => {
+            describe(`testing for ${obj.numTables}-table ${obj.movName}`, () => {
                 // to save time, we only create the game once.
                 let createdGame: boolean;
                 let lastGameCreated: GameDataService;
@@ -104,7 +106,7 @@ describe('ScoreEntryComponent', () => {
                             obj.movName,
                             obj.numBoards, // boards
                             0,             // no phantom Pair for now
-                            1,  // travorder will actually be set below
+                            1,             // travorder will actually be set below
                             new Date(Date.now()),
                             'temp for testing',
                         );
@@ -123,22 +125,32 @@ describe('ScoreEntryComponent', () => {
                     expect(gameDataService.numBoards).toBe(obj.numBoards);
                     expect(gameDataService.numRounds).toBe(obj.numRounds);
                 });
-                
+
+                // iterate over the 2 possible traveller orders
                 [1, 2].forEach( (travOrder) => {
                     const boardsPerRound = obj.numBoards/obj.numRounds;
                     _.range(1, obj.numBoards+1, boardsPerRound).forEach( (bdnum) => {
-                        it(`should have expected NSOrder for travOrder=${travOrder}, bdnum ${bdnum}`, () => {
+                        it(`should have expected Pairing Order for travOrder=${travOrder}, bdnum ${bdnum}`, () => {
                             gameDataService.travOrder = travOrder;
-                            component.curBoardNum = bdnum;
-                            component.buildNSOrder();
-                            let expectedNSOrder;
+                            // extract the rendered pairings from score-entry component's viewLines
+                            component.ngOnInit();
+                            component.startBoard(bdnum);
+                            component.updateView();
+                            const renderedPairings = component.viewLines.slice(2, 2+obj.numTables).map( (line) => {
+                                const matchArray: RegExpMatchArray | null =   line.match(/\d+/g);
+                                return matchArray!.map( (numstr) => parseInt(numstr));
+                            });
+                            // console.log(`rendered=${renderedPairings[0]}`);
+                            
+                            let expectedPairings: number[][];
+                            const objPairings: number[][] = obj.roundOrderPairings[(bdnum-1)/boardsPerRound];
                             if (travOrder === 2) {
-                                expectedNSOrder = obj.roundNSOrderArray[(bdnum-1)/boardsPerRound];
-                                } else {
-                                    expectedNSOrder = [...obj.roundNSOrderArray[(bdnum-1)/boardsPerRound]].sort((a, b)=>{return a - b});
-                                }
-                            // console.log(`in test, nsOrder for ${gameDataService.movFileName}, travOrder=${travOrder}, bdnum=${bdnum}`, component.nsOrder, 'expected', expectedNSOrder);
-                            expect(component.nsOrder).toEqual(expectedNSOrder);
+                                expectedPairings = objPairings;
+                            } else {
+                                expectedPairings = [...objPairings].sort((a, b)=>{return a[0] - b[0]});
+                            }
+                            // console.log(`in test, bdnum=${bdnum}, travOrder=${travOrder}, rendered= ${renderedPairings.flat()}, expected=${expectedPairings}`);
+                            expect(renderedPairings.flat()).toEqual(expectedPairings.flat());
                         });
                     });
                 });

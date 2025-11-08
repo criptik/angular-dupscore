@@ -8,7 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
 import { ScoreEntryComponent } from './score-entry.component';
 import { readAssetText } from '../testutils/testutils';
-import { GameDataService, BoardObj } from '../game-data/game-data.service';
+import { GameDataService, BoardObj, TravOrder } from '../game-data/game-data.service';
 import { lastValueFrom } from 'rxjs';
 import { GameDataComponent } from '../game-data/game-data.component';
 import * as _ from 'lodash';
@@ -102,11 +102,11 @@ describe('ScoreEntryComponent', () => {
                 beforeEach( async () => {
                     if (!createdGame) {
                         await gameDataService.createGame(
-                            'TempTest',    // game name
+                            'TempTest',       // game name
                             obj.movName,
-                            obj.numBoards, // boards
-                            0,             // no phantom Pair for now
-                            1,             // travorder will actually be set below
+                            obj.numBoards,    // boards
+                            0,                // no phantom Pair for now
+                            TravOrder.PAIR,   // travorder will actually be set below
                             new Date(Date.now()),
                             'temp for testing',
                         );
@@ -127,7 +127,7 @@ describe('ScoreEntryComponent', () => {
                 });
 
                 // iterate over the 2 possible traveller orders
-                [1, 2].forEach( (travOrder) => {
+                [TravOrder.PAIR, TravOrder.ROUND].forEach( (travOrder) => {
                     const boardsPerRound = obj.numBoards/obj.numRounds;
                     _.range(1, obj.numBoards+1, boardsPerRound).forEach( (bdnum) => {
                         it(`should have expected Pairing Order for travOrder=${travOrder}, bdnum ${bdnum}`, () => {
@@ -144,9 +144,10 @@ describe('ScoreEntryComponent', () => {
                             
                             let expectedPairings: number[][];
                             const objPairings: number[][] = obj.roundOrderPairings[(bdnum-1)/boardsPerRound];
-                            if (travOrder === 2) {
+                            if (travOrder === TravOrder.ROUND) {
                                 expectedPairings = objPairings;
                             } else {
+                                // travellers ordered by pair #, just sort the round ordering by ns pair
                                 expectedPairings = [...objPairings].sort((a, b)=>{return a[0] - b[0]});
                             }
                             // console.log(`in test, bdnum=${bdnum}, travOrder=${travOrder}, rendered= ${renderedPairings.flat()}, expected=${expectedPairings}`);

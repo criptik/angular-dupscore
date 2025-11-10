@@ -133,8 +133,10 @@ describe('GameSummaryComponent', () => {
 
                     // now set board 5 to be [AVE,AVE,-100]
                     let expectedDetails3TableBd5AveAve: string;
+                    let expectedDetails3TableBd5AveNP: string;
                     beforeEach(  async () => {
                         expectedDetails3TableBd5AveAve = await readAssetText('testAssets/3table/detailsBd5AveAve.txt', httpClient);
+                        expectedDetails3TableBd5AveNP = await readAssetText('testAssets/3table/detailsBd5AveNP.txt', httpClient);
                     });
                     it('should produce a correct detailed report for board 5 when set to AVE, AVE, -100', () => {
                         const p: GameDataService = gameDataService;            
@@ -154,6 +156,25 @@ describe('GameSummaryComponent', () => {
                         }
                         const details5:string = pbt.join('\n');
                         expect(details5.trim()).toBe(expectedDetails3TableBd5AveAve.trim());
+                    });
+                    it('should produce a correct detailed report for board 5 when set to AVE, NP, -100', () => {
+                        const p: GameDataService = gameDataService;            
+                        p.doDeserialize(jsonStr3Table);
+                        const board5: BoardObj = p.boardObjs.get(5)!;
+                        const bpArray = Array.from(board5.boardPlays.values());
+                        bpArray[0].addSpecialScoreInfo('AVE');
+                        bpArray[1].addSpecialScoreInfo('NP');
+                        const boardTop = 2;  // 3 pairs per board in this game
+                        board5.computeMP(boardTop);
+                        // now generate the board 5 details
+                        component.ngOnInit();
+                        let pbt: Array<string> = [];
+                        const boardObj: BoardObj = p.boardObjs.get(5)!;
+                        if (boardObj!.areAnyPlaysEntered()) {
+                            component.outputOneBoardText(pbt, boardObj);
+                        }
+                        const details5:string = pbt.join('\n');
+                        expect(details5.trim()).toBe(expectedDetails3TableBd5AveNP.trim());
                     });
                 });
             });

@@ -64,6 +64,16 @@ export class GameSummaryComponent {
         pbt.push(' ');
     }
 
+    getPairNameText(nsPair: number,  ewPair: number) {
+        const p: GameDataService = this.gameDataPtr;
+        const pairObjNS: Pair | undefined = p.pairNameMap.get(nsPair);
+        const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);
+        const nameTextNS: string = `${(pairObjNS ? pairObjNS.shortString() : '')}`;
+        const nameTextEW: string = `${(pairObjEW ? pairObjEW.shortString() : '')}`;
+        const nameText: string = `${p.pairnumToString(nsPair, false)}-${nameTextNS} vs. ${p.pairnumToString(ewPair, false)}-${nameTextEW}`;
+        return nameText;
+    }
+    
     outputOneBoardText(pbt: string[], boardObj: BoardObj) {
         const p: GameDataService = this.gameDataPtr;
         pbt.push(`  `);
@@ -80,23 +90,33 @@ export class GameSummaryComponent {
             const mpA: number = boardObj.pairToMpMap.get(nsPairA)!;
             const mpB: number = boardObj.pairToMpMap.get(nsPairB)!;
             // each should have an entry in the boardObj.pairToMpMap;
+            if (mpA === undefined && mpB === undefined) return 1;
+            if (mpA === undefined) return -1;
+            if (mpB === undefined) return 1;
             return (mpA < mpB ? 1: -1)
         });
-        sortedBoardPlayEntriesAry.forEach( ([nsPair, boardPlay]) => {
-            if (boardPlay.hasScore()) {
-                const ewPair = boardPlay.ewPair;
-                const scoreText: string = `${p.scoreStr(boardPlay, true)}  ${p.scoreStr(boardPlay, false)}`;
+        // console.log('sortedEntries', sortedBoardPlayEntriesAry);
+        sortedBoardPlayEntriesAry.forEach( ([nsPair, bp]) => {
+            if (bp.hasScore()) {
+                const ewPair = bp.ewPair;
+                const scoreText: string = `${p.scoreStr(bp, true)}  ${p.scoreStr(bp, false)}`;
                 const nsMP = boardObj.pairToMpMap.get(nsPair)!;
                 const ewMP = boardObj.pairToMpMap.get(ewPair)!;
                 // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
-                const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
-                const pairObjNS: Pair | undefined = p.pairNameMap.get(nsPair);  
-                const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);
-                const nameTextNS: string = `${(pairObjNS ? pairObjNS.shortString() : '')}`;
-                const nameTextEW: string = `${(pairObjEW ? pairObjEW.shortString() : '')}`;
-                const nameText: string = `${p.pairnumToString(nsPair, false)}-${nameTextNS} vs. ${p.pairnumToString(ewPair, false)}-${nameTextEW}`;
-                pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
+                if (nsMP !== undefined && ewMP !== undefined) {
+                    const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
+                    const nameText = this.getPairNameText(nsPair, ewPair);
+                    pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
+                }
             }
+        });
+        // if any NP or Late boardplays, show them here
+        // console.log(`board ${boardObj.bdnum}, ${boardObj.npOrLateArray.length}`);
+        boardObj.npOrLateArray.forEach( (bp) => {
+            const scoreText = '  NP   NP';
+            const mpText = '             ';
+            const nameText = this.getPairNameText(bp.nsPair, bp.ewPair);
+            pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
         });
         pbt.push(`----------------------------------------------------------------------`);
     }

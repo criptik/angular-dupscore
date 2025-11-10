@@ -69,7 +69,11 @@ export class BoardPlay {
     }
 
     hasScore() {
-        return(this.isScoreNonEmpty() && !(this.kindNS === 'NP ' || this.kindNS === 'LATE')) 
+        return(this.isScoreNonEmpty() && !this.isNPorLate());
+    }
+
+    isNPorLate() {
+        return(this.kindNS === 'NP' || this.kindNS === 'LATE'); 
     }
     
     toString(): string {
@@ -91,7 +95,7 @@ export class BoardObj {
     boardPlays: Map<number, BoardPlay>  = new Map();
     allPlaysEntered: boolean = false;
     pairToMpMap: ExcludedMap = new ExcludedMap();  // maps a pair to a mp amt
-
+    npOrLateArray: BoardPlay[] = [];
     
     constructor(bdnum: number) {
         const vulNSVals = [0,1,0,1, 1,0,1,0, 0,1,0,1, 1,0,1,0];
@@ -177,6 +181,7 @@ export class BoardObj {
     computeMP(boardTop: number) {
         // gather the nsScores from the BoardPlays that have numeric results
         const scores: number[] = [];
+        this.npOrLateArray = [];
         let actualPlays: number = 0;
         let expectedPlays: number = 0;
         let specialMap: NNMap = new Map();
@@ -186,6 +191,7 @@ export class BoardObj {
 
         Array.from(this.boardPlays.values()).forEach( (bp: BoardPlay) => {
             expectedPlays++;
+            // console.log(`in computeMP board ${this.bdnum}`, bp.kindNS, bp.kindEW); 
             // normal results to be matchpointed
             if (bp.isScoreNormal()) {
                 scores.push(bp.nsScore);
@@ -199,8 +205,12 @@ export class BoardObj {
                 const mpEW = this.getSpecialMP(bp.kindEW, boardTop);
                 if (mpNS !== -1) specialMap.set(bp.nsPair, mpNS);
                 if (mpEW !== -1) specialMap.set(bp.ewPair, mpEW);
-                // console.log('special: ', bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
+                // console.log(`board ${this.bdnum} special:`, bp.kindNS, bp.kindEW, mpNS, mpEW, this.pairToMpMap); 
+                if (bp.isNPorLate()) {
+                    this.npOrLateArray.push(bp);
+                }
             }
+            
         });
         // shortcircuit if not enough scores to matter
         this.pairToMpMap = new Map();
@@ -214,7 +224,6 @@ export class BoardObj {
             specialMap.set(singleBoardNS, 0.6 * boardTop);
             specialMap.set(singleBoardEW, 0.6 * boardTop);
         }
-        
         else {
             const cbmap = this.getCbMap(scores);
             // console.log(`board ${this.bdnum}, cbmap=`, cbmap);
@@ -223,6 +232,7 @@ export class BoardObj {
             this.buildPairToMpMap(mpMap, actualPlays-1);  // boardTop based on actualPlays
         }
 
+        
         // factoring up via Neuberg for 2 or more results
         if (actualPlays < expectedPlays) {
             const A = actualPlays;

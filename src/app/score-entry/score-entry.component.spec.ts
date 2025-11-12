@@ -9,6 +9,7 @@ import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.compone
 import { ScoreEntryComponent } from './score-entry.component';
 import { readAssetText } from '../testutils/testutils';
 import { GameDataService, BoardObj, TravOrder } from '../game-data/game-data.service';
+import { LegalScore, Suit, Dstate, ContractNoteOutput } from '../legal-score/legal-score.service';
 import { lastValueFrom } from 'rxjs';
 import { GameDataComponent } from '../game-data/game-data.component';
 import * as _ from 'lodash';
@@ -18,6 +19,7 @@ describe('ScoreEntryComponent', () => {
     let fixture: ComponentFixture<ScoreEntryComponent>;
     let httpClient: HttpClient;
     let gameDataService: GameDataService;
+    let legalScoreService: LegalScore;
     let httpTestingController: HttpTestingController;
     
     beforeEach(async () => {
@@ -40,6 +42,7 @@ describe('ScoreEntryComponent', () => {
         }).compileComponents();
         
         gameDataService = TestBed.inject(GameDataService);
+        legalScoreService = TestBed.inject(LegalScore);
         httpClient = TestBed.inject(HttpClient);
         fixture = TestBed.createComponent(ScoreEntryComponent);
         component = fixture.componentInstance;
@@ -154,6 +157,45 @@ describe('ScoreEntryComponent', () => {
                             expect(renderedPairings.flat()).toEqual(expectedPairings.flat());
                         });
                     });
+                });
+            });
+        });
+    });
+
+    describe('ContractNote  score entry', () => {
+
+        const conractNoteTests: Array<[string, number|undefined, number|undefined]> = [
+            ['6HN=',    980, 1430],
+            ['7H**S-1', -200, -400],
+            ['5HE+2',   -510, -710],
+            ['5HE7',    -510, -710],
+            ['5HE8',    undefined, undefined],
+            ['8SS=',    undefined, undefined],
+            ['3NW=',    -400,  -600],
+            ['3NT*W4',  -650,  -950],
+            ['3NTW-4',   200,   400],
+            ['3NT*W-1',  100,   200],
+            ['5CN=',     400,   600],
+            ['3NTW-10', undefined, undefined],
+            ['3NTW+5',  undefined, undefined],
+            ['3NTW2',   undefined, undefined],
+            ['3NW8',    undefined, undefined],
+            ['3EW=',    undefined, undefined],
+            ['3HD=',    undefined, undefined],
+            ['3nw=',    -400,  -600],
+            ['2SN3',    140,   140],
+            ['2SN+1',   140,   140],
+            ['2SE3',    -140,  -140],
+            ['1NT**N7', 1760,  3160],
+            ['7NT**N7', 2280,  2980],
+        ];
+
+        conractNoteTests.forEach( ([str, expScoreNSNonvul, expScoreNSVul]) => {
+            [false, true].forEach( (isDeclVul) => {
+                const expScoreNS = (isDeclVul ? expScoreNSVul : expScoreNSNonvul);
+                it(`should correctly parse ${str} to get score ${expScoreNS}`, () => {
+                    const score:number|undefined = legalScoreService.contractNoteStrToDupscoreNS(str, isDeclVul);
+                    expect(score).toBe(expScoreNS);
                 });
             });
         });

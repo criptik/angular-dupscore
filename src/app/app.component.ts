@@ -52,7 +52,7 @@ export class AppComponent {
         // console.log('onLinkClick', elem.id, event);
         this.clearHighlights();
         elem.classList.add(this.highlightClass);
-        console.log('after add', elem.id, elem.classList);
+        // console.log('after add', elem.id, elem.classList);
     }
 
     onSubLinkClick(event: any) {

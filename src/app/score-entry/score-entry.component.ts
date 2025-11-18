@@ -49,8 +49,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
     constructor(public gameDataPtr: GameDataService,
                 public _legalScore: LegalScore,
                 public _router: Router,
-                public _activatedRoute: ActivatedRoute,)  {
-        // console.log(`in constructor, gameDataSetup = ${this.gameDataPtr.gameDataSetup}`)
+                public _activatedRoute: ActivatedRoute,) {
     }
 
     ngAfterViewInit() {
@@ -93,7 +92,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         this.viewLines = [];
         const bdvulStr = this.getVulStr(this.curBoardNum);
         this.viewLines[0] = `Section:A  Board:${this.curBoardNum}  Vul:${bdvulStr}`;
-        this.viewLines[1] = `   NS    SCORE    EW`;
+        this.viewLines[1] = `   NS    SCORE    EW     CONTRACT`;
         if (false) {
             // default for unused lines
             this.nsOrder.forEach((pairnum, index) => {
@@ -110,7 +109,14 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             const ewPairStr: string = Math.abs(ewPair).toString().padStart(2,' ');
             const nsScoreStr: string = p.scoreStr(boardPlay, true);
             const ewScoreStr: string = p.scoreStr(boardPlay, false);
-            this.viewLines[index+2] = `${arrow}${nsPairStr}  ${nsScoreStr} ${ewScoreStr}  ${ewPairStr}    `;
+            let rawStandardNote:string = (boardPlay.contractNote === '' ? '' : this._legalScore.contractNoteStandardize(boardPlay.contractNote)!);
+            if (false) {
+                // set style for hearts and diamonds
+                rawStandardNote = rawStandardNote.replace(/(\u2665|\u2666)/, '<span style="color:red;">$1</span>'); 
+                // set style for spades and clubs
+                rawStandardNote = rawStandardNote.replace(/(\u2660|\u2663)/, '<span style="color:black;">$1</span>'); 
+            }
+            this.viewLines[index+2] = `${arrow}${nsPairStr}  ${nsScoreStr} ${ewScoreStr}  ${ewPairStr}     ${rawStandardNote}  `;
         });
         this.viewLines.push(` `); // separator line
         if (this.onNS !== nsEndBoardMarker) {
@@ -272,6 +278,26 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         return foundSpecial;
     }
 
+    isStringAllDigits(str:string) :boolean {
+        return /^\d+$/.test(str);
+    }
+
+    handleNumericScore(newScore:number, curInput:string, onNSBoardPlay:BoardPlay) {
+        const x = this.inputElement;
+        if (this.checkScoreLegality(newScore)) {
+            this.lastInput = curInput;
+            x.target.value = '';
+            onNSBoardPlay.addScoreInfo(newScore);
+            this.onNS = this.getNewNS(1);
+            this.updateView();
+        }
+        else {
+            x.target.value = '';
+            this.errmsg = `!! ${newScore} is not possible on this board !!`;
+            this.updateView();
+        }
+    }
+
     scoreEntryInput() {
         const x = this.inputElement;
         const key: string = x.key;
@@ -294,6 +320,17 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         }
         else if (key === 'Enter') {
             if (curInput !== '') {
+                // first check for a legal contract-result note which can be used instead of a score.
+                const noteScore:number|undefined = this._legalScore.contractNoteStrToDupscoreNS(curInput, this.curBoardNum);
+                if (noteScore !== undefined) {
+                   this.lastInput = curInput;
+                    x.target.value = '';
+                    onNSBoardPlay.addScoreInfoContractNote(noteScore, curInput);
+                    this.onNS = this.getNewNS(1);
+                    this.updateView();
+                    return;
+                }
+                
                 if (this.checkSpecialInput(curInput, x)) return;
                 if (curInput === 'S') {
                     x.target.value = '';
@@ -311,26 +348,15 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                     return;
                 }
                 
-                // score entered
+                // score entered NOTE: fix this
                 const newScore : number = parseInt(`${curInput}0`);
-                if (this.checkScoreLegality(newScore)) {
-                    this.lastInput = curInput;
-                    x.target.value = '';
-                    onNSBoardPlay.addScoreInfo(newScore);
-                    this.onNS = this.getNewNS(1);
-                    this.updateView();
-                }
-                else {
-                    x.target.value = '';
-                    this.errmsg = `!! ${newScore} is not possible on this board !!`;
-                    this.updateView();
-                }
-            } else if (this.lastInput !== '') {
-                const newScore : number = parseInt(`${this.lastInput}0`);
-                x.target.value = '';
-                onNSBoardPlay.addScoreInfo(newScore);
-                this.onNS = this.getNewNS(1);
-                this.updateView();
+                this.handleNumericScore(newScore, curInput, onNSBoardPlay);
+            } else {
+                // here if Enter used and curInput is empty
+                // we just call scoreEntryInput again after adjusting x.target.value to be lastInput
+                x.target.value = this.lastInput;
+                console.log(`reusing ${this.lastInput}`);
+                this.scoreEntryInput();
             }
         }
         else if (key === '+') {
@@ -346,9 +372,15 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                 // a legal combo for ns=avg-, ew=avg+
                 return;
             }
+            if (!this.isStringAllDigits(curInput.slice(0,-1))) {
+                // console.log('- key not StringAllDigits');
+                // a - sign in a ContractNote is OK
+                return;
+            }
             // now we know there is a non-empty input
             // negative score entered
             // move - sign from end of input to beginning
+            console.log(`minus sign typed with curinput=${curInput}`);
             curInput = `-${curInput.slice(0, -1)}`;
             const newScore : number = parseInt(`${curInput}0`);
             if (this.checkScoreLegality(newScore)) {
@@ -387,7 +419,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         else {
             // ignore non-numeric keys
             // console.log(`key ${key} is not a number!`);
-            x.target.value = x.target.value.slice(0, -1);
+            // x.target.value = x.target.value.slice(0, -1);
             // console.log(`input is now ${x.target.value}`);
         }
     }
@@ -463,7 +495,7 @@ export class ScoreEntryComponent extends ScoreBaseComponent implements AfterView
     constructor(public gameDataPtr: GameDataService,
                 public _legalScore: LegalScore,
                 public _router: Router,
-                public _activatedRoute: ActivatedRoute,)  {
+                public _activatedRoute: ActivatedRoute,) {
         super(gameDataPtr, _legalScore, _router, _activatedRoute);
     }
 
@@ -521,7 +553,7 @@ export class ScoreReviewComponent extends ScoreBaseComponent implements AfterVie
     constructor(public gameDataPtr: GameDataService,
                 public _legalScore: LegalScore,
                 public _router: Router,
-                public _activatedRoute: ActivatedRoute,)  {
+                public _activatedRoute: ActivatedRoute,) {
         super(gameDataPtr, _legalScore, _router, _activatedRoute);
     }
 

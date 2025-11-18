@@ -6,13 +6,13 @@
 <div>
     <!-- <div>012345678901234567890123456789</div> -->
 
-    <ng-container  *ngFor="let viewline of viewLines">
+    <ng-container  *ngFor="let viewline of viewLines;let idx = index;">
         <ng-container *ngIf="viewline.substring(0,1) === '=' else Normal">
             <div> <span class="inverse">==></span>{{viewline.substring(3)}}
             </div>
         </ng-container>
         <ng-template #Normal>
-            <div>{{viewline}}</div>
+            <app-suit-colorizer [inputStr] = "viewLines[idx]" ></app-suit-colorizer>
         </ng-template>
     </ng-container>
     <ng-container *ngIf="isEntryComponent()">

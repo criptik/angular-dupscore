@@ -86,13 +86,13 @@ describe('GameSummaryComponent', () => {
 
                     it('should produce a correct short report', () => {
                         jsonToShortReport(jsonStr3Table, false);
-                        expect(component.summaryText.trim()).toBe(expectedShort3Table.trim());
+                        expect(component.rawHtmlSummaryText.trim()).toBe(expectedShort3Table.trim());
                     });
             
             
                     it('should produce a correct short report after board 5 marked 3 NP', () => {
                         jsonToShortReport(jsonStr3Table, true);
-                        expect(component.summaryText.trim()).toBe(expectedShort3Table3NP.trim());
+                        expect(component.rawHtmlSummaryText.trim()).toBe(expectedShort3Table3NP.trim());
                     });
 
                 });

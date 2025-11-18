@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { GameDataService, BoardObj, Pair } from '../game-data/game-data.service';
 import {Router, ActivatedRoute} from "@angular/router";
+import { LegalScore } from '../legal-score/legal-score.service';
 import * as _ from 'lodash';
 
 class MpRec {
@@ -12,7 +13,6 @@ class MpRec {
         this.boards++;
     }
 }
-
 const debug: boolean = false;
 
 @Component({
@@ -21,12 +21,14 @@ const debug: boolean = false;
     styleUrls: ['./game-summary.component.css']
 })
 export class GameSummaryComponent {
-    summaryText: string = '';
+    summaryText: string[] = [];
     size: string = 'short';
+    testString: string = 'abc\u2665def\n';
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,    
-                private route: ActivatedRoute,) {
+                private route: ActivatedRoute,
+                private _legalScore: LegalScore,) {
             // console.log(`Summary Constructor`);
         this._router.routeReuseStrategy.shouldReuseRoute = function () {
             return false;
@@ -76,14 +78,20 @@ export class GameSummaryComponent {
     
     outputOneBoardText(pbt: string[], boardObj: BoardObj) {
         const p: GameDataService = this.gameDataPtr;
+        const boardPlayEntriesAry = Array.from(boardObj.boardPlays.entries());
+        // see if any of the boardplays has a contract note
+        const hasContractNotes:boolean = boardPlayEntriesAry.some( ([nsPair, bp]) => {
+            return (bp.contractNote !== '');
+        });
+        const indentNum: number = (hasContractNotes ? 15 : 3);
+        const indent:string = ' '.repeat(indentNum);
         pbt.push(`  `);
-        pbt.push(`   RESULTS OF BOARD ${boardObj.bdnum}`); 
+        pbt.push(`${indent}RESULTS OF BOARD ${boardObj.bdnum}`); 
         pbt.push(`  `);
-        pbt.push(`    SCORES       MATCHPOINTS    NAMES`);
-        pbt.push(`   N-S   E-W     N-S    E-W`);
+        pbt.push(`${indent} SCORES       MATCHPOINTS    NAMES`);
+        pbt.push(`${indent}N-S   E-W     N-S    E-W`);
         
         // for each pair, get totals of mps and number of boards
-        const boardPlayEntriesAry = Array.from(boardObj.boardPlays.entries());
         const sortedBoardPlayEntriesAry = boardPlayEntriesAry.sort((a, b) => {
             const nsPairA: number = a[0];
             const nsPairB: number = b[0];
@@ -95,6 +103,7 @@ export class GameSummaryComponent {
             if (mpB === undefined) return 1;
             return (mpA < mpB ? 1: -1)
         });
+
         // console.log('sortedEntries', sortedBoardPlayEntriesAry);
         sortedBoardPlayEntriesAry.forEach( ([nsPair, bp]) => {
             if (bp.hasScore()) {
@@ -106,7 +115,12 @@ export class GameSummaryComponent {
                 if (nsMP !== undefined && ewMP !== undefined) {
                     const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
                     const nameText = this.getPairNameText(nsPair, ewPair);
-                    pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
+                    let bpline: string = `  ${scoreText}    ${mpText}    ${nameText}`;
+                    if (hasContractNotes) {
+                        const standardNote:string = this._legalScore.contractNoteStandardize(bp.contractNote)!;
+                        bpline = ` ${standardNote.padEnd(11, ' ')}${bpline}`;
+                    }
+                    pbt.push(bpline);
                 }
             }
         });
@@ -141,7 +155,7 @@ export class GameSummaryComponent {
         this.route.params.subscribe( params => {
             this.size = params['size'] ?? 'short';
         });
-        console.log('size', this.size);
+        // console.log('size', this.size);
 
         // go thru all board objs
         let fullyEnteredBoards = 0;
@@ -195,11 +209,13 @@ export class GameSummaryComponent {
                 this.outputPerBoardData(pbt);
             }
             pbt.push('\n');
-            this.summaryText = pbt.join('\n');
+            // this.summaryText = pbt.join('\n');
+            this.summaryText = pbt;
         }
     }
 
+    // TODO: how to make this use colors
     onClipButtonClick(x:any) {
-        navigator.clipboard.writeText(this.summaryText);
+        navigator.clipboard.writeText(this.summaryText.join('\n'));
     }
 }

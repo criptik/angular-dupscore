@@ -14,6 +14,7 @@ import { GameSetupComponent } from './game-setup/game-setup.component';
 import { NamesEntryComponent, NativeElementInjectorDirective } from './names-entry/names-entry.component';
 import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.component';
 import { NameDataComponent } from './name-data/name-data.component';
+import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.component';
 
 @NgModule({
     declarations: [
@@ -28,6 +29,7 @@ import { NameDataComponent } from './name-data/name-data.component';
         NativeElementInjectorDirective,
         DeleterDialogComponent,
         NameDataComponent,
+        SuitColorizerComponent,
     ],
     imports: [
         BrowserModule,

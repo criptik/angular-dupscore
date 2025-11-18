@@ -3,5 +3,8 @@
         Copy
     </button>
 </div>
-        
-<pre>{{ summaryText }}</pre>
+
+<pre>
+    <app-suit-colorizer *ngFor="let pbtline of summaryText" [inputStr] = "pbtline">
+    </app-suit-colorizer>
+</pre>

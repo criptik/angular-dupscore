@@ -190,11 +190,13 @@ describe('ScoreEntryComponent', () => {
             ['7NT**N7', 2280,  2980],
         ];
 
+        
         conractNoteTests.forEach( ([str, expScoreNSNonvul, expScoreNSVul]) => {
-            [false, true].forEach( (isDeclVul) => {
+            // pick boards with neither vul and both vul
+            [true, false].forEach( (isDeclVul) => {
                 const expScoreNS = (isDeclVul ? expScoreNSVul : expScoreNSNonvul);
                 it(`should correctly parse ${str} to get score ${expScoreNS}`, () => {
-                    const score:number|undefined = legalScoreService.contractNoteStrToDupscoreNS(str, isDeclVul);
+                    const score:number|undefined = legalScoreService.contractNoteStrToDupscoreNSGivenVul(str, isDeclVul);
                     expect(score).toBe(expScoreNS);
                 });
             });

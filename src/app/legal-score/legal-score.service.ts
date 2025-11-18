@@ -25,7 +25,7 @@ export class LegalScore {
     scoreMapVul = new Map<number, any>();
     debug : boolean = false;
 
-    constructor() {
+    constructor(public gameDataPtr: GameDataService) {
         this.buildScoreSet(this.legalScoresNotVul, false);
         this.buildScoreSet(this.legalScoresVul, true);
         // console.log('this.legalScoresNotVul', Array.from(this.legalScoresNotVul));
@@ -132,24 +132,6 @@ export class LegalScore {
         return retval;
     }
     
-    checkResult(nsScore:number, nsvul:boolean, ewvul:boolean, expected:boolean) : boolean {
-        const result: boolean = this.checkNSScoreLegal(nsScore, nsvul, ewvul);
-        if (result !== expected) {
-            console.log(`checkNSScoreLegal Assertion Error for (${nsScore},${nsvul},${ewvul}) = ${result}, expected ${expected}`);
-            if (this.debug) {
-                const nsMap = (!nsvul ? this.scoreMapNotVul : this.scoreMapVul);
-                const ewMap = (!ewvul ? this.scoreMapNotVul : this.scoreMapVul);
-                // console.log('nsMap', this.scoreMapNotVul);
-                // console.log('nsMap.get(nsScore)', nsMap.get(nsScore));
-                const nsMapFound = nsMap.get(nsScore);
-                const ewMapFound = ewMap.get(-1*nsScore);
-                if (nsMapFound) console.log('nsMapFound: ', nsMapFound);
-                if (ewMapFound) console.log('ewMapFound: ', ewMapFound);
-            }
-        }
-        return (result);
-    }
-
     parseContractNoteStr(conResultStr: string) : Partial<ContractNoteOutput> | undefined {
         conResultStr = conResultStr.toUpperCase();
         const regex:RegExp = /(?<level>[1-7])(?<suit>S|H|D|C|N|NT)(?<dblstr>\*{0,2})(?<decl>N|S|E|W)(?<resStr>=|\+[1-6]|\-\d+|[1-7])/;
@@ -186,7 +168,7 @@ export class LegalScore {
         }
     }
 
-    contractNoteStrToDupscoreNS(contractNoteStr:string, isDeclVul:boolean) : number | undefined {
+    contractNoteStrToDupscoreNSGivenVul(contractNoteStr:string, isDeclVul:boolean) : number | undefined {
         const contractNoteOutput:Partial<ContractNoteOutput>|undefined = this.parseContractNoteStr(contractNoteStr); 
         let score:number|undefined = undefined;
         if (contractNoteOutput === undefined) {
@@ -220,6 +202,58 @@ export class LegalScore {
             }
         }
         return score;
+    }
+    
+    contractNoteStrToDupscoreNS(contractNoteStr:string, bdnum:number) : number | undefined {
+        const contractNoteOutput:Partial<ContractNoteOutput>|undefined = this.parseContractNoteStr(contractNoteStr); 
+        let score:number|undefined = undefined;
+        if (contractNoteOutput === undefined) {
+            return(undefined);
+        }
+        else {
+            // compute vul from bdnum
+            const bdobj = this.gameDataPtr.boardObjs.get(bdnum) as BoardObj;
+            // console.log(`bdobj for bdnum=${bdnum}`, bdobj);
+            const vulNS = bdobj.vulNS;
+            const vulEW = bdobj.vulEW;
+            const isDeclVul:boolean = ('NS'.includes(contractNoteOutput!.decl!) ? vulNS : vulEW);
+            // compute score
+            score = this.contractNoteStrToDupscoreNSGivenVul(contractNoteStr, isDeclVul);
+        }
+        return score;
+    }
+    
+    genSuitChar(suitStr:string) : string {
+        if (suitStr === 'S') return '\u2660 ';
+        if (suitStr === 'H') return '\u2665 ';
+        if (suitStr === 'D') return '\u2666 ';
+        if (suitStr === 'C') return '\u2663 ';
+        return suitStr;
+    }
+    
+    contractNoteStandardize(contractNoteStr:string) : string | undefined {
+        const contractNoteOutput:Partial<ContractNoteOutput>|undefined = this.parseContractNoteStr(contractNoteStr); 
+        if (contractNoteOutput === undefined) {
+            return(undefined);
+        }
+        else {
+            // slight difference for made vs. down
+            const madeTricks: number = contractNoteOutput!.tricks!;
+            const conlevel: number =  contractNoteOutput!.conlevel!;
+            const decl: string = contractNoteOutput!.decl!;
+            const suitChar: string = this.genSuitChar(contractNoteOutput!.suit!);
+            const dblstr = contractNoteOutput!.dblstr!;
+            const conPart: string = `${conlevel}${suitChar}${dblstr} ${decl}`;
+            let resultPart: string = '';
+            if (madeTricks < conlevel + 6) {
+                resultPart = ` ${madeTricks - (conlevel + 6)}`;
+            }
+            else {
+                resultPart = ` ${madeTricks - 6}`;
+            }
+            const standardNote:string = `${conPart}${resultPart}`;
+            return standardNote;
+        }
     }
     
 

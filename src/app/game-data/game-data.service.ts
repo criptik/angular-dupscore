@@ -22,6 +22,7 @@ export class BoardPlay {
     nsScore:number;
     kindNS:string = '';
     kindEW:string = '';
+    contractNote:string = '';
     
     constructor(nsPair: number, ewPair: number, round: number) {
         this.nsPair = nsPair;
@@ -52,6 +53,11 @@ export class BoardPlay {
         this.kindEW = '';
     }
 
+    addScoreInfoContractNote(score: number, note: string) {
+        this.addScoreInfo(score);
+        this.contractNote = note;
+    }
+    
     isScoreEmpty() {
         return(this.nsScore === SCORE_EMPTY);
     }
@@ -376,7 +382,7 @@ export class GameDataService {
         const pattern = '\x21\x22\x23\x24';
         const datstart = asStr.lastIndexOf(pattern) + pattern.length;
         const datsiz = abuf.byteLength - datstart;
-        console.log(`rounds|boardsets=${ui8ary[4]}`);
+        // console.log(`rounds|boardsets=${ui8ary[4]}`);
         console.log(`datstart=${datstart}`);
         let idx = datstart;
         this.numRounds = (datsiz / this.numTables) / 3;

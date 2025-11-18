@@ -1,13 +1,20 @@
 import { TestBed } from '@angular/core/testing';
-
 import { LegalScore } from './legal-score.service';
+import { GameDataService } from '../game-data/game-data.service';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('LegalScore', () => {
     let service: LegalScore;
+    let gameDataService: GameDataService;
     
-    beforeEach(() => {
-        TestBed.configureTestingModule({});
+    beforeEach( async () => {
+        await TestBed.configureTestingModule({
+            providers: [
+                provideHttpClient(),
+            ],
+        }).compileComponents();
         service = TestBed.inject(LegalScore);
+        gameDataService = TestBed.inject(GameDataService);
         service.debug = false;
     });
     
@@ -65,10 +72,28 @@ describe('LegalScore', () => {
         testAry.push([-1*score, V, NV, false]);
         testAry.push([-1*score, NV, NV, false]);
     });
+
+    function checkResult(nsScore:number, nsvul:boolean, ewvul:boolean, expected:boolean) : boolean {
+        const result: boolean = service.checkNSScoreLegal(nsScore, nsvul, ewvul);
+        if (result !== expected) {
+            console.log(`checkNSScoreLegal Assertion Error for (${nsScore},${nsvul},${ewvul}) = ${result}, expected ${expected}`);
+            if (service.debug) {
+                const nsMap = (!nsvul ? service.scoreMapNotVul : service.scoreMapVul);
+                const ewMap = (!ewvul ? service.scoreMapNotVul : service.scoreMapVul);
+                // console.log('nsMap', service.scoreMapNotVul);
+                // console.log('nsMap.get(nsScore)', nsMap.get(nsScore));
+                const nsMapFound = nsMap.get(nsScore);
+                const ewMapFound = ewMap.get(-1*nsScore);
+                if (nsMapFound) console.log('nsMapFound: ', nsMapFound);
+                if (ewMapFound) console.log('ewMapFound: ', ewMapFound);
+            }
+        }
+        return (result);
+    }
     
     testAry.forEach( ([score, nsVul, ewVul, exp]) => {
         it(`Check for ${score} for Vul:${vulstr(nsVul, ewVul)} should be ${exp}`, () => {
-            const result = service.checkResult(  score, nsVul, ewVul, exp);
+            const result = checkResult(  score, nsVul, ewVul, exp);
             expect(result).toBe(exp);
             if (result !== exp && service.debug) {
                 console.log(service.legalScoresNotVul.size);

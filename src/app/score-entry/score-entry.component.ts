@@ -162,7 +162,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
         }
         
         const boardSelect = parseInt(boardSelectStr!);
-        console.log('boardSelect:', boardSelect, this.boardsToDoMsg);
+        // console.log('boardSelect:', boardSelect, this.boardsToDoMsg);
         if (boardSelect > 0 && boardSelect <= this.gameDataPtr.numBoards) {
             this.gotoBoardDialog.nativeElement.close();
             this.startBoard(boardSelect);
@@ -347,10 +347,17 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                     this.unbalancedSpecialDialog.nativeElement.showModal();
                     return;
                 }
+                if (this.isStringAllDigits(curInput)) {
+                    const newScore : number = parseInt(`${curInput}0`);
+                    this.handleNumericScore(newScore, curInput, onNSBoardPlay);
+                } else {
+                    // Enter seen and not numeric, assume it is an invalid contract note specifier
+                    x.target.value = '';
+                    this.errmsg = `!! '${curInput}' is not a valid Contract/Result format !!`;
+                    this.updateView();
+                }
                 
-                // score entered NOTE: fix this
-                const newScore : number = parseInt(`${curInput}0`);
-                this.handleNumericScore(newScore, curInput, onNSBoardPlay);
+                
             } else {
                 // here if Enter used and curInput is empty
                 // we just call scoreEntryInput again after adjusting x.target.value to be lastInput
@@ -373,8 +380,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                 return;
             }
             if (!this.isStringAllDigits(curInput.slice(0,-1))) {
-                // console.log('- key not StringAllDigits');
-                // a - sign in a ContractNote is OK
+                // minus sign is legal in contractNote, so keep going
                 return;
             }
             // now we know there is a non-empty input

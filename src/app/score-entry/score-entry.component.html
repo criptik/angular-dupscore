@@ -12,7 +12,7 @@
             </div>
         </ng-container>
         <ng-template #Normal>
-            <app-suit-colorizer [inputStr] = "viewLines[idx]" ></app-suit-colorizer>
+            <app-suit-colorizer [inputStr] = "viewLines[idx]" [colorizeBlack] = "false" ></app-suit-colorizer>
         </ng-template>
     </ng-container>
     <ng-container *ngIf="isEntryComponent()">

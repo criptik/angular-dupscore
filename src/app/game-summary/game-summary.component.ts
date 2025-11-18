@@ -116,9 +116,11 @@ export class GameSummaryComponent {
                     const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
                     const nameText = this.getPairNameText(nsPair, ewPair);
                     let bpline: string = `  ${scoreText}    ${mpText}    ${nameText}`;
-                    if (hasContractNotes) {
+                    if (hasContractNotes && bp.contractNote && bp.contractNote! !== '') {
                         const standardNote:string = this._legalScore.contractNoteStandardize(bp.contractNote)!;
                         bpline = ` ${standardNote.padEnd(11, ' ')}${bpline}`;
+                    } else {
+                        bpline = ` ${''.padEnd(11, ' ')}${bpline}`;
                     }
                     pbt.push(bpline);
                 }

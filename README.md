@@ -16,7 +16,29 @@ Here is a list of what you can do with Angular-dupscore.
 
 * Enter player names for each pair.  You can also swap pairs.
 
-* Enter the results from the traveller for each board.  The way the results are entered and the keystrokes used matches the way it is done in acblscore.
+* Enter the results from the traveller for each board.  When entering
+  numeric scores directly, the way the results are entered and the
+  keystrokes used matches the way it is done in acblscore.  For
+  example, just like in Acblscore, you enter a score without the last
+  zero.  And just like in acblscore, hitting return duplicates the previously entered score.  There is, however, support for an alternate method of result
+  entry where you enter the contract and result instead of just the
+  score.  The following formats are supported for the Contract+Result entry.  It
+  must have the following parts: "level suit  dblstate><decl><result>"
+  * level=1-7
+  * suit is SHDC or N or NT (both are accepted)
+  * dblstate is either empty or '*' (doubled) or '**' (redoubled)
+  * decl is NSEW
+  * result part supports
+     * = for a contract made exactly
+     * +num for that number of overtricks
+     * -num for that number down
+     * a number without a plus or minus indicates how many tricks were made (after the first 6).  Examples:
+        * 2SW=    2 spades by west made exactly
+        * 2S*W-1  2 spades doubled by west, down 1
+        * 2SE+1   2 spades by East, made 3
+        * 2SE3    another way of entering 2 spades by east making 3
+
+* Note: When a contract/result is used to enter the score (instead of just the numeric score entry), the contract/result is shown in the score-entry and score-review pages, as well as on the full report page.
 
 * Review the scores that have been entered, similar to the F10 option in acblscore.
 
@@ -61,3 +83,4 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+

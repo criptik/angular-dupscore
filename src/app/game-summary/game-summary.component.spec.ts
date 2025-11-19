@@ -86,13 +86,15 @@ describe('GameSummaryComponent', () => {
 
                     it('should produce a correct short report', () => {
                         jsonToShortReport(jsonStr3Table, false);
-                        expect(component.rawHtmlSummaryText.trim()).toBe(expectedShort3Table.trim());
+                        const summaryOutput:string = component.summaryText.join('\n');
+                        expect(summaryOutput.trim()).toBe(expectedShort3Table.trim());
                     });
             
             
                     it('should produce a correct short report after board 5 marked 3 NP', () => {
                         jsonToShortReport(jsonStr3Table, true);
-                        expect(component.rawHtmlSummaryText.trim()).toBe(expectedShort3Table3NP.trim());
+                        const summaryOutput:string = component.summaryText.join('\n');
+                        expect(summaryOutput.trim()).toBe(expectedShort3Table3NP.trim());
                     });
 
                 });
@@ -117,7 +119,8 @@ describe('GameSummaryComponent', () => {
                         let pbt: Array<string> = [];
                         const boardObj: BoardObj = p.boardObjs.get(bdnum)!;
                         if (boardObj!.areAnyPlaysEntered()) {
-                            component.outputOneBoardText(pbt, boardObj);
+                            const hasContractNotes: boolean = false;  // for these tests
+                            component.outputOneBoardText(pbt, boardObj, hasContractNotes);
                         }
                         return pbt.join('\n');
                     }
@@ -152,7 +155,8 @@ describe('GameSummaryComponent', () => {
                         let pbt: Array<string> = [];
                         const boardObj: BoardObj = p.boardObjs.get(5)!;
                         if (boardObj!.areAnyPlaysEntered()) {
-                            component.outputOneBoardText(pbt, boardObj);
+                            const hasContractNotes: boolean = false;  // for these tests
+                            component.outputOneBoardText(pbt, boardObj, hasContractNotes);
                         }
                         const details5:string = pbt.join('\n');
                         expect(details5.trim()).toBe(expectedDetails3TableBd5AveAve.trim());
@@ -171,7 +175,8 @@ describe('GameSummaryComponent', () => {
                         let pbt: Array<string> = [];
                         const boardObj: BoardObj = p.boardObjs.get(5)!;
                         if (boardObj!.areAnyPlaysEntered()) {
-                            component.outputOneBoardText(pbt, boardObj);
+                            const hasContractNotes: boolean = false;  // for these tests
+                            component.outputOneBoardText(pbt, boardObj, hasContractNotes);
                         }
                         const details5:string = pbt.join('\n');
                         expect(details5.trim()).toBe(expectedDetails3TableBd5AveNP.trim());

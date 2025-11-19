@@ -76,14 +76,10 @@ export class GameSummaryComponent {
         return nameText;
     }
     
-    outputOneBoardText(pbt: string[], boardObj: BoardObj) {
+    outputOneBoardText(pbt: string[], boardObj: BoardObj, hasContractNotes: boolean) {
         const p: GameDataService = this.gameDataPtr;
         const boardPlayEntriesAry = Array.from(boardObj.boardPlays.entries());
-        // see if any of the boardplays has a contract note
-        const hasContractNotes:boolean = boardPlayEntriesAry.some( ([nsPair, bp]) => {
-            return (bp.contractNote !== '');
-        });
-        const indentNum: number = (hasContractNotes ? 15 : 3);
+        const indentNum: number = (hasContractNotes ? 12 : 3);
         const indent:string = ' '.repeat(indentNum);
         pbt.push(`  `);
         pbt.push(`${indent}RESULTS OF BOARD ${boardObj.bdnum}`); 
@@ -118,9 +114,9 @@ export class GameSummaryComponent {
                     let bpline: string = `  ${scoreText}    ${mpText}    ${nameText}`;
                     if (hasContractNotes && bp.contractNote && bp.contractNote! !== '') {
                         const standardNote:string = this._legalScore.contractNoteStandardize(bp.contractNote)!;
-                        bpline = ` ${standardNote.padEnd(11, ' ')}${bpline}`;
+                        bpline = `${standardNote.padEnd(indentNum-3, ' ')}${bpline}`;
                     } else {
-                        bpline = ` ${''.padEnd(11, ' ')}${bpline}`;
+                        bpline = `${''.padEnd(indentNum-3, ' ')}${bpline}`;
                     }
                     pbt.push(bpline);
                 }
@@ -141,9 +137,17 @@ export class GameSummaryComponent {
         const p: GameDataService = this.gameDataPtr;
         pbt.push(`  `);
 
+        // see if any boardplay in the whole game has contract Notes
+        const hasContractNotes:boolean =
+            Array.from(p.boardObjs.values()).some( boardObj => {
+                return Array.from(boardObj.boardPlays.values()).some( bp => {
+                    return (bp.contractNote !== '');
+                });
+            });
+        
         Array.from(p.boardObjs.values()).forEach( boardObj => {
             if (boardObj.areAnyPlaysEntered()) {
-                this.outputOneBoardText(pbt, boardObj);
+                this.outputOneBoardText(pbt, boardObj, hasContractNotes);
             }
         });
     }

@@ -487,6 +487,7 @@ export class GameDataService {
     doDeserialize(JSONStr: string) {
         const newobj: Object = this._serializer.deserialize(JSONStr);
         Object.assign(this, newobj);
+        // console.log(`doDeserialize: ${this.gameFileName}`);
         // handle the fact that old json formats didn't know about travOrder
         if (this.travOrder === undefined) this.travOrder = TravOrder.PAIR;
 
@@ -496,6 +497,7 @@ export class GameDataService {
 
     saveToLocalStorage() {
         window.localStorage.setItem(`game-${this.gameFileName}`, this.doSerialize());
+        // console.log(`saveToLocalStorage game-${this.gameFileName}`);
     }
 
     getFromLocalStorage(gameFileName: string) {

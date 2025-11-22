@@ -110,12 +110,6 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             const nsScoreStr: string = p.scoreStr(boardPlay, true);
             const ewScoreStr: string = p.scoreStr(boardPlay, false);
             let rawStandardNote:string = (boardPlay.contractNote === '' ? '' : this._legalScore.contractNoteStandardize(boardPlay.contractNote)!);
-            if (false) {
-                // set style for hearts and diamonds
-                rawStandardNote = rawStandardNote.replace(/(\u2665|\u2666)/, '<span style="color:red;">$1</span>'); 
-                // set style for spades and clubs
-                rawStandardNote = rawStandardNote.replace(/(\u2660|\u2663)/, '<span style="color:black;">$1</span>'); 
-            }
             this.viewLines[index+2] = `${arrow}${nsPairStr}  ${nsScoreStr} ${ewScoreStr}  ${ewPairStr}     ${rawStandardNote}  `;
         });
         this.viewLines.push(` `); // separator line
@@ -360,10 +354,14 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                 
             } else {
                 // here if Enter used and curInput is empty
+                // if there is a this.lastInput,
                 // we just call scoreEntryInput again after adjusting x.target.value to be lastInput
-                x.target.value = this.lastInput;
-                console.log(`reusing ${this.lastInput}`);
-                this.scoreEntryInput();
+                // otherwise, we just ignore the Enter
+                if (this.lastInput !== '') {
+                    x.target.value = this.lastInput;
+                    console.log(`reusing ${this.lastInput}`);
+                    this.scoreEntryInput();
+                }
             }
         }
         else if (key === '+') {

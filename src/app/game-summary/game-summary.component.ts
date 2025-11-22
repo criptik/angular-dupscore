@@ -125,10 +125,10 @@ export class GameSummaryComponent {
         // if any NP or Late boardplays, show them here
         // console.log(`board ${boardObj.bdnum}, ${boardObj.npOrLateArray.length}`);
         boardObj.npOrLateArray.forEach( (bp) => {
-            const scoreText = '  NP   NP';
+            const scoreText = ' NP   NP';
             const mpText = '             ';
             const nameText = this.getPairNameText(bp.nsPair, bp.ewPair);
-            pbt.push(`  ${scoreText}    ${mpText}    ${nameText}`);
+            pbt.push(`${indent}${scoreText}    ${mpText}    ${nameText}`);
         });
         pbt.push(`----------------------------------------------------------------------`);
     }

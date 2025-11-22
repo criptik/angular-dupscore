@@ -161,6 +161,7 @@ export class LegalScore {
                 if (madeLevel < cleanGroups.conlevel) return undefined;
                 cleanGroups.tricks = madeLevel + 6;
             }
+            // console.log(cleanGroups);
             return cleanGroups;
         }
         else { 
@@ -224,10 +225,10 @@ export class LegalScore {
     }
     
     genSuitChar(suitStr:string) : string {
-        if (suitStr === 'S') return '\u2660 ';
-        if (suitStr === 'H') return '\u2665 ';
-        if (suitStr === 'D') return '\u2666 ';
-        if (suitStr === 'C') return '\u2663 ';
+        if (suitStr === 'S') return '\u2660';
+        if (suitStr === 'H') return '\u2665';
+        if (suitStr === 'D') return '\u2666';
+        if (suitStr === 'C') return '\u2663';
         return suitStr;
     }
     
@@ -243,6 +244,7 @@ export class LegalScore {
             const decl: string = contractNoteOutput!.decl!;
             const suitChar: string = this.genSuitChar(contractNoteOutput!.suit!);
             const dblstr = contractNoteOutput!.dblstr!;
+            console.log(`standardize: "${conlevel}", "${suitChar}",  "${dblstr}", "${decl}"`);
             const conPart: string = `${conlevel}${suitChar}${dblstr} ${decl}`;
             let resultPart: string = '';
             if (madeTricks < conlevel + 6) {

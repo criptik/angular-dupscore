@@ -31,6 +31,7 @@ export class GameDataComponent {
         }, 0);
         const movName: string = p.movFileName.replace('.MOV', '');
         this.statusText = [
+            `Gamefile ${p.gameFileName}`,
             `${p.groupName} for ${p.gameDate}`,
             `Movement: ${this._movInfo.getDesc(movName)}`,
             `${p.numTables} Tables, ${p.numPairs} Pairs, (Top on Board is ${p.boardTop})`,

@@ -9,6 +9,7 @@ import { Component, Input, OnInit, OnChanges } from '@angular/core';
 export class SuitColorizerComponent implements OnInit, OnChanges {
     @Input() inputStr:string = '';
     @Input() colorizeBlack:boolean = false;
+    @Input() useBreak:boolean = false;
 
     firstPart: string = '';
     secondPart: string = '';

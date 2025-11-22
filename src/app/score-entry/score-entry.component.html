@@ -8,11 +8,13 @@
 
     <ng-container  *ngFor="let viewline of viewLines;let idx = index;">
         <ng-container *ngIf="viewline.substring(0,1) === '=' else Normal">
-            <div> <span class="inverse">==></span>{{viewline.substring(3)}}
+            <div>
+                <span class="inverse">==></span>
+                <app-suit-colorizer [inputStr] = "viewline.substring(3)" [colorizeBlack] = "false"  [useBreak] = "true"></app-suit-colorizer>
             </div>
         </ng-container>
         <ng-template #Normal>
-            <app-suit-colorizer [inputStr] = "viewLines[idx]" [colorizeBlack] = "false" ></app-suit-colorizer>
+            <app-suit-colorizer [inputStr] = "viewLines[idx]" [colorizeBlack] = "false"  [useBreak] = "true"></app-suit-colorizer>
         </ng-template>
     </ng-container>
     <ng-container *ngIf="isEntryComponent()">

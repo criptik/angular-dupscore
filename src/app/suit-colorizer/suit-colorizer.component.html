@@ -1,10 +1,10 @@
 <span>{{firstPart}}</span>
 <ng-container *ngIf="redPart !== ''">
-    <span style="color:red">{{redPart}}</span>
+    <span class="cred suit">{{redPart}}</span>
     <span>{{secondPart}}</span>
 </ng-container>
 <ng-container *ngIf="blackPart !== ''">
-    <span style="color:black">{{blackPart}}</span>
+    <span [ngClass]="colorizeBlack? 'cblk suit' : 'suit'">{{blackPart}}</span>
     <span>{{secondPart}}</span>
 </ng-container>
 <ng-container *ngIf="useBreak">

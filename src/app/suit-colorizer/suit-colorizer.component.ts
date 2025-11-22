@@ -24,7 +24,7 @@ export class SuitColorizerComponent implements OnInit, OnChanges {
         // hearts and diamonds
         const redSuitChars:string = '\u2665|\u2666';  
         // clubs and spades conditionally included
-        const blackSuitChars:string = (this.colorizeBlack ? '|\u2660|\u2663' : '');
+        const blackSuitChars:string = '|\u2660|\u2663';
         const regexStr:string = `(?<firstPart>.*)(?<suitChar>${redSuitChars}${blackSuitChars}+)(?<secondPart>.*)`;
         const regex:RegExp = new RegExp(regexStr);
         const matchOutput:RegExpMatchArray|null = regex.exec(this.inputStr);

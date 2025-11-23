@@ -183,11 +183,13 @@ describe('ScoreEntryComponent', () => {
             ['3EW=',    undefined, undefined],
             ['3HD=',    undefined, undefined],
             ['3nw=',    -400,  -600],
-            ['2SN3',    140,   140],
-            ['2SN+1',   140,   140],
+            ['2SN3',     140,   140],
+            ['2SN+1',    140,   140],
             ['2SE3',    -140,  -140],
             ['1NT**N7', 1760,  3160],
             ['7NT**N7', 2280,  2980],
+            ['PO',         0,     0],
+            ['PASS',       0,     0],
         ];
 
         

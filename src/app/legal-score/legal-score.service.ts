@@ -134,6 +134,12 @@ export class LegalScore {
     
     parseContractNoteStr(conResultStr: string) : Partial<ContractNoteOutput> | undefined {
         conResultStr = conResultStr.toUpperCase();
+        let cleanGroups: Partial<ContractNoteOutput> = {}
+        if (conResultStr === 'PO' || conResultStr === 'PASS') {
+            cleanGroups.conlevel = 0;
+            return cleanGroups;
+        }
+        
         const regex:RegExp = /(?<level>[1-7])(?<suit>S|H|D|C|N|NT)(?<dblstr>\*{0,2})(?<decl>N|S|E|W)(?<resStr>=|\+[1-6]|\-\d+|[1-7])/;
         const matchOutput:RegExpMatchArray|null = regex.exec(conResultStr);
         if (matchOutput && matchOutput.groups) {
@@ -174,6 +180,11 @@ export class LegalScore {
         let score:number|undefined = undefined;
         if (contractNoteOutput === undefined) {
             return(undefined);
+        }
+        // special case for pass-out
+        else if (contractNoteOutput!.conlevel === 0) {
+            score = 0;
+            return score;
         }
         else {
             // compute score
@@ -236,6 +247,10 @@ export class LegalScore {
         const contractNoteOutput:Partial<ContractNoteOutput>|undefined = this.parseContractNoteStr(contractNoteStr); 
         if (contractNoteOutput === undefined) {
             return(undefined);
+        }
+        // special case for pass-out
+        else if (contractNoteOutput!.conlevel === 0) {
+            return 'PASSED';
         }
         else {
             // slight difference for made vs. down

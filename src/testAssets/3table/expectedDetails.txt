@@ -76,6 +76,7 @@
    N-S   E-W     N-S    E-W
          200     1.75   0.25    5-Royal-Royal vs. 4-Boyer-Boyer
         1430     0.25   1.75    6-Hays-Hays vs. 3-Dent-Dent
+    NP   NP                     2-Worth-Worth vs. 1-Jones-Jones
 ----------------------------------------------------------------------
   
    RESULTS OF BOARD 10
@@ -146,7 +147,7 @@
    N-S   E-W     N-S    E-W
    150           2.00   0.00    6-Hays-Hays vs. 5-Royal-Royal
    120           1.00   1.00    4-Boyer-Boyer vs. 3-Dent-Dent
-  PASS           0.00   2.00    2-Worth-Worth vs. 1-Jones-Jones
+     0           0.00   2.00    2-Worth-Worth vs. 1-Jones-Jones
 ----------------------------------------------------------------------
   
    RESULTS OF BOARD 18

@@ -127,7 +127,7 @@ describe('GameSummaryComponent', () => {
                     
                     // check detailed report for each of the 20 boards in 3-table game
                     
-                    _.range(2).forEach( (n) => {
+                    _.range(20).forEach( (n) => {
                         it(`should produce a correct detailed report for board ${n+1}`, () => {
                             const details: string = jsonToOneBoardDetails(jsonStr3Table, n+1);
                             expect(details.trim()).toBe(boardDetailsArray[n].trim());

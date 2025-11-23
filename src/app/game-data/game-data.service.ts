@@ -35,29 +35,28 @@ export class BoardPlay {
         return new BoardPlay(0, 0, 0);
     }
 
-    addScoreInfo(nsScore: number, kindNS: string = '', kindEW: string = kindNS) {
+    // record score and optionally a contractNote
+    addScoreInfo(nsScore: number, note: string = '') {
         this.nsScore = nsScore;
-        this.kindNS = kindNS;
-        this.kindEW = kindEW;
+        this.kindNS = '';
+        this.kindEW = '';
+        this.contractNote = note;
     }
 
     addSpecialScoreInfo(kindNS: string, kindEW: string = kindNS) {
         this.nsScore = SCORE_SPECIAL;
         this.kindNS = kindNS;
         this.kindEW = kindEW;
+        this.contractNote = '';
     }
 
     addEmptyScoreInfo() {
         this.nsScore = SCORE_EMPTY;
         this.kindNS = '';
         this.kindEW = '';
+        this.contractNote = '';
     }
 
-    addScoreInfoContractNote(score: number, note: string) {
-        this.addScoreInfo(score);
-        this.contractNote = note;
-    }
-    
     isScoreEmpty() {
         return(this.nsScore === SCORE_EMPTY);
     }
@@ -520,7 +519,7 @@ export class GameDataService {
         else if (!boardPlay.isScoreSpecial()) {
             // normal ScoreObj with a score
             const score = boardPlay.nsScore;
-            if (score === 0 && forNS) str = 'PASS';
+            if (score === 0 && forNS) str = '0';
             else if (score > 0 && forNS) str = `${score}`;
             else if (score < 0 && !forNS) str = `${-1*score}`;
         }

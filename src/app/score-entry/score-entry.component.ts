@@ -319,7 +319,8 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                 if (noteScore !== undefined) {
                    this.lastInput = curInput;
                     x.target.value = '';
-                    onNSBoardPlay.addScoreInfoContractNote(noteScore, curInput);
+                    // adding a contractNote as well
+                    onNSBoardPlay.addScoreInfo(noteScore, curInput);
                     this.onNS = this.getNewNS(1);
                     this.updateView();
                     return;

@@ -242,7 +242,7 @@ export class LegalScore {
         if (suitStr === 'C') return '\u2663';
         return suitStr;
     }
-    
+   
     contractNoteStandardize(contractNoteStr:string) : string | undefined {
         const contractNoteOutput:Partial<ContractNoteOutput>|undefined = this.parseContractNoteStr(contractNoteStr); 
         if (contractNoteOutput === undefined) {
@@ -259,14 +259,14 @@ export class LegalScore {
             const decl: string = contractNoteOutput!.decl!;
             const suitChar: string = this.genSuitChar(contractNoteOutput!.suit!);
             const dblstr = contractNoteOutput!.dblstr!;
-            console.log(`standardize: "${conlevel}", "${suitChar}",  "${dblstr}", "${decl}"`);
+            // console.log(`standardize: "${conlevel}", "${suitChar}",  "${dblstr}", "${decl}"`);
             const conPart: string = `${conlevel}${suitChar}${dblstr} ${decl}`;
             let resultPart: string = '';
             if (madeTricks < conlevel + 6) {
                 resultPart = ` ${madeTricks - (conlevel + 6)}`;
             }
             else {
-                resultPart = ` ${madeTricks - 6}`;
+                resultPart = `  ${madeTricks - 6}`;
             }
             const standardNote:string = `${conPart}${resultPart}`;
             return standardNote;

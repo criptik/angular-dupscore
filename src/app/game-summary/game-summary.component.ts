@@ -23,7 +23,6 @@ const debug: boolean = false;
 export class GameSummaryComponent {
     summaryText: string[] = [];
     size: string = 'short';
-    testString: string = 'abc\u2665def\n';
     
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,    
@@ -132,25 +131,75 @@ export class GameSummaryComponent {
         });
         pbt.push(`----------------------------------------------------------------------`);
     }
+
+    checkForContractNotes(): boolean {
+        const p: GameDataService = this.gameDataPtr;
+        return Array.from(p.boardObjs.values()).some( boardObj => {
+            return Array.from(boardObj.boardPlays.values()).some( bp => {
+                return (bp.contractNote !== '');
+            });
+        });
+    }
     
     outputPerBoardData(pbt: string[]) {
         const p: GameDataService = this.gameDataPtr;
         pbt.push(`  `);
 
         // see if any boardplay in the whole game has contract Notes
-        const hasContractNotes:boolean =
-            Array.from(p.boardObjs.values()).some( boardObj => {
-                return Array.from(boardObj.boardPlays.values()).some( bp => {
-                    return (bp.contractNote !== '');
-                });
-            });
+        const hasContractNotes:boolean = this.checkForContractNotes();
         
         Array.from(p.boardObjs.values()).forEach( boardObj => {
             if (boardObj.areAnyPlaysEntered()) {
                 this.outputOneBoardText(pbt, boardObj, hasContractNotes);
             }
         });
+        // this.buildPairVsPairPcts();
     }
+
+    buildPairVsPairPcts() {
+        const p: GameDataService = this.gameDataPtr;
+        p.computeMPAllBoards();
+        const mpArray: number[][] = Array.from({ length: p.numPairs }, () => Array(p.numPairs).fill(0));
+        console.log('p.numPairs:', p.numPairs);
+        if (true) {
+            Array.from(p.boardObjs.values()).forEach( boardObj => {
+                Array.from(boardObj.boardPlays.values()).forEach( bp => {
+                    // get the ns and ew pairs for each boardPlay
+                    const nsPair = bp.nsPair;
+                    const ewPair = bp.ewPair;
+                    // todo: correct these for Mitchell
+                    // get the mps for that pair from the boardObj.pairToMpMap
+                    const nsMps: number|undefined = boardObj.pairToMpMap.get(nsPair);
+                    const ewMps: number|undefined = boardObj.pairToMpMap.get(ewPair);
+                    if (nsMps !== undefined && ewMps !== undefined) {
+                        const nsIdx = nsPair - 1;
+                        const ewIdx = ewPair - 1;
+                        mpArray[nsIdx][ewIdx] += nsMps;
+                        mpArray[ewIdx][nsIdx] += ewMps;
+                        // console.log(nsPair, ewPair, mpArray[nsIdx], mpArray[ewIdx]);
+                    }
+                });
+            });
+        }
+
+        // testing stuff
+        _.range(6).forEach(a => {
+            _.range(6).forEach(b => {
+                if (b > a) {
+                    const ab = mpArray[a][b];
+                    const ba = mpArray[b][a];
+                    const sum = ab + ba;
+                    const abpct = 100*ab/8;
+                    const bapct = 100*ba/8;
+                    console.log(`sum:, ${a+1} vs ${b+1}: ${ab} ${abpct.toFixed(0)}%,  ba ${bapct.toFixed(0)}%, ${sum}`);
+                }
+            });
+        });
+        
+            
+        console.log('after:', mpArray);
+    }
+    
                 
                 
     ngOnInit() {
@@ -222,6 +271,8 @@ export class GameSummaryComponent {
 
     // TODO: how to make this use colors
     onClipButtonClick(x:any) {
-        navigator.clipboard.writeText(this.summaryText.join('\n'));
+        let summaryStr: string = this.summaryText.join('\n');
+        // const hasContractNotes:boolean = this.checkForContractNotes();
+        navigator.clipboard.writeText(summaryStr);
     }
 }

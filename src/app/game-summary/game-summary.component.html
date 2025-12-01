@@ -1,10 +1,70 @@
+<!--
 <div>
     <button type="button" style="position:absolute; left:500px; font-size: 20px;" (click)="onClipButtonClick($event)">
         Copy
     </button>
 </div>
+-->
 
 <pre>
-    <app-suit-colorizer *ngFor="let pbtline of summaryText" [inputStr] = "pbtline" [colorizeBlack] = "false" [useBreak]="true">
-    </app-suit-colorizer>
+{{summaryText}}
 </pre>
+<div class="report" #reportDiv>
+    <ng-container  *ngFor="let boardInfo of allBoardOutputArray">
+        <br>
+        <span> RESULTS OF BOARD {{boardInfo.bdnum}}</span>
+        <br>
+        <br>
+        <table>
+            <tr>
+                <ng-container   *ngIf="hasContractNotes === true; then hasNotes; else noNotes;"/>
+                <ng-template #hasNotes>
+                    <th class="hdrl" colspan="3"></th>
+                </ng-template>
+                <ng-template #noNotes>
+                    <th class="hdrl">&nbsp;&nbsp;</th>
+                </ng-template>
+                <th class="hdrc" colspan="2">SCORES</th>
+                <th class="hdrc" colspan="2">MPS</th>
+                <th class="hdrl"></th>
+            </tr>
+            <tr>
+                <ng-container   *ngIf="hasContractNotes === true; then hasNotes; else noNotes;"/>
+                <ng-template #hasNotes>
+                    <th class="hdrl" colspan="3"></th>
+                </ng-template>
+                <ng-template #noNotes>
+                    <th class="hdrl">&nbsp;&nbsp;</th>
+                </ng-template>
+                <th class="hdrr nsscore">&nbsp;N-S</th>
+                <th class="hdrr ewscore">&nbsp;E-W</th>
+                <th class="hdrr nsmp">&nbsp;N-S</th>
+                <th class="hdrr ewmp">&nbsp;E-W</th>
+                <th class="hdrl names">NAMES</th>
+            </tr>
+            <ng-container  *ngFor="let bpInfo of boardInfo.bpInfoArray">
+                <tr>
+                    <ng-container   *ngIf="hasContractNotes === true; then hasNotes; else noNotes;"/>
+                    <ng-template #hasNotes>
+                        <td class="context"  *ngIf="hasContractNotes">
+                            <app-suit-colorizer [inputStr] = "bpInfo.conText" [colorizeBlack]="false" [useBreak]="false"/>
+                        </td>
+                        <td class="decl"  *ngIf="hasContractNotes">{{bpInfo.decl}}</td>
+                        <td class="restext"  *ngIf="hasContractNotes">{{bpInfo.resText}}</td>
+                    </ng-template>
+                    <ng-template #noNotes>
+                        <th class="hdrl">&nbsp;&nbsp;</th>
+                    </ng-template>
+                    <td class="nsscore">{{bpInfo.nsScore}}</td>
+                    <td class="ewscore">{{bpInfo.ewScore}}</td>
+                    <td class="nsmp">{{bpInfo.nsMP}}</td>
+                    <td class="ewmp">{{bpInfo.ewMP}}</td>
+                    <td class="names">{{bpInfo.nameText}}</td>
+                </tr>
+            </ng-container>
+            <tr>
+                <td colspan="8" class="endsep">-------------------------------------------------------------------</td>
+            </tr>
+        </table>
+    </ng-container>
+</div>  

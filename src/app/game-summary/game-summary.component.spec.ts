@@ -10,7 +10,7 @@ import { GameDataService, BoardObj } from '../game-data/game-data.service';
 import { readAssetText } from '../testutils/testutils';
 import * as _ from 'lodash';
 
-import { GameSummaryComponent } from './game-summary.component';
+import { GameSummaryComponent, BoardInfo, BPInfo } from './game-summary.component';
 
 describe('GameSummaryComponent', () => {
     let component: GameSummaryComponent;
@@ -86,60 +86,78 @@ describe('GameSummaryComponent', () => {
 
                     it('should produce a correct short report', () => {
                         jsonToShortReport(jsonStr3Table, false);
-                        const summaryOutput:string = component.summaryText.join('\n');
-                        expect(summaryOutput.trim()).toBe(expectedShort3Table.trim());
+                        expect(component.summaryText.trim()).toBe(expectedShort3Table.trim());
                     });
             
             
                     it('should produce a correct short report after board 5 marked 3 NP', () => {
                         jsonToShortReport(jsonStr3Table, true);
-                        const summaryOutput:string = component.summaryText.join('\n');
-                        expect(summaryOutput.trim()).toBe(expectedShort3Table3NP.trim());
+                        expect(component.summaryText.trim()).toBe(expectedShort3Table3NP.trim());
                     });
 
                 });
 
                 describe('3 Table Board Details', () => {
-                    let expectedDetails3Table: string;
-                    let boardDetailsArray: RegExpMatchArray;
+                    let expectedAllBoardDetails3TableJSON: string;
+                    let boardDetailsJSONArray: RegExpMatchArray;
                     beforeEach(  async () =>  {
-                        expectedDetails3Table = await readAssetText('testAssets/3table/expectedDetails.txt', httpClient);
-                        boardDetailsArray =  expectedDetails3Table.match(/   RESULTS OF BOARD.+?-{2,}/sg)!;
+                        expectedAllBoardDetails3TableJSON = await readAssetText('testAssets/3table/expectedAllBoardDetails3TableJSON.txt', httpClient);
+                        const regex = /{\s*"bdnum".+?}\s*]\s*}/gs;
+                        boardDetailsJSONArray =  expectedAllBoardDetails3TableJSON.match(regex)!;
                     });
             
                     it('details to be read in', () => {
-                        expect(expectedDetails3Table.length).not.toBe(0);
+                        expect(expectedAllBoardDetails3TableJSON.length).not.toBe(0);
+                        expect(boardDetailsJSONArray.length).toBe(20);
                     });
+
+                    function toJSON(obj: any): string {
+                        const fields = ['bdnum', 'bpInfoArray', 'conText', 'decl', 'resText', 'nsScore', 'ewScore', 'nsMP', 'ewMP', 'nameText'];
+                        return(JSON.stringify(obj, fields, 1));
+                    }
+
+                    function ignoreWhiteSpace(str: string): string {
+                        return str.replace(/\s/g, '');
+                    }
+                    
                     
                     function jsonToOneBoardDetails(jsonStr: string, bdnum: number) : string {
                         const p: GameDataService = gameDataService;
                         p.doDeserialize(jsonStr);
                         component.size = 'long';
+                        component.testing = true;
+                        // console.log('calling ngOnInit');
                         component.ngOnInit();
+                        // console.log('allBoardInfo', toJSON(component.allBoardOutputArray));
+                        
                         let pbt: Array<string> = [];
                         const boardObj: BoardObj = p.boardObjs.get(bdnum)!;
                         if (boardObj!.areAnyPlaysEntered()) {
-                            const hasContractNotes: boolean = false;  // for these tests
-                            component.outputOneBoardText(pbt, boardObj, hasContractNotes);
+                            component.hasContractNotes = false;  // for these tests
+                            const boardInfo: BoardInfo = component.getOneBoardInfo(boardObj);
+                            const boardInfoJson: string = toJSON(boardInfo);
+                            return boardInfoJson;
                         }
-                        return pbt.join('\n');
+                        else {
+                            return '';
+                        }
                     }
                     
                     // check detailed report for each of the 20 boards in 3-table game
                     
                     _.range(20).forEach( (n) => {
                         it(`should produce a correct detailed report for board ${n+1}`, () => {
-                            const details: string = jsonToOneBoardDetails(jsonStr3Table, n+1);
-                            expect(details.trim()).toBe(boardDetailsArray[n].trim());
+                            const detailsJSON: string = jsonToOneBoardDetails(jsonStr3Table, n+1);
+                            expect(ignoreWhiteSpace(detailsJSON)).toBe(ignoreWhiteSpace(boardDetailsJSONArray[n]));
                         });
                     });
 
                     // now set board 5 to be [AVE,AVE,-100]
-                    let expectedDetails3TableBd5AveAve: string;
-                    let expectedDetails3TableBd5AveNP: string;
+                    let expectedDetails3TableBd5AveAveJSON: string;
+                    let expectedDetails3TableBd5AveNPJSON: string;
                     beforeEach(  async () => {
-                        expectedDetails3TableBd5AveAve = await readAssetText('testAssets/3table/detailsBd5AveAve.txt', httpClient);
-                        expectedDetails3TableBd5AveNP = await readAssetText('testAssets/3table/detailsBd5AveNP.txt', httpClient);
+                        expectedDetails3TableBd5AveAveJSON = await readAssetText('testAssets/3table/detailsBd5AveAveJSON.txt', httpClient);
+                        expectedDetails3TableBd5AveNPJSON = await readAssetText('testAssets/3table/detailsBd5AveNPJSON.txt', httpClient);
                     });
                     it('should produce a correct detailed report for board 5 when set to AVE, AVE, -100', () => {
                         const p: GameDataService = gameDataService;            
@@ -151,15 +169,13 @@ describe('GameSummaryComponent', () => {
                         const boardTop = 2;  // 3 pairs per board in this game
                         board5.computeMP(boardTop);
                         // now generate the board 5 details
+                        component.size = 'long';
+                        component.testing = true;
                         component.ngOnInit();
-                        let pbt: Array<string> = [];
-                        const boardObj: BoardObj = p.boardObjs.get(5)!;
-                        if (boardObj!.areAnyPlaysEntered()) {
-                            const hasContractNotes: boolean = false;  // for these tests
-                            component.outputOneBoardText(pbt, boardObj, hasContractNotes);
-                        }
-                        const details5:string = pbt.join('\n');
-                        expect(details5.trim()).toBe(expectedDetails3TableBd5AveAve.trim());
+                        // get the boardInfo for board 5
+                        const boardInfo5: BoardInfo = component.getOneBoardInfo(board5);
+                        const boardInfo5JSON: string = toJSON(boardInfo5);
+                        expect(ignoreWhiteSpace(expectedDetails3TableBd5AveAveJSON)).toBe(ignoreWhiteSpace(boardInfo5JSON));
                     });
                     it('should produce a correct detailed report for board 5 when set to AVE, NP, -100', () => {
                         const p: GameDataService = gameDataService;            
@@ -171,15 +187,13 @@ describe('GameSummaryComponent', () => {
                         const boardTop = 2;  // 3 pairs per board in this game
                         board5.computeMP(boardTop);
                         // now generate the board 5 details
+                        component.size = 'long';
+                        component.testing = true;
                         component.ngOnInit();
-                        let pbt: Array<string> = [];
-                        const boardObj: BoardObj = p.boardObjs.get(5)!;
-                        if (boardObj!.areAnyPlaysEntered()) {
-                            const hasContractNotes: boolean = false;  // for these tests
-                            component.outputOneBoardText(pbt, boardObj, hasContractNotes);
-                        }
-                        const details5:string = pbt.join('\n');
-                        expect(details5.trim()).toBe(expectedDetails3TableBd5AveNP.trim());
+                        // get the boardInfo for board 5
+                        const boardInfo5: BoardInfo = component.getOneBoardInfo(board5);
+                        const boardInfo5JSON: string = toJSON(boardInfo5);
+                        expect(ignoreWhiteSpace(expectedDetails3TableBd5AveNPJSON)).toBe(ignoreWhiteSpace(boardInfo5JSON));
                     });
                 });
             });

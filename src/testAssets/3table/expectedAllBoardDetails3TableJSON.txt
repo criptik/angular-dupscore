@@ -1,0 +1,702 @@
+'[
+ {
+  "bdnum": 1,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "170",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "5-Royal-Royal vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "3-Dent-Dent vs. 2-Worth-Worth"
+   }
+  ]
+ },
+ {
+  "bdnum": 2,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "1.50",
+    "ewMP": "0.50",
+    "nameText": "3-Dent-Dent vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "1.50",
+    "ewMP": "0.50",
+    "nameText": "5-Royal-Royal vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "450",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "6-Hays-Hays vs. 1-Jones-Jones"
+   }
+  ]
+ },
+ {
+  "bdnum": 3,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "450",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "4-Boyer-Boyer vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "430",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "6-Hays-Hays vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "420",
+    "ewScore": "",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "5-Royal-Royal vs. 3-Dent-Dent"
+   }
+  ]
+ },
+ {
+  "bdnum": 4,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "140",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "650",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "4-Boyer-Boyer vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "680",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "5-Royal-Royal vs. 3-Dent-Dent"
+   }
+  ]
+ },
+ {
+  "bdnum": 5,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "1-Jones-Jones vs. 5-Royal-Royal"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "4-Boyer-Boyer vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "6-Hays-Hays vs. 2-Worth-Worth"
+   }
+  ]
+ },
+ {
+  "bdnum": 6,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "200",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "110",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "4-Boyer-Boyer vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "150",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "1-Jones-Jones vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 7,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "600",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "140",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "1-Jones-Jones vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "120",
+    "ewScore": "",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "5-Royal-Royal vs. 3-Dent-Dent"
+   }
+  ]
+ },
+ {
+  "bdnum": 8,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "200",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "1-Jones-Jones vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "120",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "5-Royal-Royal vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "100",
+    "ewScore": "",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "6-Hays-Hays vs. 2-Worth-Worth"
+   }
+  ]
+ },
+ {
+  "bdnum": 9,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "200",
+    "nsMP": "1.75",
+    "ewMP": "0.25",
+    "nameText": "5-Royal-Royal vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "1430",
+    "nsMP": "0.25",
+    "ewMP": "1.75",
+    "nameText": "6-Hays-Hays vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "NP",
+    "ewScore": "NP",
+    "nsMP": "",
+    "ewMP": "",
+    "nameText": "2-Worth-Worth vs. 1-Jones-Jones"
+   }
+  ]
+ },
+ {
+  "bdnum": 10,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "NP",
+    "ewScore": "NP",
+    "nsMP": "",
+    "ewMP": "",
+    "nameText": "2-Worth-Worth vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.75",
+    "ewMP": "0.25",
+    "nameText": "5-Royal-Royal vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "200",
+    "nsMP": "0.25",
+    "ewMP": "1.75",
+    "nameText": "6-Hays-Hays vs. 3-Dent-Dent"
+   }
+  ]
+ },
+ {
+  "bdnum": 11,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "100",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "1-Jones-Jones vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "50",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "2-Worth-Worth vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 12,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "140",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "1-Jones-Jones vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "200",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "2-Worth-Worth vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 13,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "100",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "3-Dent-Dent vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "6-Hays-Hays vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "680",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "1-Jones-Jones vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 14,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "100",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "3-Dent-Dent vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "6-Hays-Hays vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "140",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "1-Jones-Jones vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 15,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "50",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "200",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "3-Dent-Dent vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "460",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "2-Worth-Worth vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 16,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "100",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 4-Boyer-Boyer"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "620",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "2-Worth-Worth vs. 5-Royal-Royal"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "650",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "3-Dent-Dent vs. 1-Jones-Jones"
+   }
+  ]
+ },
+ {
+  "bdnum": 17,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "150",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "6-Hays-Hays vs. 5-Royal-Royal"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "120",
+    "ewScore": "",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "4-Boyer-Boyer vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "0",
+    "ewScore": "",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "2-Worth-Worth vs. 1-Jones-Jones"
+   }
+  ]
+ },
+ {
+  "bdnum": 18,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "500",
+    "ewScore": "",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "2-Worth-Worth vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "420",
+    "nsMP": "0.50",
+    "ewMP": "1.50",
+    "nameText": "4-Boyer-Boyer vs. 3-Dent-Dent"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "420",
+    "nsMP": "0.50",
+    "ewMP": "1.50",
+    "nameText": "6-Hays-Hays vs. 5-Royal-Royal"
+   }
+  ]
+ },
+ {
+  "bdnum": 19,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "170",
+    "nsMP": "2.00",
+    "ewMP": "0.00",
+    "nameText": "3-Dent-Dent vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "630",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "6-Hays-Hays vs. 5-Royal-Royal"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "690",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "4-Boyer-Boyer vs. 2-Worth-Worth"
+   }
+  ]
+ },
+ {
+  "bdnum": 20,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.50",
+    "ewMP": "0.50",
+    "nameText": "4-Boyer-Boyer vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.50",
+    "ewMP": "0.50",
+    "nameText": "3-Dent-Dent vs. 1-Jones-Jones"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "110",
+    "nsMP": "0.00",
+    "ewMP": "2.00",
+    "nameText": "6-Hays-Hays vs. 5-Royal-Royal"
+   }
+  ]
+ }
+]'

@@ -1,0 +1,35 @@
+ {
+  "bdnum": 5,
+  "bpInfoArray": [
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "",
+    "ewScore": "100",
+    "nsMP": "1.20",
+    "ewMP": "1.20",
+    "nameText": "1-Jones-Jones vs. 5-Royal-Royal"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "AVE",
+    "ewScore": "AVE",
+    "nsMP": "1.00",
+    "ewMP": "1.00",
+    "nameText": "6-Hays-Hays vs. 2-Worth-Worth"
+   },
+   {
+    "conText": "",
+    "decl": "",
+    "resText": "",
+    "nsScore": "NP",
+    "ewScore": "NP",
+    "nsMP": "",
+    "ewMP": "",
+    "nameText": "4-Boyer-Boyer vs. 3-Dent-Dent"
+   }   
+  ]
+ }

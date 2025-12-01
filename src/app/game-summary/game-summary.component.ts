@@ -1,8 +1,25 @@
 import { Component } from '@angular/core';
 import { GameDataService, BoardObj, Pair } from '../game-data/game-data.service';
 import {Router, ActivatedRoute} from "@angular/router";
-import { LegalScore } from '../legal-score/legal-score.service';
+import { LegalScore, ContractNoteOutput } from '../legal-score/legal-score.service';
+import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import * as _ from 'lodash';
+
+export interface BPInfo {
+    conText: string;
+    decl: string;
+    resText: string;
+    nsScore: string;
+    ewScore: string;
+    nsMP: string;
+    ewMP: string;
+    nameText: string;
+};
+    
+export interface BoardInfo {
+    bdnum: number;
+    bpInfoArray: Array<BPInfo>;
+}
 
 class MpRec {
     total: number = 0;
@@ -21,9 +38,12 @@ const debug: boolean = false;
     styleUrls: ['./game-summary.component.css']
 })
 export class GameSummaryComponent {
-    summaryText: string[] = [];
+    summaryText: string = '';
     size: string = 'short';
-    
+    testing: boolean = false;
+    hasContractNotes: boolean = false;
+    allBoardOutputArray: Array<BoardInfo> = [];
+    @ViewChild('reportDiv') reportDivRef! : ElementRef;
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,    
                 private route: ActivatedRoute,
@@ -74,18 +94,11 @@ export class GameSummaryComponent {
         const nameText: string = `${p.pairnumToString(nsPair, false)}-${nameTextNS} vs. ${p.pairnumToString(ewPair, false)}-${nameTextEW}`;
         return nameText;
     }
-    
-    outputOneBoardText(pbt: string[], boardObj: BoardObj, hasContractNotes: boolean) {
+
+    // object which contains info needed by renderer template
+    getOneBoardInfo(boardObj: BoardObj): BoardInfo {
         const p: GameDataService = this.gameDataPtr;
         const boardPlayEntriesAry = Array.from(boardObj.boardPlays.entries());
-        const indentNum: number = (hasContractNotes ? 12 : 3);
-        const indent:string = ' '.repeat(indentNum);
-        pbt.push(`  `);
-        pbt.push(`${indent}RESULTS OF BOARD ${boardObj.bdnum}`); 
-        pbt.push(`  `);
-        pbt.push(`${indent} SCORES       MATCHPOINTS    NAMES`);
-        pbt.push(`${indent}N-S   E-W     N-S    E-W`);
-        
         // for each pair, get totals of mps and number of boards
         const sortedBoardPlayEntriesAry = boardPlayEntriesAry.sort((a, b) => {
             const nsPairA: number = a[0];
@@ -100,36 +113,49 @@ export class GameSummaryComponent {
         });
 
         // console.log('sortedEntries', sortedBoardPlayEntriesAry);
+        let bpInfoArray = [] as Array<BPInfo>;
         sortedBoardPlayEntriesAry.forEach( ([nsPair, bp]) => {
             if (bp.hasScore()) {
                 const ewPair = bp.ewPair;
-                const scoreText: string = `${p.scoreStr(bp, true)}  ${p.scoreStr(bp, false)}`;
-                const nsMP = boardObj.pairToMpMap.get(nsPair)!;
-                const ewMP = boardObj.pairToMpMap.get(ewPair)!;
-                // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair, nsMP, ewMP);
-                if (nsMP !== undefined && ewMP !== undefined) {
-                    const mpText: string = `${nsMP.toFixed(2).padStart(5,' ')}  ${ewMP.toFixed(2).padStart(5,' ')}`;
-                    const nameText = this.getPairNameText(nsPair, ewPair);
-                    let bpline: string = `  ${scoreText}    ${mpText}    ${nameText}`;
-                    if (hasContractNotes && bp.contractNote && bp.contractNote! !== '') {
-                        const standardNote:string = this._legalScore.contractNoteStandardize(bp.contractNote)!;
-                        bpline = `${standardNote.padEnd(indentNum-3, ' ')}${bpline}`;
-                    } else {
-                        bpline = `${''.padEnd(indentNum-3, ' ')}${bpline}`;
-                    }
-                    pbt.push(bpline);
+                const bpInfo = {} as BPInfo;
+                bpInfo.nsScore = `${p.scoreStr(bp, true)}`.trim();
+                bpInfo.ewScore = `${p.scoreStr(bp, false)}`.trim();
+                // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair);
+                const nsMP: number | undefined = boardObj.pairToMpMap.get(nsPair);
+                const ewMP: number | undefined = boardObj.pairToMpMap.get(ewPair);
+                bpInfo.nsMP = (nsMP === undefined ? '' : nsMP!.toFixed(2));
+                bpInfo.ewMP = (ewMP === undefined ? '' : ewMP!.toFixed(2));
+                bpInfo.nameText = this.getPairNameText(nsPair, ewPair);
+                const cnout = (this.hasContractNotes ? this._legalScore.parseContractNoteStr(bp.contractNote)! : undefined);
+                if (cnout !== undefined && bp.nsScore !== 0) {
+                    bpInfo.conText = cnout.conText as string;
+                    bpInfo.decl = cnout.decl as string;
+                    const resStr: string = cnout.resText as string;
+                    bpInfo.resText = resStr!.padStart(2, ' ');
+                } else {
+                    bpInfo.conText = '';
+                    bpInfo.decl = '';
+                    bpInfo.resText = '';
                 }
+                bpInfoArray.push(bpInfo);
             }
         });
         // if any NP or Late boardplays, show them here
         // console.log(`board ${boardObj.bdnum}, ${boardObj.npOrLateArray.length}`);
         boardObj.npOrLateArray.forEach( (bp) => {
-            const scoreText = ' NP   NP';
-            const mpText = '             ';
-            const nameText = this.getPairNameText(bp.nsPair, bp.ewPair);
-            pbt.push(`${indent}${scoreText}    ${mpText}    ${nameText}`);
+            const nsPair = bp.nsPair;
+            const ewPair = bp.ewPair;
+            const bpInfo = {} as BPInfo;
+            bpInfo.nsScore = `NP`;
+            bpInfo.ewScore = `NP`;
+            bpInfo.nsMP = '';
+            bpInfo.ewMP = '';
+            bpInfo.nameText = this.getPairNameText(nsPair, ewPair);
+            bpInfo.conText = bpInfo.decl = bpInfo.resText = '';
+            bpInfoArray.push(bpInfo);
         });
-        pbt.push(`----------------------------------------------------------------------`);
+        // console.log(`Board ${boardObj.bdnum}: ${bpInfoArray[0]}`);
+        return {bdnum: boardObj.bdnum, bpInfoArray: bpInfoArray};
     }
 
     checkForContractNotes(): boolean {
@@ -141,18 +167,22 @@ export class GameSummaryComponent {
         });
     }
     
-    outputPerBoardData(pbt: string[]) {
+    outputPerBoardData() {
         const p: GameDataService = this.gameDataPtr;
-        pbt.push(`  `);
 
+        let allBoardOutputArray: Array<BoardInfo> = [];
         // see if any boardplay in the whole game has contract Notes
-        const hasContractNotes:boolean = this.checkForContractNotes();
+        this.hasContractNotes = this.checkForContractNotes();
         
         Array.from(p.boardObjs.values()).forEach( boardObj => {
             if (boardObj.areAnyPlaysEntered()) {
-                this.outputOneBoardText(pbt, boardObj, hasContractNotes);
+                allBoardOutputArray.push(this.getOneBoardInfo(boardObj));
             }
         });
+        // assign to the class viarable that template uses
+        this.allBoardOutputArray = allBoardOutputArray;
+        // console.log(JSON.stringify(allBoardOutputArray));
+        
         // this.buildPairVsPairPcts();
     }
 
@@ -160,7 +190,7 @@ export class GameSummaryComponent {
         const p: GameDataService = this.gameDataPtr;
         p.computeMPAllBoards();
         const mpArray: number[][] = Array.from({ length: p.numPairs }, () => Array(p.numPairs).fill(0));
-        console.log('p.numPairs:', p.numPairs);
+        // console.log('p.numPairs:', p.numPairs);
         if (true) {
             Array.from(p.boardObjs.values()).forEach( boardObj => {
                 Array.from(boardObj.boardPlays.values()).forEach( bp => {
@@ -191,26 +221,28 @@ export class GameSummaryComponent {
                     const sum = ab + ba;
                     const abpct = 100*ab/8;
                     const bapct = 100*ba/8;
-                    console.log(`sum:, ${a+1} vs ${b+1}: ${ab} ${abpct.toFixed(0)}%,  ba ${bapct.toFixed(0)}%, ${sum}`);
+                    // console.log(`sum:, ${a+1} vs ${b+1}: ${ab} ${abpct.toFixed(0)}%,  ba ${bapct.toFixed(0)}%, ${sum}`);
                 }
             });
         });
         
-            
-        console.log('after:', mpArray);
+        
+        // console.log('after:', mpArray);
     }
     
-                
-                
+    
+    
     ngOnInit() {
-        // console.log(`Summary ngOnInit`);
         const p: GameDataService = this.gameDataPtr;
         if (!p.gameDataSetup) return;
 
-        this.route.params.subscribe( params => {
-            this.size = params['size'] ?? 'short';
-        });
-        // console.log('size', this.size);
+        if (!this.testing) {
+            this.route.params.subscribe( params => {
+                this.size = params['size'] ?? 'short';
+            });
+        }
+        
+        // console.log(`Summary ngOnInit ${this.size}`);
 
         // go thru all board objs
         let fullyEnteredBoards = 0;
@@ -261,18 +293,24 @@ export class GameSummaryComponent {
             this.outputShortSummary(pbt, p.groupName, p.gameDate, 'EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
             // only do per-board data in long mode
             if (this.size === 'long') {
-                this.outputPerBoardData(pbt);
+                this.outputPerBoardData();
             }
             pbt.push('\n');
-            // this.summaryText = pbt.join('\n');
-            this.summaryText = pbt;
+            this.summaryText = pbt.join('\n');
+            // this.summaryText = pbt;
         }
     }
 
     // TODO: how to make this use colors
     onClipButtonClick(x:any) {
-        let summaryStr: string = this.summaryText.join('\n');
-        // const hasContractNotes:boolean = this.checkForContractNotes();
-        navigator.clipboard.writeText(summaryStr);
+        // Access the native HTML element
+        const divElement: HTMLDivElement = this.reportDivRef.nativeElement;
+        const htmlContent = divElement.innerHTML;
+        // console.log(htmlContent);
+        const type = "text/html";
+        const blob = new Blob([htmlContent], { type });
+        const data = [new ClipboardItem({ [type]: blob })];
+        console.log(data);
+        navigator.clipboard.write(data);
     }
 }

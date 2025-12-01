@@ -10,8 +10,10 @@ export interface ContractNoteOutput {
     suit:  string,
     dblstr: string,
     decl: string,
-    resStr: string,
+    resStr: string,  // original result string
     tricks: number,
+    conText: string, // combo of level, suit, dblstr
+    resText: string, // place for "standard" result text
 };
         
 @Injectable({
@@ -167,6 +169,17 @@ export class LegalScore {
                 if (madeLevel < cleanGroups.conlevel) return undefined;
                 cleanGroups.tricks = madeLevel + 6;
             }
+            const suitChar: string = this.genSuitChar(cleanGroups.suit!);
+            cleanGroups.conText = `${cleanGroups.level}${suitChar}${cleanGroups.dblstr}`;
+            // build output.resText
+            // slight difference for made vs. down
+            cleanGroups.resText = '';
+            if (cleanGroups.tricks < cleanGroups.conlevel + 6) {
+                cleanGroups.resText = `${cleanGroups.tricks - (cleanGroups.conlevel + 6)}`;
+            }
+            else {
+                cleanGroups.resText = `${cleanGroups.tricks - 6}`;
+            }
             // console.log(cleanGroups);
             return cleanGroups;
         }
@@ -253,7 +266,6 @@ export class LegalScore {
             return 'PASSED';
         }
         else {
-            // slight difference for made vs. down
             const madeTricks: number = contractNoteOutput!.tricks!;
             const conlevel: number =  contractNoteOutput!.conlevel!;
             const decl: string = contractNoteOutput!.decl!;
@@ -261,14 +273,8 @@ export class LegalScore {
             const dblstr = contractNoteOutput!.dblstr!;
             // console.log(`standardize: "${conlevel}", "${suitChar}",  "${dblstr}", "${decl}"`);
             const conPart: string = `${conlevel}${suitChar}${dblstr} ${decl}`;
-            let resultPart: string = '';
-            if (madeTricks < conlevel + 6) {
-                resultPart = ` ${madeTricks - (conlevel + 6)}`;
-            }
-            else {
-                resultPart = `  ${madeTricks - 6}`;
-            }
-            const standardNote:string = `${conPart}${resultPart}`;
+            const resultPart: string = contractNoteOutput.resText!;
+            const standardNote:string = `${conPart}  ${resultPart}`;
             return standardNote;
         }
     }

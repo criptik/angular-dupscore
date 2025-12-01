@@ -1,3 +1,76 @@
-pre {
+
+.report, pre {
     font-size: 20px;
+    font-family: monospace;
+}
+table {
+    border: none;
+    border-spacing: 0;
+    font-size: 20px;
+    white-space: nowrap;
+    padding: none;
+    margin: none;
+}
+
+table, tr, th, td {
+    border: none;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+td {
+    padding: none;
+}
+
+.context {
+    text-align: left;
+    width: 3.5ch;
+    padding-right: 0.1ch;
+}
+.decl {
+    text-align: left;
+    min-width: 1ch;
+    padding-right: 0.1ch;
+}
+.restext {
+    text-align: right;
+    padding-right: 3ch;
+    padding-left: 0.5ch;
+    width: 2ch;
+}
+.nsscore {
+    text-align: right;
+    width: 4ch;
+    padding-right: 2ch;
+}
+.ewscore {
+    text-align: right;
+    width: 4ch;
+    padding-right: 3ch;
+}
+.nsmp {
+    text-align: right;
+    width: 4ch;
+    padding-right: 2ch;
+}
+.ewmp {
+    text-align: right;
+    width: 4ch;
+    padding-right: 2ch;
+}
+.names {
+    text-align: left;
+    padding-left: 4ch;
+}
+.hdrl {
+    text-align: left;
+}
+.hdrr {
+    text-align: right;
+}
+.hdrc {
+    text-align: center;
+}
+.endsep {
+    text-align: left;
+    padding-top: 0ch;
 }

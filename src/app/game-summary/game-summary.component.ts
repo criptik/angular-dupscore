@@ -3,6 +3,8 @@ import { GameDataService, BoardObj, Pair } from '../game-data/game-data.service'
 import {Router, ActivatedRoute} from "@angular/router";
 import { LegalScore, ContractNoteOutput } from '../legal-score/legal-score.service';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { readAssetText } from '../testutils/testutils';
+import { HttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
 
 export interface BPInfo {
@@ -32,10 +34,104 @@ class MpRec {
 }
 const debug: boolean = false;
 
+const compCssStr = `
+.report, pre {
+    font-size: 20px;
+    font-family: monospace;
+}
+table {
+    border: none;
+    border-spacing: 0;
+    font-size: 20px;
+    white-space: nowrap;
+    padding: none;
+    margin: none;
+}
+
+table, tr, th, td {
+    border: none;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+.pairtable table, .pairtable tr, .pairtable th, .pairtable td {
+    border: 1px solid black;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+td {
+    padding: none;
+}
+
+.context {
+    text-align: left;
+    width: 3.5ch;
+    padding-right: 0.1ch;
+}
+.decl {
+    text-align: left;
+    min-width: 1ch;
+    padding-right: 0.1ch;
+}
+.restext {
+    text-align: right;
+    padding-right: 3ch;
+    padding-left: 0.5ch;
+    width: 2ch;
+}
+.nsscore {
+    text-align: right;
+    width: 4ch;
+    padding-right: 2ch;
+}
+.ewscore {
+    text-align: right;
+    width: 4ch;
+    padding-right: 3ch;
+}
+.nsmp {
+    text-align: right;
+    width: 4ch;
+    padding-right: 2ch;
+}
+.ewmp {
+    text-align: right;
+    width: 4ch;
+    padding-right: 2ch;
+}
+.names {
+    text-align: left;
+    padding-left: 4ch;
+}
+.hdrl {
+    text-align: left;
+}
+.hdrr {
+    text-align: right;
+}
+.hdrc {
+    text-align: center;
+}
+.endsep {
+    text-align: left;
+    padding-top: 0ch;
+}
+.thpct {
+    text-align: center;
+    width: 4ch;
+    padding-left: 2ch;
+}
+.tdpct {
+    text-align: right;
+    width: 4ch;
+    padding-left: 2ch;
+    padding-top: 1ch;
+}
+`;
+
 @Component({
     selector: 'app-game-summary',
     templateUrl: './game-summary.component.html',
-    styleUrls: ['./game-summary.component.css']
+    styles: [compCssStr]
 })
 export class GameSummaryComponent {
     summaryText: string = '';
@@ -44,10 +140,14 @@ export class GameSummaryComponent {
     hasContractNotes: boolean = false;
     allBoardOutputArray: Array<BoardInfo> = [];
     @ViewChild('reportDiv') reportDivRef! : ElementRef;
+    fullyEnteredBoards: number = 0;
+    pairVsPairInfo: string[][] = [];
+    
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,    
                 private route: ActivatedRoute,
-                private _legalScore: LegalScore,) {
+                private _legalScore: LegalScore,
+                private _http: HttpClient,) {
             // console.log(`Summary Constructor`);
         this._router.routeReuseStrategy.shouldReuseRoute = function () {
             return false;
@@ -56,7 +156,7 @@ export class GameSummaryComponent {
 
     outputShortSummary(pbt: string[], groupName: string, gameDate: Date, headerText: string, forPairs: number[], pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
         if (forPairs.length === 0) return;
-        console.log('gameDate=', gameDate);
+        // console.log('gameDate=', gameDate);
         const p: GameDataService = this.gameDataPtr;
         const aryMpRecEntries = Array.from(pairMpRecs.entries());
         const sortedEntries  = aryMpRecEntries.sort((a, b) => {
@@ -183,13 +283,14 @@ export class GameSummaryComponent {
         this.allBoardOutputArray = allBoardOutputArray;
         // console.log(JSON.stringify(allBoardOutputArray));
         
-        // this.buildPairVsPairPcts();
+        this.buildPairVsPairPcts();
     }
 
     buildPairVsPairPcts() {
         const p: GameDataService = this.gameDataPtr;
         p.computeMPAllBoards();
         const mpArray: number[][] = Array.from({ length: p.numPairs }, () => Array(p.numPairs).fill(0));
+        const boardCountArray: number[][] = Array.from({ length: p.numPairs }, () => Array(p.numPairs).fill(0));
         // console.log('p.numPairs:', p.numPairs);
         if (true) {
             Array.from(p.boardObjs.values()).forEach( boardObj => {
@@ -206,28 +307,48 @@ export class GameSummaryComponent {
                         const ewIdx = ewPair - 1;
                         mpArray[nsIdx][ewIdx] += nsMps;
                         mpArray[ewIdx][nsIdx] += ewMps;
+                        boardCountArray[nsIdx][ewIdx]++;
+                        boardCountArray[ewIdx][nsIdx]++;
                         // console.log(nsPair, ewPair, mpArray[nsIdx], mpArray[ewIdx]);
                     }
                 });
             });
         }
-
-        // testing stuff
-        _.range(6).forEach(a => {
-            _.range(6).forEach(b => {
-                if (b > a) {
-                    const ab = mpArray[a][b];
-                    const ba = mpArray[b][a];
-                    const sum = ab + ba;
-                    const abpct = 100*ab/8;
-                    const bapct = 100*ba/8;
-                    // console.log(`sum:, ${a+1} vs ${b+1}: ${ab} ${abpct.toFixed(0)}%,  ba ${bapct.toFixed(0)}%, ${sum}`);
-                }
-            });
+        // build string info for table to be rendered
+        // header line
+        const hdrRow: string[] = [];
+        _.range(p.numPairs).forEach( (n) => {
+            const pairnum = n+1;
+            hdrRow.push(pairnum.toFixed(0));
         });
+        this.pairVsPairInfo.push(hdrRow);
         
-        
-        // console.log('after:', mpArray);
+        // each pair's data row
+        _.range(p.numPairs).forEach( (n) => {
+            const dataRow: string[] = [];
+            const pairNumA = n+1;
+            dataRow.push(pairNumA.toFixed(0));
+            const pairObj: Pair | undefined = p.pairNameMap.get(pairNumA);
+            const pairIdStr: string = `${p.pairnumToString(pairNumA, true).padStart(4,' ')}`;
+            const nameStr: string = (pairObj ? pairObj.shortString() : '');
+            dataRow.push(nameStr);
+            _.range(p.numPairs).forEach( (m) => {
+                const pairNumB = m+1;
+                const mps = mpArray[n][m];
+                const numBoards = boardCountArray[n][m];
+                if (pairNumA === pairNumB) {
+                    dataRow.push('');
+                } else if (numBoards == 0) {
+                    dataRow.push('--');
+                } else {
+                    const pctVal: number = (100*mps/(numBoards * p.boardTop));
+                    const pctStr: string = `${pctVal.toFixed(0)}%`;
+                    dataRow.push(pctStr);
+                }                
+            });
+            this.pairVsPairInfo.push(dataRow);
+        });
+        // console.log(this.pairVsPairInfo);
     }
     
     
@@ -241,11 +362,13 @@ export class GameSummaryComponent {
                 this.size = params['size'] ?? 'short';
             });
         }
-        
         // console.log(`Summary ngOnInit ${this.size}`);
 
+        // set allBoardOutput as empty in case we are only doing short mode
+        this.allBoardOutputArray = [];
+
         // go thru all board objs
-        let fullyEnteredBoards = 0;
+        this.fullyEnteredBoards = 0;
         
         const pairMpRecs: Map<number, MpRec> = new Map();
         p.pairIds.forEach( pairId => pairMpRecs.set(pairId, new MpRec()));
@@ -253,7 +376,7 @@ export class GameSummaryComponent {
         let boardsScored = 0;
         Array.from(p.boardObjs.values()).forEach( boardObj => {
             boardObj.computeMP(p.boardTop);
-            if (boardObj.allPlaysEntered) fullyEnteredBoards++;
+            if (boardObj.allPlaysEntered) this.fullyEnteredBoards++;
             if (Array.from(boardObj.pairToMpMap.keys()).length > 0) boardsScored ++;
             
             // for each pair, get totals of mps and number of boards
@@ -281,9 +404,9 @@ export class GameSummaryComponent {
         });
         
         // show records
-        if (fullyEnteredBoards !== 0) {
+        if (this.fullyEnteredBoards !== 0) {
             let pbt = [];
-            pbt.push(`${fullyEnteredBoards} Boards have been fully scored...\n`);
+            pbt.push(`${this.fullyEnteredBoards} Boards have been fully scored...\n`);
             
             // always output summary data
             // NS pairs includes all pairs in howell mode
@@ -302,15 +425,17 @@ export class GameSummaryComponent {
     }
 
     // TODO: how to make this use colors
-    onClipButtonClick(x:any) {
+    async onClipButtonClick(x:any) {
         // Access the native HTML element
         const divElement: HTMLDivElement = this.reportDivRef.nativeElement;
         const htmlContent = divElement.innerHTML;
-        // console.log(htmlContent);
+        // add in the css stuff
+        const newHtmlContent = `<style>${compCssStr.replaceAll('20px', '15px')}</style>${htmlContent}`;
+        // console.log(newHtmlContent);
         const type = "text/html";
-        const blob = new Blob([htmlContent], { type });
+        const blob = new Blob([newHtmlContent], { type });
         const data = [new ClipboardItem({ [type]: blob })];
-        console.log(data);
+        // console.log(data);
         navigator.clipboard.write(data);
     }
 }

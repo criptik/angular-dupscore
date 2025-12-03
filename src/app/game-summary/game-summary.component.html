@@ -1,14 +1,15 @@
-<!--
+
 <div>
     <button type="button" style="position:absolute; left:500px; font-size: 20px;" (click)="onClipButtonClick($event)">
         Copy
     </button>
 </div>
--->
+
 
 <pre>
 {{summaryText}}
 </pre>
+<div #reportDiv>
 <div class="report" #reportDiv>
     <ng-container  *ngFor="let boardInfo of allBoardOutputArray">
         <br>
@@ -63,8 +64,26 @@
                 </tr>
             </ng-container>
             <tr>
-                <td colspan="8" class="endsep">-------------------------------------------------------------------</td>
+                <td colspan="8" class="endsep"><hr></td>
             </tr>
         </table>
     </ng-container>
-</div>  
+<br/>
+<br/>
+<br/>
+    <!-- the pair vs. pair chart -->
+    <table class='pairtable'>
+        <tr>
+            <th colspan="2"></th>
+            <th class="thpct" *ngFor="let pairnum of pairVsPairInfo[0]">{{pairnum}}</th>
+        </tr>
+        <ng-container  *ngFor="let dataRow of pairVsPairInfo.slice(1)">
+            <tr>
+                <td class="pairNumStr">{{dataRow[0]}}</td>
+                <td class="names">{{dataRow[1]}}</td>
+                <td class="tdpct" *ngFor="let datStr of dataRow.slice(2)">{{datStr}}</td>
+            </tr>
+        </ng-container>
+    </table>
+</div>
+</div>

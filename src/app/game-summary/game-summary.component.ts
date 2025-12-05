@@ -34,6 +34,8 @@ class MpRec {
 }
 const debug: boolean = false;
 
+// the following string includes some app-suit-colorizer stuff
+// which helps when we export to clipboard
 const compCssStr = `
 .report, pre {
     font-size: 20px;
@@ -125,6 +127,12 @@ td {
     width: 4ch;
     padding-left: 2ch;
     padding-top: 1ch;
+}
+.cred {
+    color:red;
+}
+.suit {
+    font-size: 110%;
 }
 `;
 
@@ -405,12 +413,12 @@ export class GameSummaryComponent {
         
         // show records
         if (this.fullyEnteredBoards !== 0) {
-            let pbt = [];
-            pbt.push(`${this.fullyEnteredBoards} Boards have been fully scored...\n`);
+            let pbt: string[] = [];
             
             // always output summary data
             // NS pairs includes all pairs in howell mode
             // EW pairs will be empty except in mitchell mode
+            // todo: this could use html tables as well
             const headerText = (p.isHowell ? 'All Pairs' : 'NS Pairs');
             this.outputShortSummary(pbt, p.groupName, p.gameDate, headerText, p.pairIdsNS, pairMpRecs, boardsScoredTop);
             this.outputShortSummary(pbt, p.groupName, p.gameDate, 'EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
@@ -418,7 +426,7 @@ export class GameSummaryComponent {
             if (this.size === 'long') {
                 this.outputPerBoardData();
             }
-            pbt.push('\n');
+            // pbt.push('\n');
             this.summaryText = pbt.join('\n');
             // this.summaryText = pbt;
         }
@@ -431,7 +439,7 @@ export class GameSummaryComponent {
         const htmlContent = divElement.innerHTML;
         // add in the css stuff
         const newHtmlContent = `<style>${compCssStr.replaceAll('20px', '15px')}</style>${htmlContent}`;
-        // console.log(newHtmlContent);
+        console.log(newHtmlContent);
         const type = "text/html";
         const blob = new Blob([newHtmlContent], { type });
         const data = [new ClipboardItem({ [type]: blob })];

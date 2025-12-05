@@ -5,11 +5,16 @@
     </button>
 </div>
 
+<div>
+    <pre>
+{{fullyEnteredBoards}} Boards have been fully scored...
+    </pre>
+</div>
 
+<div #reportDiv>
 <pre>
 {{summaryText}}
 </pre>
-<div #reportDiv>
 <div class="report" #reportDiv>
     <ng-container  *ngFor="let boardInfo of allBoardOutputArray">
         <br>

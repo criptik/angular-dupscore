@@ -17,6 +17,7 @@ interface PairNameObj {
     selector: 'app-names-entry',
     templateUrl: './names-entry.component.html',
     styleUrls: ['./names-entry.component.css'],
+    standalone: false
 })
 
 export class NamesEntryComponent implements AfterViewInit {
@@ -343,7 +344,8 @@ export class NamesEntryComponent implements AfterViewInit {
 
 
 @Directive({
-    selector: '[formControlName]'
+    selector: '[formControlName]',
+    standalone: false
 })
 export class NativeElementInjectorDirective implements OnInit {
     constructor (private el: ElementRef,

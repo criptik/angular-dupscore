@@ -13,7 +13,8 @@ const nsEndBoardMarker: number = -1;
 
 @Component({
     template: '',
-    styleUrls: []
+    styleUrls: [],
+    standalone: false
 })
 
 abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
@@ -494,7 +495,8 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
 @Component({
     selector: 'app-score-entry',
     templateUrl: './score-entry.component.html',
-    styleUrls: ['./score-entry.component.css']
+    styleUrls: ['./score-entry.component.css'],
+    standalone: false
 })
 export class ScoreEntryComponent extends ScoreBaseComponent implements AfterViewInit {
     constructor(public gameDataPtr: GameDataService,
@@ -552,7 +554,8 @@ export class ScoreEntryComponent extends ScoreBaseComponent implements AfterView
 @Component({
     selector: 'app-review-entry',
     templateUrl: './score-entry.component.html',
-    styleUrls: ['./score-entry.component.css']
+    styleUrls: ['./score-entry.component.css'],
+    standalone: false
 })
 export class ScoreReviewComponent extends ScoreBaseComponent implements AfterViewInit {
     constructor(public gameDataPtr: GameDataService,
@@ -586,7 +589,8 @@ export class ScoreReviewComponent extends ScoreBaseComponent implements AfterVie
 
 
 @Directive({
-    selector: '[autofocus]'
+    selector: '[autofocus]',
+    standalone: false
 })
 export class AutofocusDirective {
     constructor(private elem : ElementRef) {

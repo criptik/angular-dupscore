@@ -139,7 +139,8 @@ td {
 @Component({
     selector: 'app-game-summary',
     templateUrl: './game-summary.component.html',
-    styles: [compCssStr]
+    styles: [compCssStr],
+    standalone: false
 })
 export class GameSummaryComponent {
     summaryText: string = '';

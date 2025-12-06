@@ -1,9 +1,10 @@
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 
 @Component({
-  selector: 'app-suit-colorizer',
-  templateUrl: './suit-colorizer.component.html',
-  styleUrls: ['./suit-colorizer.component.css']
+    selector: 'app-suit-colorizer',
+    templateUrl: './suit-colorizer.component.html',
+    styleUrls: ['./suit-colorizer.component.css'],
+    standalone: false
 })
 
 export class SuitColorizerComponent implements OnInit, OnChanges {

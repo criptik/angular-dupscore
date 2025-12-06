@@ -7,7 +7,8 @@ import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.compone
 @Component({
     selector: 'app-name-data',
     templateUrl: './name-data.component.html',
-    styleUrls: ['./name-data.component.css']
+    styleUrls: ['./name-data.component.css'],
+    standalone: false
 })
 export class NameDataComponent implements AfterViewInit {
     allNamesList: Person[] = [];

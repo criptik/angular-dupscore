@@ -10,7 +10,8 @@ import * as _ from 'lodash';
 @Component({
     selector: 'app-game-setup',
     templateUrl: './game-setup.component.html',
-    styleUrls: ['./game-setup.component.css']
+    styleUrls: ['./game-setup.component.css'],
+    standalone: false
 })
 export class GameSetupComponent  implements AfterViewInit {
     @ViewChild('newGameDialog') newGameDialog!: ElementRef<HTMLDialogElement>;

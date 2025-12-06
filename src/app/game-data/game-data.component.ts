@@ -7,7 +7,8 @@ import { AppComponent } from '../app.component';
 @Component({
     selector: 'app-game-data',
     templateUrl: './game-data.component.html',
-    styleUrls: ['./game-data.component.css']
+    styleUrls: ['./game-data.component.css'],
+    standalone: false
 })
 export class GameDataComponent {
     statusText: string[] = ['Not Initialized', 'Yet'];

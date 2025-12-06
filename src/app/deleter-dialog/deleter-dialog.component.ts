@@ -5,7 +5,8 @@ import { ElementRef, ViewChild, SimpleChanges } from '@angular/core';
 @Component({
     selector: 'app-deleter-dialog',
     templateUrl: './deleter-dialog.component.html',
-    styleUrls: ['./deleter-dialog.component.css']
+    styleUrls: ['./deleter-dialog.component.css'],
+    standalone: false
 })
 export class DeleterDialogComponent implements AfterViewChecked {
     @Input() nameList: string[] = [];

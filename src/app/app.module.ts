@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { Ng2CompleterModule } from 'ng2-completer';
+// import { Ng2CompleterModule } from 'ng2-completer';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -35,7 +35,7 @@ import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.componen
         BrowserModule,
         HttpClientModule,
         AppRoutingModule,
-        Ng2CompleterModule,
+//        Ng2CompleterModule,
         FormsModule,
         ReactiveFormsModule,
     ],

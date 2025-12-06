@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 // import { Ng2CompleterModule } from 'ng2-completer';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -16,8 +16,7 @@ import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.componen
 import { NameDataComponent } from './name-data/name-data.component';
 import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.component';
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         AppComponent,
         ScoreEntryComponent,
         ScoreReviewComponent,
@@ -31,15 +30,9 @@ import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.componen
         NameDataComponent,
         SuitColorizerComponent,
     ],
-    imports: [
-        BrowserModule,
-        HttpClientModule,
+    bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-//        Ng2CompleterModule,
+        //        Ng2CompleterModule,
         FormsModule,
-        ReactiveFormsModule,
-    ],
-    providers: [],
-    bootstrap: [AppComponent]
-})
+        ReactiveFormsModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule { }

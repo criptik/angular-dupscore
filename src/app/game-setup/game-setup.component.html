@@ -15,29 +15,35 @@
         <div class="dialog-div">
             <label for="movement"> Movement:  </label>
             <select type="text" id="movement" name="movement" formControlName="movement" >
-                <option *ngFor="let mov of _movInfo.getMovInfoKeys()"
-                        [value]="mov">
+                @for (mov of _movInfo.getMovInfoKeys(); track mov) {
+                <option
+                    [value]="mov">
                     {{_movInfo.getDesc(mov)}}
                 </option>
+                }
             </select>
         </div>
-        <ng-container *ngIf="totBoardsArray.length > 0">
+        @if (totBoardsArray.length > 0) {
             <div class="dialog-div">
                 <label for="totBoards"> Total Boards:  </label>
                 <select type="text" id="totBoards" name="totBoards" formControlName="totBoards"  >
-                    <option *ngFor="let tot of totBoardsArray"
-                            [value]="tot">
+                    @for (tot of totBoardsArray; track tot) {
+                    <option
+                        [value]="tot">
                         {{tot}}
                     </option>
+                    }
                 </select>
             </div>
             <div class="dialog-div">
                 <label for="phantomPair"> Phantom Pair?:  </label>
                 <select type="text" id="phantomPair" name="phantomPair" formControlName="phantomPair"  >
-                    <option *ngFor="let phantPairNum of phantomPairArray"
-                            [value]="phantPairNum">
+                    @for (phantPairNum of phantomPairArray; track phantPairNum) {
+                    <option
+                        [value]="phantPairNum">
                         {{gameDataPtr.pairnumToString(phantPairNum)}}
                     </option>
+                    }
                 </select>
             </div>
             <div class="dialog-div">
@@ -47,7 +53,8 @@
                     <option value=2>in Played Order</option>
                 </select>
             </div>
-        </ng-container>
+        
+}
 
         <div>
             <button type="submit" style="margin-top:2rem"> Submit </button>
@@ -58,10 +65,12 @@
 <dialog class="px20" #loadGameDialog>
     <form [formGroup]="loadGameForm" (ngSubmit)="onLoadGameFormSubmit()">
         <select type="text" id="loadGameName" name="loadGameName" formControlName="loadGameName"  >
-            <option *ngFor="let name of existingGameList"
-                    [value]="name">
+            @for (name of existingGameList; track name) {
+            <option
+                [value]="name">
                 {{name}}
             </option>
+            }
         </select>
         <div>
             <button type="submit" style="margin-top:2rem"> Submit </button>

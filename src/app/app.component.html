@@ -1,9 +1,7 @@
 <div class="navbar">
-    <ng-container *ngFor="let menuobj of menuLayout; index as mainidx;" >
-        <ng-container *ngIf="!menuobj.needsGame || gameDataPtr.gameDataSetup">
-            <ng-container *ngIf="menuobj.sub === undefined; then isSimple; else isMulti;">
-            </ng-container>
-            <ng-template #isSimple>
+    @for (menuobj of menuLayout; track menuobj; let mainidx = $index) {
+        @if (!menuobj.needsGame || gameDataPtr.gameDataSetup) {
+            @if (menuobj.sub === undefined) {
                 <a  routerLink="{{menuobj.path}}"
                     routerLinkActive="active" ariaCurrentWhenActive="page"
                     id="{{mainidx}}"
@@ -11,8 +9,7 @@
                 >
                     {{menuobj.text}}
                 </a>
-            </ng-template>
-            <ng-template #isMulti>
+            } @else {
                 <div class="subnav">
                     <button class="subnavbtn"
                             (mouseover)="onButtonMouseOver($event)"
@@ -20,19 +17,21 @@
                         {{menuobj.text}}&#9660;
                     </button>
                     <div class="subnav-content">
-                        <a *ngFor="let submenuobj of menuobj.sub; index as subidx;"
-                           routerLink="{{submenuobj.path}}"
-                           routerLinkActive="active" ariaCurrentWhenActive="page"
-                           (click)="onSubLinkClick($event)"
-                           id="{{mainidx}}-{{subidx}}"
+                        @for (submenuobj of menuobj.sub; track submenuobj; let subidx = $index) {
+                        <a
+                            routerLink="{{submenuobj.path}}"
+                            routerLinkActive="active" ariaCurrentWhenActive="page"
+                            (click)="onSubLinkClick($event)"
+                            id="{{mainidx}}-{{subidx}}"
                         >
                             {{submenuobj.text}}
                         </a>
+                        }
                     </div>
                 </div>    
-            </ng-template>
-        </ng-container>
-    </ng-container>
+            }
+        }
+    }
     <span style="float:right">Version 1.18</span>
     <!-- <hr/> -->
 </div>

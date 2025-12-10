@@ -6,14 +6,16 @@
     </div>
     <br/>
     <br/>
-    <ng-container *ngIf="!gameDataPtr.isHowell">
+    @if (!gameDataPtr.isHowell) {
         <pre class="px20">
              NS                              EW
         </pre>
-    </ng-container>            
+    
+    }            
     <!-- a row has one button in Howell mode, 2 in Mitchell lmode -->
-    <div  *ngFor="let rowArray of pairNameStrArray;">
-        <ng-container *ngFor="let obj of rowArray;">
+    @for (rowArray of pairNameStrArray; track rowArray) {
+        <div >
+        @for (obj of rowArray; track obj) {
             <button id="{{'pair' + obj.pairnum}}"
                     (click)="onNameButtonClick($event)"
                     (contextmenu)="onNameButtonRightClick($event)"
@@ -21,8 +23,9 @@
             >
                 {{absPairnum(obj.pairnum)}}&nbsp;&nbsp;{{obj.nameStr}}
             </button>
-        </ng-container>
-    </div>
+        }
+        </div>
+    }
 </div>
 
 <dialog class="px20" #nameEntryDialog>
@@ -46,12 +49,16 @@
                (focus)="onFirstNameFocus($event)"  (keyup.enter)="onEnterKey($event)" autocomplete="off">
         
         <datalist id="nameCompleterList">
-            <option *ngFor="let item of nameCompletion" [value]="item">{{item}}</option>
+            @for (item of nameCompletion; track item) {
+            <option [value]="item">{{item}}</option>
+            }
         </datalist>
         
-        <div *ngFor="let msg of formErrorMsgAry" class="error-msg-alert">
+        @for (msg of formErrorMsgAry; track msg) {
+        <div class="error-msg-alert">
             {{msg}}
         </div>
+        }
         <p>
             <button type="button" form="nameEntryForm" class="px30"   (click)="onNameEntryFormSubmit()"> Submit </button>
         </p>

@@ -6,39 +6,38 @@
 <div>
     <!-- <div>012345678901234567890123456789</div> -->
 
-    <ng-container  *ngFor="let viewline of viewLines;let idx = index;">
-        <ng-container *ngIf="viewline.substring(0,1) === '=' else Normal">
-            <div>
-                <span class="inverse">==></span>
-                <app-suit-colorizer [inputStr] = "viewline.substring(3)" [colorizeBlack] = "false"  [useBreak] = "true"></app-suit-colorizer>
-            </div>
-        </ng-container>
-        <ng-template #Normal>
-            <app-suit-colorizer [inputStr] = "viewLines[idx]" [colorizeBlack] = "false"  [useBreak] = "true"></app-suit-colorizer>
-        </ng-template>
-    </ng-container>
-    <ng-container *ngIf="isEntryComponent()">
+    @for (viewline of viewLines; track $index; let idx = $index) {
+        @if (viewline.substring(0,1) === '=') {
+        <div>
+            <span class="inverse">==></span>
+            <app-suit-colorizer [inputStr] = "viewline.substring(3)" [colorizeBlack] = "false"  [useBreak] = "true"></app-suit-colorizer>
+        </div>
+        } @else {
+        <app-suit-colorizer [inputStr] = "viewLines[idx]" [colorizeBlack] = "false"  [useBreak] = "true"></app-suit-colorizer>
+        }
+    }
+    @if (isEntryComponent()) {
         <div>
         {{inputLine}}<input autofocus #scoreInput id="scoreInput" (keyup)="onScoreEntryInputKeyUp($event)" size="5" autocomplete="off">
         </div>
-    </ng-container>
+    }
 </div>
 
 <dialog class="px20" #gotoBoardDialog tabindex="-1x">
     <form [formGroup]="gotoBoardForm" id="gotoBoardForm" (submit)="onGoToBoardFormSubmit()" (cancel)="onGoToBoardFormCancel()" (keydown.escape)="onGoToBoardFormCancel()">
-        <ng-container *ngIf="isEntryComponent()">
+        @if (isEntryComponent()) {
             <p> Boards Remaining </p>
             <p> {{boardsToDoMsg}} </p>
-        </ng-container>
+        }
         <p>
             <label for="boardSelect"> GoTo Board: </label>
             <input class="px20" type="text" autofocus id="boardSelect" name="boardSelect" formControlName="boardSelect" #boardSelect autocomplete="off">
         </p>
-        <ng-container *ngIf="boardSelectErrMsg.length > 0">
+        @if (boardSelectErrMsg.length > 0) {
             <div class="error-msg-alert">
                 {{boardSelectErrMsg}}
             </div>
-        </ng-container>
+        }
         <button type="submit" class="px20"> Submit </button>
     </form>
 </dialog>
@@ -56,11 +55,11 @@
             <label for="specialEW"> {{unbalancedSpecialEWPrompt}} </label>
             <input class="px20" type="text" id="specialEW" name="specialEW" formControlName="specialEW" autocomplete="off">
         </p>
-        <ng-container *ngIf="unbalancedSpecialErrMsg.length > 0">
+        @if (unbalancedSpecialErrMsg.length > 0) {
             <div class="error-msg-alert">
                 {{unbalancedSpecialErrMsg}}
             </div>
-        </ng-container>
+        }
         <button type="submit" class="px20"> Submit </button>
     </form>
 </dialog>

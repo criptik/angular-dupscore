@@ -1,5 +1,7 @@
 <div>
-    <div *ngFor="let line of statusText">
+    @for (line of statusText; track line) {
+    <div>
         {{ line }}
     </div>
+    }
 </div>

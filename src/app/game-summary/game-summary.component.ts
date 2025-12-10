@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
 
 export interface BPInfo {
+    nsPair: number;
     conText: string;
     decl: string;
     resText: string;
@@ -227,6 +228,7 @@ export class GameSummaryComponent {
             if (bp.hasScore()) {
                 const ewPair = bp.ewPair;
                 const bpInfo = {} as BPInfo;
+                bpInfo.nsPair = nsPair;
                 bpInfo.nsScore = `${p.scoreStr(bp, true)}`.trim();
                 bpInfo.ewScore = `${p.scoreStr(bp, false)}`.trim();
                 // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair);

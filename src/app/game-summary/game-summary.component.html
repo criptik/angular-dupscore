@@ -12,10 +12,17 @@
 </div>
 
 <div #reportDiv>
-<pre>
+    <button id="travellersButton" type="button" onclick="toggler('travellers')">
+        Travellers
+    </button>
+    <button id="pairVsPairButton" type="button" onclick="toggler('pairVsPair')">
+        PairVsPair
+    </button>
+    <pre>
 {{summaryText}}
 </pre>
 <div class="report" #reportDiv>
+  <div id="travellers">
     @for (boardInfo of allBoardOutputArray; track boardInfo.bdnum) {
 
         <br>
@@ -61,12 +68,13 @@
                     <td colspan="8" class="endsep"><hr></td>
                 </tr>
         </table>
-    
-}
+        
+        }  <!-- for boardInfo -->
+  </div>
 <br/>
 <br/>
-<br/>
-    <!-- the pair vs. pair chart -->
+  <!-- the pair vs. pair chart -->
+  <div id="pairVsPair">
     <table class='pairtable'>
         <tr>
             <th colspan="2"></th>
@@ -74,15 +82,16 @@
             <th class="thpct">{{pairnum}}</th>
             }
         </tr>
-        @for (dataRow of pairVsPairInfo.slice(1); track dataRow) {
+        @for (dataRow of pairVsPairInfo.slice(1); track $index) {
         <tr>
             <td class="pairNumStr">{{dataRow[0]}}</td>
             <td class="names">{{dataRow[1]}}</td>
-            @for (datStr of dataRow.slice(2); track datStr) {
+            @for (datStr of dataRow.slice(2); track $index) {
             <td class="tdpct">{{datStr}}</td>
             }
         </tr>
         }
     </table>
+  </div>
 </div>
 </div>

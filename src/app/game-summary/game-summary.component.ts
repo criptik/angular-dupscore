@@ -135,7 +135,37 @@ td {
 .suit {
     font-size: 110%;
 }
+#travellers {
+    display: block;
+}
+#pairVsPair {
+    display: none;
+}
 `;
+
+const scriptStr = `
+<script>
+function toggler(onId) {
+     const ids = ['travellers', 'pairVsPair'];
+     ids.forEach( (offId) => {
+         const elem = document.getElementById(offId);
+         elem.style.display = "none";
+     });
+     const onElem = document.getElementById(onId);
+     onElem.style.display = "block";
+ }
+</script>
+`;
+
+const buttonsStr = '';
+// const buttonsStr = `
+//     <button type="button" onclick="toggler('travellers')">
+//         Travellers
+//     </button>
+//     <button type="button" onclick="toggler('pairVsPair')">
+//         PairVsPair
+//     </button>
+// `;
 
 @Component({
     selector: 'app-game-summary',
@@ -440,8 +470,8 @@ export class GameSummaryComponent {
         // Access the native HTML element
         const divElement: HTMLDivElement = this.reportDivRef.nativeElement;
         const htmlContent = divElement.innerHTML;
-        // add in the css stuff
-        const newHtmlContent = `<style>${compCssStr.replaceAll('20px', '15px')}</style>${htmlContent}`;
+        // add in the script and css stuff
+        const newHtmlContent = `${scriptStr}<style>${compCssStr.replaceAll('20px', '15px')}</style>${buttonsStr}${htmlContent}`;
         console.log(newHtmlContent);
         const type = "text/html";
         const blob = new Blob([newHtmlContent], { type });
@@ -449,4 +479,15 @@ export class GameSummaryComponent {
         // console.log(data);
         navigator.clipboard.write(data);
     }
+
+    toggler(onId: string) {
+        const ids: string[] = ['travellers', 'pairVsPair'];
+        ids.forEach( (offId) => {
+            const elem = document.getElementById(offId)!;
+            elem.style.display = "none";
+        });
+        const onElem: HTMLElement = document.getElementById(onId)!;
+        onElem.style.display = "block";
+    }
+
 }

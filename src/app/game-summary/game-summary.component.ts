@@ -24,6 +24,20 @@ export interface BoardInfo {
     bpInfoArray: Array<BPInfo>;
 }
 
+export interface ShortSummRowInfo {
+    place: string;
+    mpTotalStr: string;
+    pctStr: string;
+    pairIdStr: string;
+    nameStr: string;
+}
+
+export interface ShortSummTableInfo {
+    hdr: string;
+    rows: ShortSummRowInfo[];
+}
+
+
 class MpRec {
     total: number = 0;
     boards: number = 0;
@@ -135,6 +149,48 @@ td {
 .suit {
     font-size: 110%;
 }
+.shortSummTitleLine {
+    text-align: left;
+}
+.shortSummPlace {
+    text-align: right;
+    width: 4ch;
+}
+.shortSummMps {
+    text-align: right;
+    width: 9ch;
+}
+.shortSummPct {
+    text-align: right;
+    width: 9ch;
+}
+.shortSummPairId {
+    text-align: right;
+    width: 4ch;
+    padding-left: 2ch;
+}
+.shortSummName {
+    text-align: left;
+    padding-left: 2ch;
+}
+.shortSummPlaceHdr {
+    text-align: center;
+    width: 4ch;
+}
+.shortSummMpsHdr {
+    text-align: right;
+    width: 9ch;
+}
+.shortSummPctHdr {
+    text-align: right;
+    width: 9ch;
+}
+.shortSummPairIdHdr {
+    text-align: left;
+    width: 4ch;
+    padding-left: 2ch;
+}
+
 #travellers {
     display: block;
 }
@@ -182,21 +238,20 @@ export class GameSummaryComponent {
     @ViewChild('reportDiv') reportDivRef! : ElementRef;
     fullyEnteredBoards: number = 0;
     pairVsPairInfo: string[][] = [];
-    
+    shortSummTableInfos: ShortSummTableInfo[] = [];
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,    
                 private route: ActivatedRoute,
                 private _legalScore: LegalScore,
                 private _http: HttpClient,) {
-            // console.log(`Summary Constructor`);
+        // console.log(`Summary Constructor`);
         this._router.routeReuseStrategy.shouldReuseRoute = function () {
             return false;
         };
     }
 
-    outputShortSummary(pbt: string[], groupName: string, gameDate: Date, headerText: string, forPairs: number[], pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
+    outputShortSummary(headerText: string, forPairs: number[], pairMpRecs: Map<number, MpRec>, boardsScoredTop: number) {
         if (forPairs.length === 0) return;
-        // console.log('gameDate=', gameDate);
         const p: GameDataService = this.gameDataPtr;
         const aryMpRecEntries = Array.from(pairMpRecs.entries());
         const sortedEntries  = aryMpRecEntries.sort((a, b) => {
@@ -205,24 +260,26 @@ export class GameSummaryComponent {
             return (mpRecA.total < mpRecB.total ? 1: -1)
         });
 
-        pbt.push(`${groupName} for ${gameDate}`);
-        pbt.push(`Summary for ${headerText}`);
-        pbt.push(`  Place    Pct    Score   Pair`);
+        const shortSummTableInfo = {} as ShortSummTableInfo;
+        shortSummTableInfo.hdr = `Summary for ${headerText}`;
+        shortSummTableInfo.rows = [];
         
         // testing , show records
         let place = 1;
         sortedEntries.forEach( ([pairId, mpRec]) => {
-            if (forPairs.includes(pairId)) { 
-                const mpTotalStr: string = mpRec.total.toFixed(2).padStart(5,' ');
-                const pctStr: string = ((100*mpRec.total/boardsScoredTop).toFixed(2) + '%').padStart(7, ' ');
+            if (forPairs.includes(pairId)) {
+                const shortSummRowInfo = {} as ShortSummRowInfo;
+                shortSummRowInfo.place = place.toString();
+                shortSummRowInfo.mpTotalStr = mpRec.total.toFixed(2);
+                shortSummRowInfo.pctStr = ((100*mpRec.total/boardsScoredTop).toFixed(2) + '%');
                 const pairObj: Pair | undefined = p.pairNameMap.get(pairId);
-                const pairIdStr: string = `${p.pairnumToString(pairId, true).padStart(4,' ')}`;
-                const nameStr: string = (pairObj ? pairObj.shortString() : '');
-                pbt.push(`  ${place.toString().padStart(4,' ')}   ${pctStr}  ${mpTotalStr}  ${pairIdStr} ${nameStr}`);
+                shortSummRowInfo.pairIdStr = `${p.pairnumToString(pairId, true)}`;
+                shortSummRowInfo.nameStr = (pairObj ? pairObj.shortString() : '');
+                shortSummTableInfo.rows.push(shortSummRowInfo);
                 place++;
             }
         });
-        pbt.push(' ');
+        this.shortSummTableInfos.push(shortSummTableInfo);
     }
 
     getPairNameText(nsPair: number,  ewPair: number) {
@@ -345,7 +402,7 @@ export class GameSummaryComponent {
                     const ewMps: number|undefined = boardObj.pairToMpMap.get(ewPair);
                     if (nsMps !== undefined && ewMps !== undefined) {
                         const nsIdx = nsPair - 1;
-                        const ewIdx = ewPair - 1;
+                        const ewIdx = Math.abs(ewPair) - 1;
                         mpArray[nsIdx][ewIdx] += nsMps;
                         mpArray[ewIdx][nsIdx] += ewMps;
                         boardCountArray[nsIdx][ewIdx]++;
@@ -358,14 +415,15 @@ export class GameSummaryComponent {
         // build string info for table to be rendered
         // header line
         const hdrRow: string[] = [];
-        _.range(p.numPairs).forEach( (n) => {
+        const numPairCols: number = (p.isHowell ? p.numPairs : p.numPairs/2);
+        _.range(numPairCols).forEach( (n) => {
             const pairnum = n+1;
             hdrRow.push(pairnum.toFixed(0));
         });
         this.pairVsPairInfo.push(hdrRow);
         
         // each pair's data row
-        _.range(p.numPairs).forEach( (n) => {
+        _.range(numPairCols).forEach( (n) => {
             const dataRow: string[] = [];
             const pairNumA = n+1;
             dataRow.push(pairNumA.toFixed(0));
@@ -373,13 +431,11 @@ export class GameSummaryComponent {
             const pairIdStr: string = `${p.pairnumToString(pairNumA, true).padStart(4,' ')}`;
             const nameStr: string = (pairObj ? pairObj.shortString() : '');
             dataRow.push(nameStr);
-            _.range(p.numPairs).forEach( (m) => {
+            _.range(numPairCols).forEach( (m) => {
                 const pairNumB = m+1;
                 const mps = mpArray[n][m];
                 const numBoards = boardCountArray[n][m];
-                if (pairNumA === pairNumB) {
-                    dataRow.push('');
-                } else if (numBoards == 0) {
+                if (numBoards == 0) {
                     dataRow.push('--');
                 } else {
                     const pctVal: number = (100*mps/(numBoards * p.boardTop));
@@ -446,22 +502,21 @@ export class GameSummaryComponent {
         
         // show records
         if (this.fullyEnteredBoards !== 0) {
-            let pbt: string[] = [];
-            
             // always output summary data
             // NS pairs includes all pairs in howell mode
             // EW pairs will be empty except in mitchell mode
-            // todo: this could use html tables as well
-            const headerText = (p.isHowell ? 'All Pairs' : 'NS Pairs');
-            this.outputShortSummary(pbt, p.groupName, p.gameDate, headerText, p.pairIdsNS, pairMpRecs, boardsScoredTop);
-            this.outputShortSummary(pbt, p.groupName, p.gameDate, 'EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
+            this.shortSummTableInfos = [];
+            this.summaryText = `${p.groupName} for ${p.gameDate}`;
+            if (p.isHowell) {
+                this.outputShortSummary('All Pairs', p.pairIdsNS, pairMpRecs, boardsScoredTop);
+            } else {
+                this.outputShortSummary('NS Pairs', p.pairIdsNS, pairMpRecs, boardsScoredTop);
+                this.outputShortSummary('EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
+            }
             // only do per-board data in long mode
             if (this.size === 'long') {
                 this.outputPerBoardData();
             }
-            // pbt.push('\n');
-            this.summaryText = pbt.join('\n');
-            // this.summaryText = pbt;
         }
     }
 
@@ -472,7 +527,7 @@ export class GameSummaryComponent {
         const htmlContent = divElement.innerHTML;
         // add in the script and css stuff
         const newHtmlContent = `${scriptStr}<style>${compCssStr.replaceAll('20px', '15px')}</style>${buttonsStr}${htmlContent}`;
-        console.log(newHtmlContent);
+        // console.log(newHtmlContent);
         const type = "text/html";
         const blob = new Blob([newHtmlContent], { type });
         const data = [new ClipboardItem({ [type]: blob })];

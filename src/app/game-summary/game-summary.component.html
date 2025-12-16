@@ -5,24 +5,45 @@
     </button>
 </div>
 
-<div>
-    <pre>
-{{fullyEnteredBoards}} Boards have been fully scored...
-    </pre>
-</div>
+<span>
+    <pre>{{fullyEnteredBoards}} Boards have been fully scored...</pre>
+</span>
 
-<div #reportDiv>
-    <button id="travellersButton" type="button" onclick="toggler('travellers')">
+<div>
+    <button id="travellersButton" type="button" (click)="toggler('travellers')">
         Travellers
     </button>
-    <button id="pairVsPairButton" type="button" onclick="toggler('pairVsPair')">
+    <button id="pairVsPairButton" type="button" (click)="toggler('pairVsPair')">
         PairVsPair
     </button>
-    <pre>
-{{summaryText}}
-</pre>
-<div class="report" #reportDiv>
-  <div id="travellers">
+    <br/>
+    <br/>
+    <div class="report" #reportDiv>
+        <span><b>{{summaryText}}</b></span>
+        @for (shortSummTableInfo of shortSummTableInfos; track $index) {
+        <table>
+            <br/>
+            <tr>
+                <th class="shortSummTitleLine" colspan="5">{{shortSummTableInfo.hdr}}</th>
+            </tr>
+            <tr>
+                <th class="shortSummPlaceHdr">RANK</th>
+                <th class="shortSummMpsHdr">MPS&nbsp;</th>
+                <th class="shortSummPctHdr">PCT&nbsp;&nbsp;</th>
+                <th class="shortSummPairIdHdr" colspan="2">&nbsp;&nbsp;&nbsp;PAIR</th>
+            </tr>
+            @for (shortSummRowInfo of shortSummTableInfo.rows; track $index) {
+            <tr>
+                <td class="shortSummPlace">{{shortSummRowInfo.place}}</td>
+                <td class="shortSummMps">{{shortSummRowInfo.mpTotalStr}}</td>
+                <td class="shortSummPct">{{shortSummRowInfo.pctStr}}</td>
+                <td class="shortSummPairId">{{shortSummRowInfo.pairIdStr}}</td>
+                <td class="shortSummName">{{shortSummRowInfo.nameStr}}</td>
+            </tr>
+            }
+        </table>
+        }
+        <div id="travellers">
     @for (boardInfo of allBoardOutputArray; track boardInfo.bdnum) {
 
         <br>

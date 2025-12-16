@@ -118,7 +118,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             // normal prompt for score for current boardplay
             // get boardplay for onNS
             const curBoardPlay = this.getBoardPlay(this.curBoardNum, this.onNS);
-            const onEW: number = curBoardPlay.ewPair;
+            const onEW: number = Math.abs(curBoardPlay.ewPair);
             const bdvulStr = this.getVulStr(this.curBoardNum);
             this.inputLine = `Board: ${this.curBoardNum}  NS:${this.onNS}  EW:${onEW}  Vul:${bdvulStr}  SCORE:`;
             this.viewLines.push(this.errmsg);

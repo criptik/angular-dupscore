@@ -1,0 +1,49 @@
+[
+ {
+  "hdr": "Summary for All Pairs",
+  "rows": [
+   {
+    "place": "1",
+    "mpTotalStr": "25.50",
+    "pctStr": "63.75%",
+    "pairIdStr": "5",
+    "nameStr": "Royal-Royal"
+   },
+   {
+    "place": "2",
+    "mpTotalStr": "25.00",
+    "pctStr": "62.50%",
+    "pairIdStr": "3",
+    "nameStr": "Dent-Dent"
+   },
+   {
+    "place": "3",
+    "mpTotalStr": "24.00",
+    "pctStr": "60.00%",
+    "pairIdStr": "6",
+    "nameStr": "Hays-Hays"
+   },
+   {
+    "place": "4",
+    "mpTotalStr": "16.11",
+    "pctStr": "40.28%",
+    "pairIdStr": "1",
+    "nameStr": "Jones-Jones"
+   },
+   {
+    "place": "5",
+    "mpTotalStr": "15.00",
+    "pctStr": "37.50%",
+    "pairIdStr": "4",
+    "nameStr": "Boyer-Boyer"
+   },
+   {
+    "place": "6",
+    "mpTotalStr": "13.33",
+    "pctStr": "33.33%",
+    "pairIdStr": "2",
+    "nameStr": "Worth-Worth"
+   }
+  ]
+ }
+]

@@ -1,9 +1,0 @@
-Second Friday Pairs for 2025-10-10
-Summary for All Pairs
-  Place    Pct    Score   Pair
-     1    64.47%  24.50     5 Royal-Royal
-     2    63.16%  24.00     3 Dent-Dent
-     3    60.53%  23.00     6 Hays-Hays
-     4    39.71%  15.09     1 Jones-Jones
-     5    36.84%  14.00     4 Boyer-Boyer
-     6    32.35%  12.29     2 Worth-Worth

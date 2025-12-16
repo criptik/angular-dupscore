@@ -46,6 +46,10 @@ describe('GameSummaryComponent', () => {
         expect(component).toBeTruthy();
     });
     
+    function ignoreWhiteSpace(str: string): string {
+        return str.replace(/\s/g, '');
+    }
+    
     describe('3 Table Reports', () => {
         // run all this stuff with both the old (withMpMap) and new (withoutMpMap) json files.
         const jsonInputTypes: Array<string> = ['WithMpMap', 'NoMpMap'];
@@ -57,11 +61,17 @@ describe('GameSummaryComponent', () => {
                 });
 
                 describe('3 Table Short Reports', () => {
-                    let  expectedShort3Table: string;
-                    let  expectedShort3Table3NP: string;
+                    // json for the shortSummTableInfos stuff
+                    function toJSON(obj: any): string {
+                        const fields = ['hdr', 'rows', 'place', 'mpTotalStr', 'pctStr', 'pairIdStr', 'nameStr'];
+                        return(JSON.stringify(obj, fields, 1));
+                    }
+
+                    let  expectedShort3TableJSON: string;
+                    let  expectedShort3Table3NPJSON: string;
                     beforeEach(  async () =>  {
-                        expectedShort3Table = await readAssetText('testAssets/3table/expectedShortSummary.txt', httpClient);
-                        expectedShort3Table3NP = await readAssetText('testAssets/3table/expectedShortSummary2.txt', httpClient);
+                        expectedShort3TableJSON = await readAssetText('testAssets/3table/expectedShort3Table.JSON', httpClient);
+                        expectedShort3Table3NPJSON = await readAssetText('testAssets/3table/expectedShort3Table3NP.JSON', httpClient);
                     });
                     function jsonToShortReport(jsonStr: string, modifyBoard5:boolean = false) {
                         const p: GameDataService = gameDataService;
@@ -80,19 +90,23 @@ describe('GameSummaryComponent', () => {
             
                     it('should have read in files', () => {
                         expect(jsonStr3Table.length).not.toBe(0);
-                        expect(expectedShort3Table.length).not.toBe(0);
-                        expect(expectedShort3Table3NP.length).not.toBe(0);
+                        expect(expectedShort3TableJSON.length).not.toBe(0);
+                        expect(expectedShort3Table3NPJSON.length).not.toBe(0);
                     });
 
                     it('should produce a correct short report', () => {
                         jsonToShortReport(jsonStr3Table, false);
-                        expect(component.summaryText.trim()).toBe(expectedShort3Table.trim());
+                        const shortSummTableInfosJSON: string = toJSON(component.shortSummTableInfos);
+                        // console.log(shortSummTableInfosJSON);
+                        expect(ignoreWhiteSpace(shortSummTableInfosJSON)).toBe(ignoreWhiteSpace(expectedShort3TableJSON));
                     });
-            
-            
+                    
+                    
                     it('should produce a correct short report after board 5 marked 3 NP', () => {
                         jsonToShortReport(jsonStr3Table, true);
-                        expect(component.summaryText.trim()).toBe(expectedShort3Table3NP.trim());
+                        const shortSummTableInfos3NPJSON: string = toJSON(component.shortSummTableInfos);
+                        // console.log(shortSummTableInfos3NPJSON);
+                        expect(ignoreWhiteSpace(shortSummTableInfos3NPJSON)).toBe(ignoreWhiteSpace(expectedShort3Table3NPJSON));
                     });
 
                 });
@@ -101,7 +115,7 @@ describe('GameSummaryComponent', () => {
                     let expectedAllBoardDetails3TableJSON: string;
                     let boardDetailsJSONArray: RegExpMatchArray;
                     beforeEach(  async () =>  {
-                        expectedAllBoardDetails3TableJSON = await readAssetText('testAssets/3table/expectedAllBoardDetails3TableJSON.txt', httpClient);
+                        expectedAllBoardDetails3TableJSON = await readAssetText('testAssets/3table/expectedAllBoardDetails3Table.JSON', httpClient);
                         const regex = /{\s*"bdnum".+?}\s*]\s*}/gs;
                         boardDetailsJSONArray =  expectedAllBoardDetails3TableJSON.match(regex)!;
                     });
@@ -116,10 +130,6 @@ describe('GameSummaryComponent', () => {
                         return(JSON.stringify(obj, fields, 1));
                     }
 
-                    function ignoreWhiteSpace(str: string): string {
-                        return str.replace(/\s/g, '');
-                    }
-                    
                     
                     function jsonToOneBoardDetails(jsonStr: string, bdnum: number) : string {
                         const p: GameDataService = gameDataService;
@@ -156,8 +166,8 @@ describe('GameSummaryComponent', () => {
                     let expectedDetails3TableBd5AveAveJSON: string;
                     let expectedDetails3TableBd5AveNPJSON: string;
                     beforeEach(  async () => {
-                        expectedDetails3TableBd5AveAveJSON = await readAssetText('testAssets/3table/detailsBd5AveAveJSON.txt', httpClient);
-                        expectedDetails3TableBd5AveNPJSON = await readAssetText('testAssets/3table/detailsBd5AveNPJSON.txt', httpClient);
+                        expectedDetails3TableBd5AveAveJSON = await readAssetText('testAssets/3table/detailsBd5AveAve.JSON', httpClient);
+                        expectedDetails3TableBd5AveNPJSON = await readAssetText('testAssets/3table/detailsBd5AveNP.JSON', httpClient);
                     });
                     it('should produce a correct detailed report for board 5 when set to AVE, AVE, -100', () => {
                         const p: GameDataService = gameDataService;            

@@ -42,5 +42,13 @@
     "karma-jasmine-html-reporter": "~2.0.0",
     "lite-server": "^2.6.1",
     "typescript": "~5.8.3"
-  }
+  },
+
+    "resolutions": {
+        "yargs": "17.7.2"
+    },
+    "overrides": {
+        "yargs": "17.7.2"
+    }
+    
 }

@@ -29,5 +29,13 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+    "ts-node": {
+        "compilerOptions": {
+            "esm": true,
+            "module": "ESNext",
+            "moduleResolution": "Node"
+        }
+    },
+
 }

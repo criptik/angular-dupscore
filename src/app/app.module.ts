@@ -15,24 +15,26 @@ import { NamesEntryComponent, NativeElementInjectorDirective } from './names-ent
 import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.component';
 import { NameDataComponent } from './name-data/name-data.component';
 import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.component';
+import { PairpairTableComponent } from './game-summary/tables/pairpair-table/pairpair-table.component';
 
 @NgModule({ declarations: [
-        AppComponent,
-        ScoreEntryComponent,
-        ScoreReviewComponent,
-        GameDataComponent,
-        AutofocusDirective,
-        GameSummaryComponent,
-        GameSetupComponent,
-        NamesEntryComponent,
-        NativeElementInjectorDirective,
-        DeleterDialogComponent,
-        NameDataComponent,
-        SuitColorizerComponent,
-    ],
-    bootstrap: [AppComponent], imports: [BrowserModule,
-        AppRoutingModule,
-        //        Ng2CompleterModule,
-        FormsModule,
-        ReactiveFormsModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
+    AppComponent,
+    ScoreEntryComponent,
+    ScoreReviewComponent,
+    GameDataComponent,
+    AutofocusDirective,
+    GameSummaryComponent,
+    GameSetupComponent,
+    NamesEntryComponent,
+    NativeElementInjectorDirective,
+    DeleterDialogComponent,
+    NameDataComponent,
+    SuitColorizerComponent,
+    PairpairTableComponent,
+],
+            bootstrap: [AppComponent], imports: [BrowserModule,
+                                                 AppRoutingModule,
+                                                 //        Ng2CompleterModule,
+                                                 FormsModule,
+                                                 ReactiveFormsModule], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule { }

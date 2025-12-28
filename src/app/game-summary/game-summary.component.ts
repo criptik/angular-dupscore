@@ -6,24 +6,8 @@ import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { readAssetText } from '../testutils/testutils';
 import { HttpClient } from '@angular/common/http';
 import { PairpairTableComponent } from './tables/pairpair-table/pairpair-table.component';
+import { TravellersTableComponent } from './tables/travellers-table/travellers-table.component';
 import * as _ from 'lodash';
-
-export interface BPInfo {
-    nsPair: number;
-    conText: string;
-    decl: string;
-    resText: string;
-    nsScore: string;
-    ewScore: string;
-    nsMP: string;
-    ewMP: string;
-    nameText: string;
-};
-    
-export interface BoardInfo {
-    bdnum: number;
-    bpInfoArray: Array<BPInfo>;
-}
 
 export interface ShortSummRowInfo {
     place: string;
@@ -73,66 +57,6 @@ table, tr, th, td {
 }
 td {
     padding: none;
-}
-
-.context {
-    text-align: left;
-    width: 3.5ch;
-    padding-right: 0.1ch;
-}
-.decl {
-    text-align: left;
-    min-width: 1ch;
-    padding-right: 0.1ch;
-}
-.restext {
-    text-align: right;
-    padding-right: 3ch;
-    padding-left: 0.5ch;
-    width: 2ch;
-}
-.nsscore {
-    text-align: right;
-    width: 4ch;
-    padding-right: 2ch;
-}
-.ewscore {
-    text-align: right;
-    width: 4ch;
-    padding-right: 3ch;
-}
-.nsmp {
-    text-align: right;
-    width: 4ch;
-    padding-right: 2ch;
-}
-.ewmp {
-    text-align: right;
-    width: 4ch;
-    padding-right: 2ch;
-}
-.hdrl {
-    text-align: left;
-}
-.hdrr {
-    text-align: right;
-}
-.hdrc {
-    text-align: center;
-}
-.endsep {
-    text-align: left;
-    padding-top: 0ch;
-}
-.names {
-    text-align: left;
-    padding-left: 4ch;
-}
-.cred {
-    color:red;
-}
-.suit {
-    font-size: 110%;
 }
 .shortSummTitleLine {
     text-align: left;
@@ -215,12 +139,11 @@ export class GameSummaryComponent {
     summaryText: string = '';
     size: string = 'short';
     testing: boolean = false;
-    hasContractNotes: boolean = false;
-    allBoardOutputArray: Array<BoardInfo> = [];
     @ViewChild('reportDiv') reportDivRef! : ElementRef;
     fullyEnteredBoards: number = 0;
     shortSummTableInfos: ShortSummTableInfo[] = [];
     @ViewChild(PairpairTableComponent) private pairpairTableComponent!: PairpairTableComponent;
+    @ViewChild(TravellersTableComponent) private travellersTableComponent!: TravellersTableComponent;
 
     constructor(private gameDataPtr: GameDataService,
                 private _router: Router,    
@@ -265,110 +188,6 @@ export class GameSummaryComponent {
         this.shortSummTableInfos.push(shortSummTableInfo);
     }
 
-    getPairNameText(nsPair: number,  ewPair: number) {
-        const p: GameDataService = this.gameDataPtr;
-        const pairObjNS: Pair | undefined = p.pairNameMap.get(nsPair);
-        const pairObjEW: Pair | undefined = p.pairNameMap.get(ewPair);
-        const nameTextNS: string = `${(pairObjNS ? pairObjNS.shortString() : '')}`;
-        const nameTextEW: string = `${(pairObjEW ? pairObjEW.shortString() : '')}`;
-        const nameText: string = `${p.pairnumToString(nsPair, false)}-${nameTextNS} vs. ${p.pairnumToString(ewPair, false)}-${nameTextEW}`;
-        return nameText;
-    }
-
-    // object which contains info needed by renderer template
-    getOneBoardInfo(boardObj: BoardObj): BoardInfo {
-        const p: GameDataService = this.gameDataPtr;
-        const boardPlayEntriesAry = Array.from(boardObj.boardPlays.entries());
-        // for each pair, get totals of mps and number of boards
-        const sortedBoardPlayEntriesAry = boardPlayEntriesAry.sort((a, b) => {
-            const nsPairA: number = a[0];
-            const nsPairB: number = b[0];
-            const mpA: number = boardObj.pairToMpMap.get(nsPairA)!;
-            const mpB: number = boardObj.pairToMpMap.get(nsPairB)!;
-            // each should have an entry in the boardObj.pairToMpMap;
-            if (mpA === undefined && mpB === undefined) return 1;
-            if (mpA === undefined) return -1;
-            if (mpB === undefined) return 1;
-            return (mpA < mpB ? 1: -1)
-        });
-
-        // console.log('sortedEntries', sortedBoardPlayEntriesAry);
-        let bpInfoArray = [] as Array<BPInfo>;
-        sortedBoardPlayEntriesAry.forEach( ([nsPair, bp]) => {
-            if (bp.hasScore()) {
-                const ewPair = bp.ewPair;
-                const bpInfo = {} as BPInfo;
-                bpInfo.nsPair = nsPair;
-                bpInfo.nsScore = `${p.scoreStr(bp, true)}`.trim();
-                bpInfo.ewScore = `${p.scoreStr(bp, false)}`.trim();
-                // console.log(`outputOneBoard, board #${boardObj.bdnum}`, nsPair, ewPair);
-                const nsMP: number | undefined = boardObj.pairToMpMap.get(nsPair);
-                const ewMP: number | undefined = boardObj.pairToMpMap.get(ewPair);
-                bpInfo.nsMP = (nsMP === undefined ? '' : nsMP!.toFixed(2));
-                bpInfo.ewMP = (ewMP === undefined ? '' : ewMP!.toFixed(2));
-                bpInfo.nameText = this.getPairNameText(nsPair, ewPair);
-                const cnout = (this.hasContractNotes ? this._legalScore.parseContractNoteStr(bp.contractNote)! : undefined);
-                if (cnout !== undefined && bp.nsScore !== 0) {
-                    bpInfo.conText = cnout.conText as string;
-                    bpInfo.decl = cnout.decl as string;
-                    const resStr: string = cnout.resText as string;
-                    bpInfo.resText = resStr!.padStart(2, ' ');
-                } else {
-                    bpInfo.conText = '';
-                    bpInfo.decl = '';
-                    bpInfo.resText = '';
-                }
-                bpInfoArray.push(bpInfo);
-            }
-        });
-        // if any NP or Late boardplays, show them here
-        // console.log(`board ${boardObj.bdnum}, ${boardObj.npOrLateArray.length}`);
-        boardObj.npOrLateArray.forEach( (bp) => {
-            const nsPair = bp.nsPair;
-            const ewPair = bp.ewPair;
-            const bpInfo = {} as BPInfo;
-            bpInfo.nsScore = `NP`;
-            bpInfo.ewScore = `NP`;
-            bpInfo.nsMP = '';
-            bpInfo.ewMP = '';
-            bpInfo.nameText = this.getPairNameText(nsPair, ewPair);
-            bpInfo.conText = bpInfo.decl = bpInfo.resText = '';
-            bpInfoArray.push(bpInfo);
-        });
-        // console.log(`Board ${boardObj.bdnum}: ${bpInfoArray[0]}`);
-        return {bdnum: boardObj.bdnum, bpInfoArray: bpInfoArray};
-    }
-
-    checkForContractNotes(): boolean {
-        const p: GameDataService = this.gameDataPtr;
-        return Array.from(p.boardObjs.values()).some( boardObj => {
-            return Array.from(boardObj.boardPlays.values()).some( bp => {
-                return (bp.contractNote !== '');
-            });
-        });
-    }
-    
-    outputPerBoardData() {
-        const p: GameDataService = this.gameDataPtr;
-
-        let allBoardOutputArray: Array<BoardInfo> = [];
-        // see if any boardplay in the whole game has contract Notes
-        this.hasContractNotes = this.checkForContractNotes();
-        
-        Array.from(p.boardObjs.values()).forEach( boardObj => {
-            if (boardObj.areAnyPlaysEntered()) {
-                allBoardOutputArray.push(this.getOneBoardInfo(boardObj));
-            }
-        });
-        // assign to the class viarable that template uses
-        this.allBoardOutputArray = allBoardOutputArray;
-        // console.log(JSON.stringify(allBoardOutputArray));
-        
-        // this.buildPairVsPairPcts();
-    }
-
-    
-    
     ngOnInit() {
         const p: GameDataService = this.gameDataPtr;
         if (!p.gameDataSetup) return;
@@ -379,9 +198,6 @@ export class GameSummaryComponent {
             });
         }
         // console.log(`Summary ngOnInit ${this.size}`);
-
-        // set allBoardOutput as empty in case we are only doing short mode
-        this.allBoardOutputArray = [];
 
         // go thru all board objs
         this.fullyEnteredBoards = 0;
@@ -432,14 +248,9 @@ export class GameSummaryComponent {
                 this.outputShortSummary('NS Pairs', p.pairIdsNS, pairMpRecs, boardsScoredTop);
                 this.outputShortSummary('EW Pairs', p.pairIdsEW, pairMpRecs, boardsScoredTop);
             }
-            // only do per-board data in long mode
-            if (this.size === 'long') {
-                this.outputPerBoardData();
-            }
         }
     }
 
-    // TODO: how to make this use colors
     async onClipButtonClick(x:any) {
         // Access the native HTML element
         const divElement: HTMLDivElement = this.reportDivRef.nativeElement;
@@ -449,6 +260,7 @@ export class GameSummaryComponent {
         const totalCssStr = `
                ${compCssStr}
                ${this.pairpairTableComponent.getCompCssStr()}
+               ${this.travellersTableComponent.getCompCssStr()}
         `;
 
         const newHtmlContent = `${scriptStr}<style>${totalCssStr.replaceAll('20px', '15px')}</style>${buttonsStr}${htmlContent}`;

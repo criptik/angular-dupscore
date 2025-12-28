@@ -16,6 +16,7 @@ import { DeleterDialogComponent } from './deleter-dialog/deleter-dialog.componen
 import { NameDataComponent } from './name-data/name-data.component';
 import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.component';
 import { PairpairTableComponent } from './game-summary/tables/pairpair-table/pairpair-table.component';
+import { TravellersTableComponent } from './game-summary/tables/travellers-table/travellers-table.component';
 
 @NgModule({ declarations: [
     AppComponent,
@@ -31,6 +32,7 @@ import { PairpairTableComponent } from './game-summary/tables/pairpair-table/pai
     NameDataComponent,
     SuitColorizerComponent,
     PairpairTableComponent,
+    TravellersTableComponent,
 ],
             bootstrap: [AppComponent], imports: [BrowserModule,
                                                  AppRoutingModule,

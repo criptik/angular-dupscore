@@ -1,0 +1,49 @@
+<div id="travellers">
+    @for (boardInfo of allBoardOutputArray; track boardInfo.bdnum) {
+    
+    <br>
+    <span> RESULTS OF BOARD {{boardInfo.bdnum}}</span>
+    <br>
+    <br>
+    <table>
+        @let thColspan = (hasContractNotes ? "3" : "1");
+        <tr>
+            <th class="hdrl" [attr.colspan]=thColspan>&nbsp;&nbsp;</th>
+            <th class="hdrc" colspan="2">SCORES</th>
+            <th class="hdrc" colspan="2">MPS</th>
+            <th class="hdrl"></th>
+        </tr>
+        <tr>
+            <th class="hdrl" [attr.colspan]=thColspan>&nbsp;&nbsp;</th>
+            <th class="hdrr nsscore">&nbsp;N-S</th>
+            <th class="hdrr ewscore">&nbsp;E-W</th>
+            <th class="hdrr nsmp">&nbsp;N-S</th>
+            <th class="hdrr ewmp">&nbsp;E-W</th>
+            <th class="hdrl names">NAMES</th>
+        </tr>
+        @for (bpInfo of boardInfo.bpInfoArray; track bpInfo.nsPair) {
+        <tr>
+            @if (hasContractNotes) {
+            <td class="context" >
+                <app-suit-colorizer [inputStr] = "bpInfo.conText" [colorizeBlack]="false" [useBreak]="false"/>
+            </td>
+            <td class="decl" >{{bpInfo.decl}}</td>
+            <td class="restext" >{{bpInfo.resText}}</td>
+            } @else {
+            <th class="hdrl">&nbsp;&nbsp;</th>
+            }
+            <td class="nsscore">{{bpInfo.nsScore}}</td>
+            <td class="ewscore">{{bpInfo.ewScore}}</td>
+            <td class="nsmp">{{bpInfo.nsMP}}</td>
+            <td class="ewmp">{{bpInfo.ewMP}}</td>
+            <td class="names">{{bpInfo.nameText}}</td>
+        </tr>
+        
+        }
+        <tr>
+            <td colspan="8" class="endsep"><hr></td>
+        </tr>
+    </table>
+    
+    }  <!-- for boardInfo -->
+</div>

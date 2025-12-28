@@ -17,6 +17,7 @@ import { NameDataComponent } from './name-data/name-data.component';
 import { SuitColorizerComponent } from './suit-colorizer/suit-colorizer.component';
 import { PairpairTableComponent } from './game-summary/tables/pairpair-table/pairpair-table.component';
 import { TravellersTableComponent } from './game-summary/tables/travellers-table/travellers-table.component';
+import { ShortsummTableComponent } from './game-summary/tables/shortsumm-table/shortsumm-table.component';
 
 @NgModule({ declarations: [
     AppComponent,
@@ -33,6 +34,7 @@ import { TravellersTableComponent } from './game-summary/tables/travellers-table
     SuitColorizerComponent,
     PairpairTableComponent,
     TravellersTableComponent,
+    ShortsummTableComponent,
 ],
             bootstrap: [AppComponent], imports: [BrowserModule,
                                                  AppRoutingModule,

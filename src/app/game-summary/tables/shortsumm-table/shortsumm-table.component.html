@@ -1,0 +1,26 @@
+<div id="shortsumm">
+        <span><b>{{summaryText}}</b></span>
+        @for (shortSummTableInfo of shortSummTableInfos; track $index) {
+        <table>
+            <br/>
+            <tr>
+                <th class="shortSummTitleLine" colspan="5">{{shortSummTableInfo.hdr}}</th>
+            </tr>
+            <tr>
+                <th class="shortSummPlaceHdr">RANK</th>
+                <th class="shortSummMpsHdr">MPS&nbsp;</th>
+                <th class="shortSummPctHdr">PCT&nbsp;&nbsp;</th>
+                <th class="shortSummPairIdHdr" colspan="2">&nbsp;&nbsp;&nbsp;PAIR</th>
+            </tr>
+            @for (shortSummRowInfo of shortSummTableInfo.rows; track $index) {
+            <tr>
+                <td class="shortSummPlace">{{shortSummRowInfo.place}}</td>
+                <td class="shortSummMps">{{shortSummRowInfo.mpTotalStr}}</td>
+                <td class="shortSummPct">{{shortSummRowInfo.pctStr}}</td>
+                <td class="shortSummPairId">{{shortSummRowInfo.pairIdStr}}</td>
+                <td class="shortSummName">{{shortSummRowInfo.nameStr}}</td>
+            </tr>
+            }
+        </table>
+        }
+</div>

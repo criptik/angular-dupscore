@@ -46,6 +46,7 @@ export class NamesEntryComponent implements AfterViewInit {
     nameEntryFormPairnum: number = 0;
     
     formErrorMsgAry: string[] = [];
+    formWarnMsgAry: string[] = [];
     blankPair: Pair = new Pair(new Person('', ''), new Person('', ''));
     curInputsSeen: string[] = [];
     
@@ -59,13 +60,18 @@ export class NamesEntryComponent implements AfterViewInit {
     pairnumFromId(str: string): number {
         return (parseInt(str.replace(/[a-zA-Z ]/g, '')));
     }
+
+    clearMsgArrays() {
+        this.formErrorMsgAry = [];
+        this.formWarnMsgAry = [];
+    }
     
     
     onNameButtonClick(x: any) {
         this.swapPairFirst = 0;
         // console.log('target.id', x.target.id);
         // parse number from id which is nameXX
-        this.formErrorMsgAry = [];
+        this.clearMsgArrays();
         const pairnum = this.pairnumFromId(x.target.id);
         const pairText:string = this.gameDataPtr.pairnumToString(pairnum);
         this.nameEntryDialogHeader = `Names for Pair ${pairText}`;
@@ -241,7 +247,7 @@ export class NamesEntryComponent implements AfterViewInit {
     
     onLastNameFocus(x: any) {
         this.buildUnusedNameLists();
-        this.formErrorMsgAry = [];
+        this.clearMsgArrays();
         // console.log('onLastNameFocus', this.nameEntryForm.errors);
         this.genLastNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
     }
@@ -262,7 +268,7 @@ export class NamesEntryComponent implements AfterViewInit {
     
     onFirstNameFocus(x: any) {
         this.buildUnusedNameLists();
-        this.formErrorMsgAry = [];
+        this.clearMsgArrays();
         this.genFirstNameCompletionList(x.target.value, this.pairnumFromId(x.target.id));
     }
 
@@ -289,11 +295,20 @@ export class NamesEntryComponent implements AfterViewInit {
                 }
             }
             // check against other pair names already entered but don't check against this pair
+            // for now we will make this a warning and clear out the other usage
             const matchPairNum: number = this.personAlreadyInPairNameMap(checkPerson);
             if (matchPairNum !== 0) {
-                const errorstr: string = `${checkPerson.toString()} already in use in pair ${matchPairNum}`;
-                // console.log(errorstr);
-                formErrorMessages.add(errorstr);
+                const warnstr: string = `WARNING: ${checkPerson.toString()} was already in use in pair ${matchPairNum}
+Pair ${matchPairNum} usage has been cleared out.
+You should fix up Pair ${matchPairNum}`;
+                alert(warnstr);
+                const otherPair = this.gameDataPtr.pairNameMap.get(matchPairNum)!;
+                if (otherPair.A.matches(checkPerson)) {
+                    otherPair.A = Person.emptyInstance();
+                }
+                if (otherPair.B.matches(checkPerson)) {
+                    otherPair.B = Person.emptyInstance();
+                }
             }
         } // for n
         return (Array.from(formErrorMessages.keys()));

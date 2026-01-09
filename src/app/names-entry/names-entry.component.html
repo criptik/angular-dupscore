@@ -13,9 +13,9 @@
     
     }            
     <!-- a row has one button in Howell mode, 2 in Mitchell lmode -->
-    @for (rowArray of pairNameStrArray; track rowArray) {
+    @for (rowArray of pairNameStrArray; track $index) {
         <div >
-        @for (obj of rowArray; track obj) {
+        @for (obj of rowArray; track $index) {
             <button id="{{'pair' + obj.pairnum}}"
                     (click)="onNameButtonClick($event)"
                     (contextmenu)="onNameButtonRightClick($event)"
@@ -49,12 +49,12 @@
                (focus)="onFirstNameFocus($event)"  (keyup.enter)="onEnterKey($event)" autocomplete="off">
         
         <datalist id="nameCompleterList">
-            @for (item of nameCompletion; track item) {
+            @for (item of nameCompletion; track $index) {
             <option [value]="item">{{item}}</option>
             }
         </datalist>
         
-        @for (msg of formErrorMsgAry; track msg) {
+        @for (msg of formErrorMsgAry; track $index) {
         <div class="error-msg-alert">
             {{msg}}
         </div>

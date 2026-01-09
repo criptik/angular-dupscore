@@ -21,6 +21,8 @@ describe('PairpairTableComponent', () => {
             ],
         }).compileComponents();
         
+        gameDataService = TestBed.inject(GameDataService);
+        httpClient = TestBed.inject(HttpClient);
         fixture = TestBed.createComponent(PairpairTableComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();

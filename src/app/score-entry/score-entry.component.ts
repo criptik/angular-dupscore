@@ -314,6 +314,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             this.updateView();
         }
         else if (key === 'Enter') {
+            // console.log(`Enter key with curInput="${curInput}"`);
             if (curInput !== '') {
                 // first check for a legal contract-result note which can be used instead of a score.
                 const noteScore:number|undefined = this._legalScore.contractNoteStrToDupscoreNS(curInput, this.curBoardNum);
@@ -343,7 +344,8 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                     this.unbalancedSpecialDialog.nativeElement.showModal();
                     return;
                 }
-                if (this.isStringAllDigits(curInput)) {
+                // normal numeric score is either all digits, or explicit minus sign followed by all digits
+                if (this.isStringAllDigits(curInput) || (curInput[0] == '-' && this.isStringAllDigits(curInput.slice(1)))) {
                     const newScore : number = parseInt(`${curInput}0`);
                     this.handleNumericScore(newScore, curInput, onNSBoardPlay);
                 } else {
@@ -361,7 +363,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                 // otherwise, we just ignore the Enter
                 if (this.lastInput !== '') {
                     x.target.value = this.lastInput;
-                    console.log(`reusing ${this.lastInput}`);
+                    console.log(`reusing "${this.lastInput}"`);
                     this.scoreEntryInput();
                 }
             }
@@ -389,18 +391,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             console.log(`minus sign typed with curinput=${curInput}`);
             curInput = `-${curInput.slice(0, -1)}`;
             const newScore : number = parseInt(`${curInput}0`);
-            if (this.checkScoreLegality(newScore)) {
-                this.lastInput = curInput;
-                x.target.value = '';
-                onNSBoardPlay.addScoreInfo(newScore);
-                this.onNS = this.getNewNS(1);
-                // console.log(`new onNS = ${this.onNS}`);
-                this.updateView();
-            }
-            else {
-                x.target.value = '';
-                this.errmsg = `!! ${newScore} is not possible on this board !!`;
-            }
+            this.handleNumericScore(newScore, curInput, onNSBoardPlay);
         }
         else if (key === 'Escape') {
             if (!this.escapedFromUnbalanced) {

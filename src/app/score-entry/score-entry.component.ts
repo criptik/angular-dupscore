@@ -363,7 +363,7 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
                 // otherwise, we just ignore the Enter
                 if (this.lastInput !== '') {
                     x.target.value = this.lastInput;
-                    console.log(`reusing "${this.lastInput}"`);
+                    // console.log(`reusing "${this.lastInput}"`);
                     this.scoreEntryInput();
                 }
             }
@@ -388,9 +388,11 @@ abstract class ScoreBaseComponent implements AfterViewInit, AfterContentInit {
             // now we know there is a non-empty input
             // negative score entered
             // move - sign from end of input to beginning
-            console.log(`minus sign typed with curinput=${curInput}`);
+            // console.log(`minus sign typed with curinput=${curInput}`);
             curInput = `-${curInput.slice(0, -1)}`;
+            // console.log(`curInput is now ${curInput}`);
             const newScore : number = parseInt(`${curInput}0`);
+            // console.log(`newScore is now ${newScore}`);
             this.handleNumericScore(newScore, curInput, onNSBoardPlay);
         }
         else if (key === 'Escape') {

@@ -8,7 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { DeleterDialogComponent } from '../deleter-dialog/deleter-dialog.component';
 import { ScoreEntryComponent } from './score-entry.component';
 import { readAssetText } from '../testutils/testutils';
-import { GameDataService, BoardObj, TravOrder } from '../game-data/game-data.service';
+import { GameDataService, BoardObj, BoardPlay, TravOrder, SCORE_EMPTY, SCORE_SPECIAL } from '../game-data/game-data.service';
 import { LegalScore, Suit, Dstate, ContractNoteOutput } from '../legal-score/legal-score.service';
 import { lastValueFrom } from 'rxjs';
 import { GameDataComponent } from '../game-data/game-data.component';
@@ -197,10 +197,118 @@ describe('ScoreEntryComponent', () => {
             // pick boards with neither vul and both vul
             [true, false].forEach( (isDeclVul) => {
                 const expScoreNS = (isDeclVul ? expScoreNSVul : expScoreNSNonvul);
-                it(`should correctly parse ${str} to get score ${expScoreNS}`, () => {
+                it(`should correctly parse ${str} to get score ${expScoreNS} when declVul=${isDeclVul}`, () => {
                     const score:number|undefined = legalScoreService.contractNoteStrToDupscoreNSGivenVul(str, isDeclVul);
                     expect(score).toBe(expScoreNS);
                 });
+            });
+        });
+    });
+
+    describe('Score Entry Input Tests', () => {
+        // to save time, we only create the game once.
+        let createdGame: boolean;
+        let lastGameCreated: GameDataService;
+        createdGame = false;
+        let bp13: BoardPlay = BoardPlay.emptyInstance();
+        let bp15: BoardPlay = BoardPlay.emptyInstance();
+        let bp16: BoardPlay = BoardPlay.emptyInstance();
+        
+        beforeEach( async () => {
+            if (!createdGame) {
+                await gameDataService.createGame(
+                    'TempTest',       // game name
+                    'HCOLONEL',
+                    20,    // boards
+                    0,                // no phantom Pair for now
+                    TravOrder.PAIR,   // travorder will actually be set below
+                    new Date(Date.now()),
+                    'temp for testing',
+                );
+                createdGame = true;
+                lastGameCreated = gameDataService;
+            }
+            else {
+                // retrieve last one we crated to reuse
+                // and have to tell score-entry compoment about this
+                gameDataService = lastGameCreated;
+                component.gameDataPtr = gameDataService;
+            }
+
+            const c = component;
+            c.curBoardNum = 1;
+            c.buildNSOrder();
+            c.inputElement = {key:'', target:{value:''}};
+            c.onNS = 3;  // NS pairs on board 1 are 3,5,6
+            bp13 = c.getBoardPlay(1, 3);
+            bp15 = c.getBoardPlay(1, 5);
+            bp16 = c.getBoardPlay(1, 6);
+            [bp13, bp15, bp16].forEach( (bp) => {
+                bp.addEmptyScoreInfo();
+            });
+
+        });
+                
+        it(`should have created Game`, () => {
+            expect(gameDataService.numBoards).toBe(20);
+            expect(gameDataService.numRounds).toBe(10);
+        });
+
+        function getCurBoardPlay() {
+            const c = component;
+            return(c.getBoardPlay(c.curBoardNum, c.onNS));
+        }
+
+
+        function notSpecialKey(str: string) {
+            // true if a single alphanumeric character
+            return (str.length === 1);
+            // return /^[a-z0-9\-]$/i.test(str);
+        }
+        
+        function processKeys(keys: string[]): void {
+            const c = component;
+            keys.forEach( (key) => {
+                if (notSpecialKey(key)) {
+                    // append key to value string
+                    c.inputElement.target.value += key;
+                    // console.log(`target value is now ${c.inputElement.target.value}`);
+                }
+                c.inputElement.key = key;
+                c.scoreEntryInput();
+            });
+        }
+        
+        const tests: any[] = [
+            {title: 'repeat positive input', keys:[...'42-', ...'45', 'Enter', 'Enter'],   expScores:[-420, 450, 450]},
+            {title: 'repeat negative input', keys:[...'42', 'Enter', ...'45-', 'Enter'],   expScores:[420, -450, -450]},
+            {title: 'repeat input twice',    keys:[...'42', 'Enter', 'Enter', 'Enter'],    expScores:[420, 420, 420]},
+            {title: 'repeat negative input twice',    keys:[...'42-', 'Enter', 'Enter'],    expScores:[-420, -420, -420]},
+            {title: 'second entry only',      keys:['ArrowDown', ...'45', 'Enter', 'ArrowDown'],   expScores:[SCORE_EMPTY, 450, SCORE_EMPTY]},
+            {title: 'first and last entry',   keys:[...'42-', 'ArrowDown', ...'45', 'Enter'],   expScores:[-420, SCORE_EMPTY, 450]},
+            {title: 'down and up arrows overwrite', keys:[...'42-', 'Enter', 'ArrowUp', 'ArrowUp', 'X', 'Enter'],   expScores:[SCORE_EMPTY, -420, SCORE_EMPTY]},
+            {title: 'illegal score handling', keys:[...'62-'],   expScores:[SCORE_EMPTY, SCORE_EMPTY, SCORE_EMPTY], errmsg: `!! -620 is not possible on this board !!` },
+            {title: 'AVE+ for NS', keys:[...'A+', 'Enter'],   expScores:[SCORE_SPECIAL, SCORE_EMPTY, SCORE_EMPTY], expKinds:[{ns:'AVE+', ew:'AVE-'} ] },
+            {title: 'AVE- for NS', keys:[...'A-', 'Enter'],   expScores:[SCORE_SPECIAL, SCORE_EMPTY, SCORE_EMPTY], expKinds:[{ns:'AVE-', ew:'AVE+'} ] },
+            {title: 'AVE+ for NS and AVE for both', keys:[...'A+', 'Enter', ...'A', 'Enter'],
+                                                    expScores:[SCORE_SPECIAL, SCORE_SPECIAL, SCORE_EMPTY],
+                                                    expKinds:[{ns:'AVE+', ew:'AVE-'}, {ns:'AVE', ew:'AVE'}] },
+        ];
+        tests.forEach( (test) => {
+            fit(test.title, () => {
+                const c = component;
+                processKeys(test.keys);
+                const bps = [bp13, bp15, bp16]; 
+                _.range(3).forEach( (idx) => {
+                    expect(bps[idx].nsScore).toBe(test.expScores[idx]);
+                    if (bps[idx].nsScore === SCORE_SPECIAL) {
+                        expect(bps[idx].kindNS).toBe(test.expKinds[idx].ns);
+                        expect(bps[idx].kindEW).toBe(test.expKinds[idx].ew);
+                    }
+                });
+                if (test.errmsg !== undefined) {
+                    expect(c.viewLines[6]).toBe(test.errmsg);
+                }
             });
         });
     });

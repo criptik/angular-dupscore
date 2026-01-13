@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { SerializerClass, SeriClassLiteral } from '../serializer/serializer';
 import * as _ from 'lodash';
 
-const SCORE_EMPTY: number = -2;
-const SCORE_SPECIAL: number = -1;
+export const SCORE_EMPTY: number = -2;
+export const SCORE_SPECIAL: number = -1;
 
 export type NNMap = Map<number, number>;
 export const TravOrder =  {
@@ -19,7 +19,7 @@ export class BoardPlay {
     ewPair: number;
     round: number;
     // result info
-    nsScore:number;
+    nsScore:number = SCORE_EMPTY;
     kindNS:string = '';
     kindEW:string = '';
     contractNote:string = '';
@@ -28,7 +28,7 @@ export class BoardPlay {
         this.nsPair = nsPair;
         this.ewPair = ewPair;
         this.round = round;
-        this.nsScore = SCORE_EMPTY;  // symbol for empty
+        this.addEmptyScoreInfo();
     }
 
     static emptyInstance() {

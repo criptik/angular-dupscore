@@ -81,24 +81,27 @@ export class PairpairTableComponent {
         // console.log('p.numPairs:', p.numPairs);
         if (true) {
             Array.from(p.boardObjs.values()).forEach( boardObj => {
-                Array.from(boardObj.boardPlays.values()).forEach( bp => {
-                    // get the ns and ew pairs for each boardPlay
-                    const nsPair = bp.nsPair;
-                    const ewPair = bp.ewPair;
-                    // todo: correct these for Mitchell
-                    // get the mps for that pair from the boardObj.pairToMpMap
-                    const nsMps: number|undefined = boardObj.pairToMpMap.get(nsPair);
-                    const ewMps: number|undefined = boardObj.pairToMpMap.get(ewPair);
-                    if (nsMps !== undefined && ewMps !== undefined) {
-                        const nsIdx = nsPair - 1;
-                        const ewIdx = Math.abs(ewPair) - 1;
-                        mpArray[nsIdx][ewIdx] += nsMps;
-                        mpArray[ewIdx][nsIdx] += ewMps;
-                        boardCountArray[nsIdx][ewIdx]++;
-                        boardCountArray[ewIdx][nsIdx]++;
-                        // console.log(nsPair, ewPair, mpArray[nsIdx], mpArray[ewIdx]);
-                    }
-                });
+                // check for crazy case where boards 19 and 20 showed up in 2-table 18-board game
+                if (boardObj.bdnum <= p.numBoards) {
+                    Array.from(boardObj.boardPlays.values()).forEach( bp => {
+                        // get the ns and ew pairs for each boardPlay
+                        const nsPair = bp.nsPair;
+                        const ewPair = bp.ewPair;
+                        // todo: correct these for Mitchell
+                        // get the mps for that pair from the boardObj.pairToMpMap
+                        const nsMps: number|undefined = boardObj.pairToMpMap.get(nsPair);
+                        const ewMps: number|undefined = boardObj.pairToMpMap.get(ewPair);
+                        if (nsMps !== undefined && ewMps !== undefined) {
+                            const nsIdx = nsPair - 1;
+                            const ewIdx = Math.abs(ewPair) - 1;
+                            mpArray[nsIdx][ewIdx] += nsMps;
+                            mpArray[ewIdx][nsIdx] += ewMps;
+                            boardCountArray[nsIdx][ewIdx]++;
+                            boardCountArray[ewIdx][nsIdx]++;
+                            // console.log(nsPair, ewPair, mpArray[nsIdx], mpArray[ewIdx]);
+                        }
+                    });
+                }
             });
         }
         // build string info for table to be rendered

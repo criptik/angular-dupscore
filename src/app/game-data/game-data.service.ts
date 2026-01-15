@@ -392,6 +392,7 @@ export class GameDataService {
         _.range(1, this.numBoards+1).forEach(bdnum => {
             const bdobj = new BoardObj(bdnum);
             this.boardObjs.set(bdnum, bdobj);
+            // console.log(`in setup, setting bdobj ${bdnum}`);
         });
         
         // inspect the triplets to get the boardPlays for each boardObj

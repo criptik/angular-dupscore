@@ -105,15 +105,18 @@ export class ShortsummTableComponent {
 
         let boardsScored = 0;
         Array.from(p.boardObjs.values()).forEach( boardObj => {
-            boardObj.computeMP(p.boardTop);
-            if (Array.from(boardObj.pairToMpMap.keys()).length > 0) boardsScored ++;
-            
-            // for each pair, get totals of mps and number of boards
-            Array.from(boardObj.pairToMpMap.entries()).forEach( ([pairId, mp]) => {
-                // console.log(`board ${boardObj.bdnum}, pair ${pairId}, ${mp}`);
-                const mpRec = this.pairMpRecs.get(pairId) as MpRec;
-                mpRec.bumpMp(mp);
-            });
+            // check for crazy case where boards 19 and 20 showed up in 2-table 18-board game
+            if (boardObj.bdnum <= p.numBoards) {
+                boardObj.computeMP(p.boardTop);
+                if (Array.from(boardObj.pairToMpMap.keys()).length > 0) boardsScored ++;
+                
+                // for each pair, get totals of mps and number of boards
+                Array.from(boardObj.pairToMpMap.entries()).forEach( ([pairId, mp]) => {
+                    // console.log(`board ${boardObj.bdnum}, pair ${pairId}, ${mp}`);
+                    const mpRec = this.pairMpRecs.get(pairId) as MpRec;
+                    mpRec.bumpMp(mp);
+                });
+            }
         });
 
         // compute Top overall score to get percentages

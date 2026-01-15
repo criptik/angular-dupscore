@@ -201,7 +201,8 @@ export class TravellersTableComponent {
         this.hasContractNotes = this.checkForContractNotes();
         
         Array.from(p.boardObjs.values()).forEach( boardObj => {
-            if (boardObj.areAnyPlaysEntered()) {
+            // 2nd check for crazy case where boards 19 and 20 showed up in 2-table 18-board game
+            if (boardObj.areAnyPlaysEntered() && (boardObj.bdnum <= p.numBoards)) {
                 allBoardOutputArray.push(this.getOneBoardInfo(boardObj));
             }
         });

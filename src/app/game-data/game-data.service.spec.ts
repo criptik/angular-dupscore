@@ -3,7 +3,7 @@ import { Injectable, InjectionToken } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
 
-import { GameDataService, BoardObj, BoardPlay} from './game-data.service';
+import { GameDataService, BoardObj, BoardPlay, TravOrder} from './game-data.service';
 
 describe('GameDataService', () => {
     let service: GameDataService;
@@ -100,5 +100,34 @@ describe('GameDataService', () => {
             }
         });
     });
-    
+
+    [18, 21, 24, 27].forEach( (numBoards) => {
+        describe(`2-table Tests with ${numBoards} boards`, () => {
+            beforeEach( async () => {
+                console.log(`create game ${numBoards}`);
+                const p: GameDataService = service;
+                await p.createGame(
+                    'TempTest',       // game name
+                    'H0203X',
+                    numBoards,        // boards
+                    0,                // no phantom Pair for now
+                    TravOrder.PAIR,   // travorder will actually be set below
+                    new Date(Date.now()),
+                    'temp for testing',
+                );
+            });
+            it('should have correct boardObjs count', () => { 
+                console.log(`test for ${numBoards}`);
+                const p: GameDataService = service;
+                expect(p.numBoards).toBe(numBoards);
+                expect(Array.from(p.boardObjs).length).toBe(numBoards);
+                Array.from(p.boardObjs.values()).forEach( (bdobj: BoardObj) => {
+                    console.log(numBoards, bdobj.bdnum);
+                    expect(bdobj.bdnum).toBeGreaterThanOrEqual(1);
+                    expect(bdobj.bdnum).toBeLessThanOrEqual(numBoards);
+                });
+            });
+        });
+            
+    });
 });

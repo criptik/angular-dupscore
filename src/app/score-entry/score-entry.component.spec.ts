@@ -295,7 +295,7 @@ describe('ScoreEntryComponent', () => {
                                                     expKinds:[{ns:'AVE+', ew:'AVE-'}, {ns:'AVE', ew:'AVE'}] },
         ];
         tests.forEach( (test) => {
-            fit(test.title, () => {
+            it(test.title, () => {
                 const c = component;
                 processKeys(test.keys);
                 const bps = [bp13, bp15, bp16]; 

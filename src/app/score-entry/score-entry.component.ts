@@ -534,7 +534,9 @@ export class ScoreEntryComponent extends ScoreBaseComponent implements AfterView
         this.boardsToDoMsg = '';
         // console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
         Array.from(p.boardObjs.values()).forEach( bdobj => {
-            if (!bdobj.allPlaysEntered) {
+            // the 2nd crazy check below was because on at least one platform
+            // the two table game with 18 boards thought there was a board 19 and 20
+            if (!bdobj.allPlaysEntered && (bdobj.bdnum <= p.numBoards)) {
                 this.boardsToDoMsg += ` ${bdobj.bdnum}`;
                 if (defaultNextBoard === 0) defaultNextBoard = bdobj.bdnum;
             }

@@ -12,7 +12,7 @@
             <td class="pairNumStr">{{dataRow[0]}}</td>
             <td class="names">{{dataRow[1]}}</td>
             @for (datStr of dataRow.slice(2); track $index) {
-            <td class="tdpct">{{datStr}}</td>
+            <td class="tdpct" [ngStyle]="{'background-color': getCellColor(datStr)}">>{{datStr}}</td>
             }
         </tr>
         }

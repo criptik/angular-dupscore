@@ -47,6 +47,7 @@ td {
 #pairVsPair {
     display: none;
 }
+
 `;
 
 @Component({
@@ -138,6 +139,17 @@ export class PairpairTableComponent {
             this.pairVsPairInfo.push(dataRow);
         });
         // console.log(this.pairVsPairInfo);
+    }
+
+    getCellColor(pctStr: string) : string {
+        if (pctStr === '--') return 'white'
+        const intval: number = parseInt(pctStr);
+        const rangeWidth = 20;
+        const rangeStart = 0;
+        const colors: string[] = ['orangered', 'pink', 'yellow', 'greenyellow', 'skyblue'];
+        const colidx = Math.trunc(intval/20);
+        if (colidx < colors.length) return colors[colidx];
+        else return 'white';
     }
     
 

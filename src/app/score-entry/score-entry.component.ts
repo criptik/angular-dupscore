@@ -531,16 +531,30 @@ export class ScoreEntryComponent extends ScoreBaseComponent implements AfterView
         const p: GameDataService = this.gameDataPtr;
         // build the modal dialog box info
         let defaultNextBoard: number = 0;
+        let firstUndoneBoard: number = 0;
+        let undoneBoards: number[] = [];
         this.boardsToDoMsg = '';
         // console.log('boardObjs len: ', Array.from(p.boardObjs.values()).length);
         Array.from(p.boardObjs.values()).forEach( bdobj => {
             // the 2nd crazy check below was because on at least one platform
             // the two table game with 18 boards thought there was a board 19 and 20
             if (!bdobj.allPlaysEntered && (bdobj.bdnum <= p.numBoards)) {
-                this.boardsToDoMsg += ` ${bdobj.bdnum}`;
-                if (defaultNextBoard === 0) defaultNextBoard = bdobj.bdnum;
+                undoneBoards.push(bdobj.bdnum);
             }
         });
+        if (undoneBoards.length > 0) firstUndoneBoard = undoneBoards[0];
+
+        // build up boardsToDoMsg and compute defaultNextBoard to be the next undone board if any, otherwise the firstUndoneBoard
+        // and if at end and no undone boards, then 0
+
+        undoneBoards.forEach( bdnum => {
+            this.boardsToDoMsg += ` ${bdnum}`;
+            if (defaultNextBoard === 0 && bdnum > this.curBoardNum) defaultNextBoard = bdnum;
+        });
+
+        // if at this point we still have no higher undone bdnum, pick firstUndoneBoard as default
+        if (defaultNextBoard === 0) defaultNextBoard = firstUndoneBoard;
+ 
         return defaultNextBoard;
     }
 }
